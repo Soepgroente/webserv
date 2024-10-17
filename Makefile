@@ -1,19 +1,19 @@
-NAME		:= webserv
-T_EXEC		:= webserv_tester
-CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -Ofast -flto -std=c++20 $(HEADERS) #-g
-OS			:= $(shell uname)
-HEADERS		:= -I include
+NAME		= webserv
+T_EXEC		= webserv_tester
+CC			= c++
+CFLAGS		= -Wall -Wextra -Werror -Ofast -flto -std=c++20 $(HEADERS) #-g
+OS			= $(shell uname)
+HEADERS		= -I./include
 
 CPPFILES	:= 
 
 TFILES		:= 
 
-MAIN		:= main.cpp
+MAIN		= main.cpp
 
-SRC_DIR		:= src
-T_DIR		:= tests
-OBJ_DIR		:= obj
+SRC_DIR		= src
+T_DIR		= tests
+OBJ_DIR		= obj
 OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
 
 M_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(MAIN:%.cpp=%.o)))
@@ -27,6 +27,7 @@ T_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(TFILES:%.cpp=%.o)))
 vpath %.cpp $(shell find $(SRC_DIR) -type d)
 
 all: $(NAME)
+	./$(NAME)
 
 test: $(T_EXEC)
 
