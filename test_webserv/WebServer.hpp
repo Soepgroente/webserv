@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/27 13:38:25 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/10/10 18:10:15 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/10/31 17:05:05 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 # include <sstream>
 # include <stdio.h>
 # include <netinet/in.h>
+# include <sys/types.h>
 # include <sys/socket.h>
+# include <netdb.h>
 # include <errno.h>
 # include <string.h>
 # include <unistd.h>
@@ -26,6 +28,7 @@
 # include <poll.h>
 # include <vector>
 # include <map>
+# include <algorithm>
 
 # define DEFAULT_PORT 8081
 # define BUFFER_SIZE 1024
@@ -50,6 +53,10 @@ struct serverConf_s
 };
 
 void	handleError(const std::string& error);
+std::string	handleRequest(const std::string& request);
+std::string	handleGetRequest(const std::string& path);
+std::string	handlePostRequest(const std::string& path, std::istringstream& request);
+
 
 class WebServer
 {
@@ -60,7 +67,8 @@ class WebServer
 		std::vector<serverConf_s>	servers_confs;
 		std::vector<int>			server_fds;
 		std::vector<struct pollfd>	poll_fds;
-		// int	serverSocketInit(const std::string& host, int port);
+		std::map<int, std::string>	client_responses;
+		int	serverSocketInit(const std::string& host, int port);
 	public:
 		// OCF
 		WebServer();
@@ -71,8 +79,13 @@ class WebServer
 		WebServer(int port);
 		void	loadConfig(const std::string& config_file);
 		void	start();
-		void	acceptConnection(std::vector<struct pollfd>& poll_fds);
-		void	handleClient(struct pollfd&	client_pollfd);
+		void	acceptConnection(int server_fd);
+		void	handleClientRead(struct pollfd&	client_pollfd);
+		void	handleClientWrite(struct pollfd& client_pollfd);
+
+		// Geters
+		void	printServerConfs() const;
+		bool	isServerSocket(int fd) const;
 };
 
 #endif

@@ -6,14 +6,17 @@
 #    By: akasiota <akasiota@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/09/24 15:07:50 by akasiota      #+#    #+#                  #
-#    Updated: 2024/10/01 01:08:43 by akasiota      ########   odam.nl          #
+#    Updated: 2024/10/30 17:59:55 by akasiota      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME:= webserv
 CPPFLAGS:= -Wall -Wextra -Werror -std=c++20
 SRCS:= main.cpp \
-      WebServer.cpp
+      WebServer.cpp \
+	  WebServer-Geters.cpp \
+	  WebServerClientStuff.cpp \
+	  WebServerHandleRequests.cpp
 OBJDIR:= objs
 OBJS:= $(SRCS:%.cpp=$(OBJDIR)/%.o)
 
