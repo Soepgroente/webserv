@@ -6,13 +6,13 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:03:20 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/10/31 13:00:01 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/08 15:38:04 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServer.hpp"
 
-void	WebServer::handleClientRead(struct pollfd&	client_pollfd)
+void	WebServer::handleClientRead(struct pollfd&	client_pollfd, std::vector<serverConf_s>& servers)
 {
 	std::string	buffer(BUFFER_SIZE, '\0');
 	int			bytes_read;
@@ -37,7 +37,7 @@ void	WebServer::handleClientRead(struct pollfd&	client_pollfd)
 	{
 		buffer.resize(bytes_read);
 		std::cout << "Received: " << buffer << std::endl;
-		response = handleRequest(buffer);
+		response = handleRequest(buffer, servers); // need to figure out how to pass the appropriate port server and if it matters
 		client_responses[client_pollfd.fd] = response;
 		client_pollfd.events = POLLOUT;
 		// response = 	"HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";
@@ -47,14 +47,10 @@ void	WebServer::handleClientRead(struct pollfd&	client_pollfd)
 void	WebServer::handleClientWrite(struct pollfd& client_pollfd)
 {
 	std::string	response = client_responses[client_pollfd.fd];
-	size_t		bytes_written = write(client_pollfd.fd, &response[0], response.size());
+	long		bytes_written = write(client_pollfd.fd, &response[0], response.size());
 	if (bytes_written < 0)
 	{
-		if (errno != EWOULDBLOCK)
-		{
-			std::cerr << "Write to client_fd error" << std::endl;
-			handleError(strerror(errno));
-		}
+		handleError("Write to client_fd error");
 		return ;
 	}
 	// std::cout << "wrote: " << bytes_written << std::endl;

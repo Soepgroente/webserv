@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/24 15:29:02 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/10/31 15:35:26 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/06 17:14:13 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,16 +56,18 @@ void	WebServer::loadConfig(const std::string& config_file)
 	std::cout << "Opened the config file" << std::endl;
 	while (std::getline(conf_ifstream, line))
 	{
+		// Add some code to remove leading-trailing whitespace and skip empty lines and comments
+		line.erase(0, line.find_first_not_of(" \t\r\n"));
+		line.erase(line.find_last_not_of(" \t\r\n") + 1);
+		if (line.empty() || line[0] == '#')
+			continue;
+			
 		std::istringstream	ss(line);
 		std::string			key;
 		if (line.find("server {") != std::string::npos)
-		{
 			new_server_conf = serverConf_s();
-		}
 		else if (line.find("}") != std::string::npos)
-		{
 			servers_confs.push_back(new_server_conf);
-		}
 		else if (ss >> key) // safeguard the other ss manipulations later
 		{
 			if (key == "host")
@@ -85,6 +87,12 @@ void	WebServer::loadConfig(const std::string& config_file)
 				ss >> path;
 				while (std::getline(conf_ifstream, line) && line.find("}") == std::string::npos)
 				{
+					// Add some code to remove leading-trailing whitespace and skip empty lines and comments
+					line.erase(0, line.find_first_not_of(" \t\r\n"));
+					line.erase(line.find_last_not_of(" \t\r\n") + 1);
+					if (line.empty() || line[0] == '#')
+						continue;
+					
 					std::istringstream	route_ss(line);
 					std::string			route_key;
 					if (route_ss >> route_key)
@@ -101,6 +109,23 @@ void	WebServer::loadConfig(const std::string& config_file)
 							route_ss >> route.root;
 						else if (route_key == "upload_dir")
 							route_ss >> route.upload_dir;
+						else if (route_key == "directory_listing")
+						{
+							std::string	str;
+							route_ss >> str;
+							// if (value == "on")
+							// 	route.directory_listing = true;
+							route.directory_listing = (str == "on");
+						}
+						else if (route_key == "index")
+							route_ss >> route.index;
+						else if (route_key == "cgi_extensions")
+						{
+							std::string	str;
+							while (route_ss >> str)
+								route.cgi_extensions.push_back(str);
+														
+						}
 					}
 				}
 				new_server_conf.routes[path] = route;
@@ -147,7 +172,7 @@ void	WebServer::start()
 				}
 				else
 				{
-					handleClientRead(poll_fds[i]);
+					handleClientRead(poll_fds[i], servers_confs);
 				}
 			}
 			else if (poll_fds[i].revents & POLLOUT)

@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/27 13:38:25 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/10/31 17:05:05 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/08 15:27:41 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,20 @@
 # include <netinet/in.h>
 # include <sys/types.h>
 # include <sys/socket.h>
+# include <sys/wait.h>
 # include <netdb.h>
 # include <errno.h>
 # include <string.h>
 # include <unistd.h>
 # include <fcntl.h>
+# include <sys/stat.h>
+# include <dirent.h>
 # include <fstream>
 # include <poll.h>
 # include <vector>
 # include <map>
 # include <algorithm>
+# include <array>
 
 # define DEFAULT_PORT 8081
 # define BUFFER_SIZE 1024
@@ -40,6 +44,9 @@ struct routeConf_s
 	std::string					redirection;
 	std::string					root;
 	std::string					upload_dir;
+	bool						directory_listing = false;
+	std::string					index;
+	std::vector<std::string>	cgi_extensions;
 };
 
 struct serverConf_s
@@ -53,9 +60,7 @@ struct serverConf_s
 };
 
 void	handleError(const std::string& error);
-std::string	handleRequest(const std::string& request);
-std::string	handleGetRequest(const std::string& path);
-std::string	handlePostRequest(const std::string& path, std::istringstream& request);
+std::string	constructErrorResponse(const std::string& status_code, const serverConf_s& server);
 
 
 class WebServer
@@ -80,8 +85,11 @@ class WebServer
 		void	loadConfig(const std::string& config_file);
 		void	start();
 		void	acceptConnection(int server_fd);
-		void	handleClientRead(struct pollfd&	client_pollfd);
+		void	handleClientRead(struct pollfd&	client_pollfd, std::vector<serverConf_s>& servers);
 		void	handleClientWrite(struct pollfd& client_pollfd);
+		std::string	handleRequest(const std::string& request, const std::vector<serverConf_s>& servers);
+		std::string getDefaultPage(const std::string& page_path, const std::string& status_code, const serverConf_s& server);
+
 
 		// Geters
 		void	printServerConfs() const;
