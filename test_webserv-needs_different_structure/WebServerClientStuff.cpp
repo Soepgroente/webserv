@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:03:20 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/08 15:38:04 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:02:44 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	WebServer::handleClientRead(struct pollfd&	client_pollfd, std::vector<serve
 	{
 		buffer.resize(bytes_read);
 		std::cout << "Received: " << buffer << std::endl;
-		response = handleRequest(buffer, servers); // need to figure out how to pass the appropriate port server and if it matters
+		response = handleRequest(buffer, servers);
 		client_responses[client_pollfd.fd] = response;
 		client_pollfd.events = POLLOUT;
 		// response = 	"HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, world!";

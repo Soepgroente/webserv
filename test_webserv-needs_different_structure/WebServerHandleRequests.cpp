@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:46:31 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/08 16:12:14 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:16:03 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@ static int	findServerFromPort(std::istringstream& request_s, const std::vector<s
 	pos = tmp.find(':');
 	if (tmp.find(':') == std::string::npos)
 		return -1;
-	std::string	port_str;
-	port_str = tmp.substr(pos + 1);
+	std::string	host_str = tmp.substr(0, pos);
+	std::string	port_str = tmp.substr(pos + 1);
 	int	i = 0;
 	for (auto& server : servers)
 	{
-		if (server.port == std::stoi(port_str))
+		if (server.host == host_str && server.port == std::stoi(port_str))
 			break ;
 		i++;
 	}

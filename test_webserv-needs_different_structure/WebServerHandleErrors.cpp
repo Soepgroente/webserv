@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 13:15:06 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/08 16:25:18 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:16:51 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,10 @@ std::string	constructErrorResponse(const std::string& status_code, const serverC
 {
 	std::string	status_message = getStatusMessage(status_code);
 	// Check if there is a default error page
-	if (!server.error_page.empty())
+	if (!server.error_page_dir.empty())
 	{
-		std::string		error_page_path = server.error_page + "/" + status_code + ".html"; // e.g. ./error_pages/404.html
+		std::string		error_page_path = server.error_page_dir + "/" + status_code + ".html"; // e.g. ./error_pages/404.html
+		std::cout << "\n\nFilename: " << error_page_path << std::endl;
 		std::ifstream	file(error_page_path, std::ios::binary);
 		if (file.is_open())
 		{

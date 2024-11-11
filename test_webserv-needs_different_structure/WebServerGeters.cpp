@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   WebServer-Geters.cpp                               :+:    :+:            */
+/*   WebServerGeters.cpp                                :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/29 16:41:07 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/10/30 13:51:05 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:14:01 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	WebServer::printServerConfs() const
 		std::cout << "Host: " << server.host << std::endl;
 		std::cout << "Port: " << server.port << std::endl;
 		std::cout << "Server name: " << server.server_name << std::endl;
-		std::cout << "Error page: " << server.error_page << std::endl;
+		std::cout << "Error page directory: " << server.error_page_dir << std::endl;
 		std::cout << "Client_body_size: " << server.client_body_size << std::endl;
 		std::cout << "-----Locations-----" << std::endl;
 		for (auto& pair : server.routes)

@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/24 15:29:02 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:14:13 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:12:39 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,8 +76,8 @@ void	WebServer::loadConfig(const std::string& config_file)
 				ss >> new_server_conf.port;
 			else if (key == "server_name")
 				ss >> new_server_conf.server_name;
-			else if (key == "error page")
-				ss >> new_server_conf.error_page;
+			else if (key == "error_page_dir")
+				ss >> new_server_conf.error_page_dir;
 			else if (key == "client_body_size")
 				ss >> new_server_conf.client_body_size;
 			else if (key == "location")

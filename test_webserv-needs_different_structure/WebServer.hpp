@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/27 13:38:25 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/08 15:27:41 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 13:12:46 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ struct serverConf_s
 	std::string	host;
 	int			port;
 	std::string	server_name;
-	std::string	error_page;
+	std::string	error_page_dir;
 	int			client_body_size;
 	std::map<std::string, routeConf_s> routes;
 };
