@@ -6,12 +6,12 @@
 #    By: akasiota <akasiota@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/09/24 15:07:50 by akasiota      #+#    #+#                  #
-#    Updated: 2024/11/08 14:26:12 by akasiota      ########   odam.nl          #
+#    Updated: 2024/11/11 14:14:34 by akasiota      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME:= webserv
-CPPFLAGS:= -Wall -Wextra -Werror -std=c++20
+CPPFLAGS:= -Wall -Wextra -Werror -std=c++20 -g
 SRCS:= main.cpp \
       WebServer.cpp \
 	  WebServerGeters.cpp \

@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:03:20 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/11 13:02:44 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 14:17:50 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void	WebServer::handleClientRead(struct pollfd&	client_pollfd, std::vector<serve
 
 void	WebServer::handleClientWrite(struct pollfd& client_pollfd)
 {
-	std::string	response = client_responses[client_pollfd.fd];
+	std::string&	response = client_responses[client_pollfd.fd];
 	long		bytes_written = write(client_pollfd.fd, &response[0], response.size());
 	if (bytes_written < 0)
 	{
