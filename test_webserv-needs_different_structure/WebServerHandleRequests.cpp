@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:46:31 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/11 14:06:04 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/11 17:53:49 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,32 +24,18 @@ static int	findServerFromPort(std::istringstream& request_s, const std::vector<s
 	if (tmp.find(':') == std::string::npos)
 		return -1;
 	std::string	host_str = tmp.substr(0, pos);
+	if (host_str == "localhost")
+		host_str = "127.0.0.1";
 	std::string	port_str = tmp.substr(pos + 1);
 	int	i = 0;
 	for (auto& server : servers)
 	{
 		if (server.host == host_str && server.port == std::stoi(port_str))
-			break ;
+			return i;
 		i++;
 	}
-	return i;
+	return -1;
 }
-
-// static std::string	serveStaticFile(const std::string& file_path, const serverConf_s& server)
-// {
-// 	std::ifstream file(file_path, std::ios::binary);
-// 	if (!file.is_open())
-// 		return WebServer::ConstructErrorResponse("404", server);
-// 	std::stringstream buffer;
-// 	buffer << file.rdbuf();
-// 	std::string content = buffer.str();
-// 	std::ostringstream response;
-// 	response << "HTTP/1.1 200 OK\r\n";
-// 	response << "Content-Length: " << content.size() << "\r\n";
-// 	response << "Content-Type: text/html\r\n\r\n";
-// 	response << content;
-// 	return response.str();
-// }
 
 static std::string handleDirectoryRequest(const std::string& dir_path, const routeConf_s& route, const serverConf_s& server)
 {
@@ -196,7 +182,7 @@ static std::string	handleGetRequest(const std::string& path, const serverConf_s 
 	}
 	std::string		file_path = path.substr(1);
 	std::ifstream	file(file_path, std::ios::binary);
-	std::cout << "\nFILE PATH: " << file_path << std::endl;
+	std::cout << "FILE PATH: " << file_path << "\n\n" << std::endl;
 	if (!file.is_open())
 	{
 		std::cout << "\nFILE PATH IN ERROR: " << file_path << std::endl;
@@ -209,7 +195,6 @@ static std::string	handleGetRequest(const std::string& path, const serverConf_s 
 	std::stringstream response;
 	response << "HTTP/1.1 200 OK\r\n";
 	response << "Content-Length: " << content.size() << "\r\n";
-	// response << "Content-Type: text/html\r\n\r\n";
 	response << "Content-Type: " << getMimeType(file_path) << "\r\n\r\n";
 	response << content;
 	file.close();
@@ -230,7 +215,8 @@ static void	parseHeaders(std::istringstream& request, std::map<std::string, std:
 	std::string	line;
 	std::string	trimmed_line;
 	size_t		pos;
-
+	
+	request.seekg(0);
 	while (std::getline(request, line))
 	{
 		trimmed_line = trimWhitespace(line);
@@ -248,7 +234,7 @@ static void	parseHeaders(std::istringstream& request, std::map<std::string, std:
 			}
 			headers[key] = value;
 		}
-	}
+	}	
 }
 
 static std::string	handlePostRequest(const std::string& path, std::istringstream& request, const serverConf_s& server)
@@ -256,7 +242,7 @@ static std::string	handlePostRequest(const std::string& path, std::istringstream
 	std::map<std::string, std::string> headers;
 	std::string	str_request = request.str();
 	std::string file_content;
-	
+		
 	parseHeaders(request, headers);
 	if (std::stoi(headers["Content-Length"]) > server.client_body_size)
 		return constructErrorResponse("413", server);
@@ -264,8 +250,11 @@ static std::string	handlePostRequest(const std::string& path, std::istringstream
 	{
 		if (headers["Content-Type"].find("application/x-www-form-urlencoded") != std::string::npos)
 		{
-			// adjust 
-			return "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nURL-ENCODED";
+			// adjust
+			file_content = str_request.substr(str_request.find("\r\n\r\n") + 4);
+			// std::cout << "\n\n----REQUEST_STREAM-------\n" << body << std::endl;
+			
+			// return "HTTP/1.1 200 OK\r\nContent-Length: 11\r\n\r\nURL-ENCODED";
 		}
 		else if (headers["Content-Type"].find("multipart/form-data") != std::string::npos)
 		{
@@ -286,11 +275,12 @@ static std::string	handlePostRequest(const std::string& path, std::istringstream
 		// Error - adjust
 		return constructErrorResponse("400", server);
 	}
-	std::string		upload_dir = "./uploads"; // this needs to be the upload directory of the server
+	std::string		upload_dir = "uploads";//server.routes; // this needs to be the upload directory of the server
 	struct stat st;
 	if (stat(upload_dir.c_str(), &st) == -1)
 		mkdir(upload_dir.c_str(), 0755);
 	std::string		filename = upload_dir + path;
+	std::cout << "\n\n-----FILENAME: " << filename << std::endl;
 	std::ofstream	file(filename, std::ios::binary);
 	if (!file.is_open())
 	{
@@ -325,14 +315,14 @@ std::string	WebServer::handleRequest(const std::string& request, const std::vect
 			matched_route = &route.second;
 			matched_path = route_path;
 		}
+		// std::cout << "Matched path: " << matched_path << std::endl;
+		// std::cout << "Route path: " << route_path << std::endl;
 	}
 	if (matched_route != nullptr)
 	{
-		// Validate method
-		if (!matched_route->methods.empty() && \
+		if (matched_route->methods.empty() == false && \
 		std::find(matched_route->methods.begin(), matched_route->methods.end(), method) == matched_route->methods.end())
 			return constructErrorResponse("405", servers[i]);
-		
 		if (!matched_route->redirection.empty())
 		{
 			std::ostringstream	response;
@@ -352,6 +342,7 @@ std::string	WebServer::handleRequest(const std::string& request, const std::vect
 			if (fs_path.size() >= ext.size() && fs_path.compare(fs_path.size() - ext.size(), ext.size(), ext) == 0)
 				return executeCGI(fs_path, path, servers[i]);
 		}
+
 		if (method == "GET")
 			return handleGetRequest(path, servers[i]);
 		else if (method == "POST")
@@ -364,5 +355,4 @@ std::string	WebServer::handleRequest(const std::string& request, const std::vect
 	}
 	else
 		return constructErrorResponse("404", servers[i]);
-
 }
