@@ -1,59 +1,32 @@
-NAME		= webserv
-T_EXEC		= webserv_tester
-CC			= c++
-CFLAGS		= -Wall -Wextra -Werror -Ofast -flto -std=c++20 $(HEADERS) #-g
-OS			= $(shell uname)
-HEADERS		= -I./include
+NAME := webserv
+CXX := clang++
+CPPFLAGS := -g
+SRCDIR := src
+INCDIR := include
+OBJDIR := obj
 
-CPPFILES	:= 
+SRCS := $(wildcard $(SRCDIR)/*.cpp)
+OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
-TFILES		:= 
-
-MAIN		= main.cpp
-
-SRC_DIR		= src
-T_DIR		= tests
-OBJ_DIR		= obj
-OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
-
-M_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(MAIN:%.cpp=%.o)))
-T_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(TFILES:%.cpp=%.o)))
-
-#ifeq ($(OS), Darwin)
-#
-#
-#endif
-
-vpath %.cpp $(shell find $(SRC_DIR) -type d)
 
 all: $(NAME)
-	./$(NAME)
 
-test: $(T_EXEC)
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	@$(CXX) $(CPPFLAGS) -I$(INCDIR) -c $< -o $@
 
-$(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
-	$(CC) $(CFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME) 
-
-$(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
-	$(CC) $(CFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
-
-$(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
-	$(CC) -c $(CFLAGS) -o $@ $^
+$(NAME): $(OBJS)
+	@$(CXX) $(CPPFLAGS) $(OBJS) -o $(NAME)
 
 clean:
-	rm -rf $(OBJ_DIR)
+	@rm -rf $(OBJDIR)
 
 fclean: clean
-	rm -f $(NAME)
-	rm -f $(T_EXEC)
+	@rm -f $(NAME)
 
 re: fclean all
-retest: fclean test
 
-debug: CFLAGS += -fsanitize=address
-debug: re
-
-.PHONY: all clean fclean re debug test retest
+run: $(NAME)
+	@./$^
