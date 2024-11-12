@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:46:31 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/11 17:53:49 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/12 13:33:40 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,11 +176,15 @@ static std::string	getMimeType(const std::string& file_path)
 
 static std::string	handleGetRequest(const std::string& path, const serverConf_s server)
 {
+	std::string	file_path;
+	
 	if (path == "/")
 	{
-		return "HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nHomepage";
+		file_path = "Homepage.html";
+		// return "HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nHomepage";
 	}
-	std::string		file_path = path.substr(1);
+	else
+		file_path = path.substr(1);
 	std::ifstream	file(file_path, std::ios::binary);
 	std::cout << "FILE PATH: " << file_path << "\n\n" << std::endl;
 	if (!file.is_open())
