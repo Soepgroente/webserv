@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:46:31 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/12 13:33:40 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/12 14:54:08 by akasiota      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,7 +241,7 @@ static void	parseHeaders(std::istringstream& request, std::map<std::string, std:
 	}	
 }
 
-static std::string	handlePostRequest(const std::string& path, std::istringstream& request, const serverConf_s& server)
+static std::string	handlePostRequest(const std::string& path, std::istringstream& request, const routeConf_s* route, const serverConf_s& server)
 {
 	std::map<std::string, std::string> headers;
 	std::string	str_request = request.str();
@@ -279,11 +279,27 @@ static std::string	handlePostRequest(const std::string& path, std::istringstream
 		// Error - adjust
 		return constructErrorResponse("400", server);
 	}
-	std::string		upload_dir = "uploads";//server.routes; // this needs to be the upload directory of the server
-	struct stat st;
-	if (stat(upload_dir.c_str(), &st) == -1)
-		mkdir(upload_dir.c_str(), 0755);
-	std::string		filename = upload_dir + path;
+	std::string		upload_dir = route->upload_dir;
+	try
+	{
+		if (!std::filesystem::exists(upload_dir))
+		{
+			if (!std::filesystem::create_directories(upload_dir))
+				return constructErrorResponse("500", server);
+		}
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+		return constructErrorResponse("500", server);
+	}
+	size_t pos = path.find_last_of('/');
+	std::string filename = upload_dir + path.substr(pos);
+	// std::string		upload_dir = "uploads";//server.routes; // this needs to be the upload directory of the server
+	// struct stat st;
+	// if (stat(upload_dir.c_str(), &st) == -1)
+	// 	mkdir(upload_dir.c_str(), 0755);
+	// std::string		filename = upload_dir + path;
 	std::cout << "\n\n-----FILENAME: " << filename << std::endl;
 	std::ofstream	file(filename, std::ios::binary);
 	if (!file.is_open())
@@ -351,7 +367,7 @@ std::string	WebServer::handleRequest(const std::string& request, const std::vect
 			return handleGetRequest(path, servers[i]);
 		else if (method == "POST")
 			// return "HTTP/1.1 200 OK\r\nContent-Length: 4\r\n\r\nPOST";
-			return handlePostRequest(path, request_s, servers[i]);
+			return handlePostRequest(path, request_s, matched_route, servers[i]);
 		else if (method == "DELETE")
 			return "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\nDELETE";
 		else
