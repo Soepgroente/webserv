@@ -1,11 +1,11 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -Ofast -flto -std=c++20 $(HEADERS) #-g
+CPPFLAGS	= -Ofast -std=c++20 $(HEADERS) -g #-Wall -Wextra -Werror -flto 
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
-CPPFILES	:= 
+CPPFILES	:=	WebServer.cpp \
 
 TFILES		:= 
 
@@ -34,13 +34,16 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
-	$(CC) $(CFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME) 
+	$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME) 
 
 $(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
-	$(CC) $(CFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
+	$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
-	$(CC) -c $(CFLAGS) -o $@ $^
+	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
+
+$(OBJ_DIR)/%.o : include/%.cpp
+	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
 
 clean:
 	rm -rf $(OBJ_DIR)
