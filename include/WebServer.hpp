@@ -1,20 +1,29 @@
 #pragma once
 
-#include "Project.hpp"
 #include "Server.hpp"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <functional>
 
-struct	Webserver
+struct	Server;
+
+class	WebServer
 {
 	public:
 
-	Webserver();
-	~Webserver();
-	Webserver(int port);
-	Webserver(const Webserver& original) = delete;
-	void operator=(const Webserver& original) = delete;
+	WebServer() = default;
+	~WebServer() = default;
+	WebServer(const WebServer& original) = delete;
+	void operator=(const WebServer& original) = delete;
 
+	void	parseConfigurations(const std::string& fileLocation);
 
 	private:
 
 	std::vector<Server>	servers;
+	
+	void	printServerStruct(const Server& toPrint)	const;
 };

@@ -6,7 +6,7 @@
 /*   By: akasiota <akasiota@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/09/27 13:38:25 by akasiota      #+#    #+#                 */
-/*   Updated: 2024/11/12 13:59:45 by akasiota      ########   odam.nl         */
+/*   Updated: 2024/11/19 13:17:05 by vvan-der      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,15 +66,6 @@ std::string	constructErrorResponse(const std::string& status_code, const serverC
 
 class WebServer
 {
-	private:
-		int port;
-		int server_fd;
-		
-		std::vector<serverConf_s>	servers_confs;
-		std::vector<int>			server_fds;
-		std::vector<struct pollfd>	poll_fds;
-		std::map<int, std::string>	client_responses;
-		int	serverSocketInit(const std::string& host, int port);
 	public:
 		// OCF
 		WebServer();
@@ -95,6 +86,16 @@ class WebServer
 		// Geters
 		void	printServerConfs() const;
 		bool	isServerSocket(int fd) const;
+
+	private:
+		int port;
+		int server_fd;
+		
+		std::vector<serverConf_s>	servers_confs;
+		std::vector<int>			server_fds;
+		std::vector<struct pollfd>	poll_fds;
+		std::map<int, std::string>	client_responses;
+		int	serverSocketInit(const std::string& host, int port);
 };
 
 #endif
