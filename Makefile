@@ -1,7 +1,7 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Ofast -std=c++20 $(HEADERS) -g #-Wall -Wextra -Werror -flto 
+CPPFLAGS	= -std=c++20 $(HEADERS) -g #-Wall -Wextra -Werror -flto 
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
@@ -40,9 +40,6 @@ $(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
 	$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
-	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
-
-$(OBJ_DIR)/%.o : include/%.cpp
 	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
 
 clean:

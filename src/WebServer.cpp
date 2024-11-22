@@ -17,53 +17,83 @@ static void	parseHost(const std::string& input, Server& server, int& lineCount)
 
 static void	parsePort(const std::string& input, Server& server, int& lineCount)
 {
-	;
+	// if (server.port != 0)
+	// 	errorExit("Invalid configuration file", lineCount);
+	server.port = std::stoi(input);
 }
 
 static void	parseName(const std::string& input, Server& server, int& lineCount)
 {
-	;
+	if (server.serverName != "")
+		errorExit("Invalid configuration file", lineCount);
+	server.serverName = input;
 }
 
 static void	parseErrorPage(const std::string& input, Server& server, int& lineCount)
 {
-	;
+	if (server.errorLocation != "")
+		errorExit("Invalid configuration file", lineCount);
+	server.errorLocation = input;
 }
 
 static void	parseBodySize(const std::string& input, Server& server, int& lineCount)
 {
-	;
+	// if (server.bodySize != 0)
+	// 	errorExit("Invalid configuration file", lineCount);
+	server.bodySize = std::stoi(input);
 }
+
+// static void	parseLocationRoot()
+// {
+
+// }
 
 static void	parseLocation(const std::string& input, Server& server, int& lineCount)
 {
-	std::string	line;
-	Location	location;
+	std::string			line;
+	std::string 		path;
+	Location			location;
+	std::string	tmp;
 
-	line.erase(line.find_first_of("{") - 1, std::string::npos);
-	server.locations.insert({line, location});
-	while (file.eof() == false && line != "}")
+	line = input.substr(0, line.find_first_of("{") - 1);
+	path = line;
+	server.locations.insert({path, location});
+	while (file.eof() == false)
 	{
 		std::getline(file, line, '\n');
 		lineCount++;
 		line.erase(0, line.find_first_not_of(" \t\r\n"));
 		line.erase(line.find_last_not_of(" \t\r\n") + 1, std::string::npos);
-		if (line == "methods")
+		if (line == "}")
+			break;
+		std::stringstream	s_line;
+		s_line.str(line);
+		std::cout << "---------\n" << s_line.str() << std::endl;
+		s_line >> tmp;
+		std::cout << "---------\n|" << tmp << '|' << std::endl;
+		if (tmp == "methods")
 		{
-
+			if (server.locations[path].methods.empty() == false)
+				errorExit("Invalid configuration file", lineCount);
+			while (s_line >> tmp)
+				server.locations[path].methods.push_back(tmp);
+			continue;		
 		}
-		if (line == "cgi_extensions")
+		if (tmp == "cgi_extensions")
 		{
-			
+			if (server.locations[path].cgiExtensions.empty() == false)
+				errorExit("Invalid configuration file", lineCount);
+			while (s_line >> tmp)
+				server.locations[path].cgiExtensions.push_back(tmp);
+			continue;
 		}
-		try
-		{
-
-		}
-		catch (std::exception& e)
-		{
+		std::map<std::string, std::string>& tmp_map = server.locations[path].dirs;
+		std::map<std::string, std::string>::iterator it;
+		it = tmp_map.find(tmp);
+		if (it == tmp_map.end())
 			errorExit("Invalid location variable", lineCount);
-		}
+		s_line >> tmp;
+		it->second = tmp;
 	}
 
 	
@@ -102,7 +132,6 @@ void	WebServer::printServerStruct(const Server& toPrint)	const
 static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 {
 	std::string			line;
-	std::stringstream	s_input;
 	Server				server;
 	size_t 				pos;
 
@@ -125,7 +154,6 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		std::getline(file, line, '\n');
 		line.erase(0, line.find_first_not_of(" \t\r\n"));
 		line.erase(line.find_last_not_of(" \t\r\n") + 1, std::string::npos);
-		s_input.str(line);
 		pos = line.find_first_of(' ');
 		try
 		{
@@ -133,7 +161,8 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		}
 		catch (std::exception& e)
 		{
-			errorExit("Invalid variable name", lineCount);
+			std::cerr << e.what() << std::endl;
+			errorExit("Error in configuration file", lineCount);
 		}
 		lineCount++;
 	}

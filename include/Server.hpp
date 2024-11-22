@@ -11,7 +11,7 @@ struct Location
 
 	std::map<std::string, std::string>	dirs = 
 	{
-		{"root", ""},
+		{"root", "kk"},
 		{"directory_listing", ""},
 		{"index_file", ""},
 		{"upload_dir", ""},
