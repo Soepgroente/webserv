@@ -6,6 +6,7 @@ OS			:= $(shell uname)
 HEADERS		:= -I include
 
 CPPFILES	:=	WebServer.cpp \
+				WebServerUtils.cpp \
 
 TFILES		:= 
 

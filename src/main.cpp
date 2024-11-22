@@ -12,5 +12,7 @@ int	main(int argc, char** argv)
 	else
 		config = argv[1];
 	webserver.parseConfigurations(config);
-
+	webserver.startTheThing();
+	for (Server it : servers)
+		printServerStruct(it);
 }
