@@ -1,12 +1,15 @@
 #pragma once
 
-#include "Server.hpp"
-#include <iostream>
-#include <iomanip>
 #include <fstream>
-#include <vector>
-#include <map>
 #include <functional>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <netdb.h>
+#include "Server.hpp"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <vector>
 
 struct	Server;
 
@@ -20,6 +23,7 @@ class	WebServer
 	void operator=(const WebServer& original) = delete;
 
 	void	parseConfigurations(const std::string& fileLocation);
+	void	startTheThing();
 
 	private:
 

@@ -11,9 +11,9 @@ struct Location
 
 	std::map<std::string, std::string>	dirs = 
 	{
-		{"root", "kk"},
+		{"root", ""},
 		{"directory_listing", ""},
-		{"index_file", ""},
+		{"index", ""},
 		{"upload_dir", ""},
 		{"redirection", ""},
 	};
@@ -21,9 +21,9 @@ struct Location
 
 struct	Server
 {
-	int16_t	port;
-	int16_t	fd;
-	int32_t	bodySize;
+	uint16_t	port;
+	int16_t		socket;
+	int32_t		bodySize;
 
 	std::string	serverName;
 	std::string	errorLocation;
