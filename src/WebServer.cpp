@@ -63,28 +63,7 @@ void	WebServer::loopadydoopady()
 
 void	WebServer::startTheThing()
 {
-	for (Server it : servers)
-	{
-		sockaddr_in	serverAddress{};
-
-		serverAddress.sin_family = AF_INET;
-		serverAddress.sin_port = htons(it.port);
-		serverAddress.sin_addr.s_addr = INADDR_ANY;
-
-		it.socket = socket(AF_INET, SOCK_STREAM, 0);
-		if (it.socket == -1)
-			errorExit("Socket failed to create", -1);
-		fcntl(it.socket, F_SETFL, fcntl(it.socket, F_GETFL, 0) | O_NONBLOCK);
-		if (errno != 0)
-			errorExit(strerror(errno), -1);
-		if (bind(it.socket, reinterpret_cast<const sockaddr*> \
-			(&serverAddress), sizeof(serverAddress)) == -1)
-		{
-			errorExit("Socket failed to bind", -1);
-		}
-		if (listen(it.socket, 10) == -1)
-			errorExit("Listen failed", -1);
-	}
+	initialize();
 	pollDescriptors = createPollArray();
 	loopadydoopady();
 	// for (Server it : servers)

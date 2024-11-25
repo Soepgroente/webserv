@@ -37,6 +37,7 @@ class	WebServer
 	std::vector<Server>			servers;
 	std::vector<struct pollfd>	pollDescriptors;
 	
+	void	initialize();
 	void	loopadydoopady();
 	void	printServerStruct(const Server& toPrint)	const;
 	bool	isServerSocket(int socket);
