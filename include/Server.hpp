@@ -22,7 +22,7 @@ struct Location
 struct	Server
 {
 	uint16_t	port;
-	int16_t		socket;
+	int			socket = -1;
 	int32_t		bodySize;
 
 	std::string	serverName;

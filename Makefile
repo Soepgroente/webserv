@@ -1,11 +1,14 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -std=c++20 $(HEADERS) -g #-Wall -Wextra -Werror -flto 
+CPPFLAGS	= -Wall -Wextra -Werror -flto -Ofast -std=c++20 $(HEADERS) -g #
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
 CPPFILES	:=	WebServer.cpp \
+				WebServerParse.cpp \
+				WebServerRequests.cpp \
+				WebServerSocket.cpp \
 				WebServerUtils.cpp \
 
 TFILES		:= 

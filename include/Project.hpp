@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fcntl.h>
 #include <iostream>
 #include <iomanip>
 #include <netdb.h>
