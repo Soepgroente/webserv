@@ -8,7 +8,7 @@ void	WebServer::printServerStruct(const Server& toPrint)	const
 	std::cout << "Name: " << toPrint.serverName << std::endl;
 	std::cout << "Body size: " << toPrint.bodySize << std::endl;
 	std::cout << "Error location: " << toPrint.errorLocation << "\n" << std::endl;
-	for (const std::pair<std::string, Location>& pair : toPrint.locations)
+	for (const std::pair<std::string, Location> pair : toPrint.locations)
 	{
 		std::cout << "Location: " << pair.first << std::endl;
 		std::cout << "Methods: ";
@@ -23,7 +23,7 @@ void	WebServer::printServerStruct(const Server& toPrint)	const
 			std::cout << iter << ", ";
 		}
 		std::cout << std::endl;
-		for (const std::pair<std::string, std::string>& despair : pair.second.dirs)
+		for (const std::pair<std::string, std::string> despair : pair.second.dirs)
 		{
 			std::cout << despair.first << ": " << despair.second << std::endl;
 		}
@@ -43,7 +43,7 @@ void	errorExit(std::string errorMessage, int errorLocation)
 
 bool	WebServer::isServerSocket(int socket)
 {
-	for (Server it : servers)
+	for (Server& it : servers)
 	{
 		if (it.socket == socket)
 			return (true);

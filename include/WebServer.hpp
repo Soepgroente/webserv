@@ -11,10 +11,12 @@
 #include <netdb.h>
 #include <poll.h>
 #include "Server.hpp"
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
+
 
 #define FOREVER 1
 
@@ -34,14 +36,21 @@ class	WebServer
 
 	private:
 
+	/* Private variables	*/
+
 	std::vector<Server>			servers;
 	std::vector<struct pollfd>	pollDescriptors;
 	
+	/*	Private functions	*/
+
 	void	initialize();
 	void	loopadydoopady();
 	void	printServerStruct(const Server& toPrint)	const;
 	bool	isServerSocket(int socket);
 	void	acceptConnection(int serverSocket);
+
+	void	handleClientRead(int clientFd);
+	void	handleClientWrite(int clientFd);
 
 	std::vector<struct pollfd>	createPollArray();
 };

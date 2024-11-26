@@ -1,6 +1,5 @@
 #include "WebServer.hpp"
 
-
 WebServer::~WebServer()
 {
 	for (pollfd it : pollDescriptors)
@@ -18,7 +17,6 @@ void	WebServer::acceptConnection(int serverSocket)
 	int					clientFd;
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(sockaddr_in);
-	struct pollfd		clientPollFd;
 
 	clientFd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), \
 		&clientAddressLength);
@@ -27,9 +25,8 @@ void	WebServer::acceptConnection(int serverSocket)
 		std::cerr << "Client was not accepted." << std::endl;
 		return ;
 	}
-	fcntl(clientFd, F_SETFL, fcntl(clientFd, F_GETFL, 0) | O_NONBLOCK);
-	if (errno != 0)
-		errorExit(strerror(errno), -1); // exit or keep running?
+	if (fcntl(clientFd, F_SETFL, fcntl(clientFd, F_GETFL, 0) | O_NONBLOCK) == -1)
+		errorExit(strerror(errno), -1);
 	pollDescriptors.push_back({clientFd, POLLIN, 0});
 	std::cout << "Accepted new connection" << std::endl;
 }
@@ -38,24 +35,25 @@ void	WebServer::loopadydoopady()
 {
 	while (FOREVER)
 	{
-		if (poll(pollDescriptors.data(), pollDescriptors.size(), -1) == -1)
-			errorExit("Poll failed", -1);	// exit or keep running?
-		for (pollfd it : pollDescriptors)
+		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
+			errorExit("Poll function failed", -1);
+		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
-			if ((it.revents & POLLIN) != 0)
+			if ((pollDescriptors[i].revents & POLLIN) != 0)
 			{
-				if (isServerSocket(it.fd) == true)
+				if (isServerSocket(pollDescriptors[i].fd) == true)
 				{
-					acceptConnection(it.fd);
+					acceptConnection(pollDescriptors[i].fd);
 				}
 				else
 				{
-					handleClientRead(it, servers_confs);
+					std::cout << pollDescriptors[i].fd << std::endl;
+					handleClientRead(pollDescriptors[i].fd);
 				}
 			}
-			else if ((it.revents & POLLOUT) != 0)
+			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				handleClientWrite(it);
+				handleClientWrite(pollDescriptors[i].fd);
 			}
 		}
 	}
@@ -65,6 +63,7 @@ void	WebServer::startTheThing()
 {
 	initialize();
 	pollDescriptors = createPollArray();
+
 	loopadydoopady();
 	// for (Server it : servers)
 	// 	printServerStruct(it);

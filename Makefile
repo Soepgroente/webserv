@@ -7,6 +7,7 @@ HEADERS		:= -I include
 
 CPPFILES	:=	WebServer.cpp \
 				WebServerParse.cpp \
+				WebServerRequests.cpp \
 				WebServerSocket.cpp \
 				WebServerUtils.cpp \
 

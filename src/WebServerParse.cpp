@@ -3,53 +3,44 @@
 
 std::ifstream	file;
 
+static void	closeAndExit(std::string message, int& lineCount)
+{
+	file.close();
+	errorExit(message, lineCount);
+}
+
 static void	parseHost(const std::string& input, Server& server, int& lineCount)
 {
 	if (server.host != "")
-	{
-		file.close();
-		errorExit("Invalid configuration file", lineCount);
-	}
+		closeAndExit("Invalid configuration file", lineCount);
 	server.host = input;
 }
 
 static void	parsePort(const std::string& input, Server& server, int& lineCount)
 {
 	if (server.port != 0)
-	{
-		file.close();
-		errorExit("Invalid configuration file", lineCount);
-	}
+		closeAndExit("Invalid configuration file", lineCount);
 	server.port = std::stoi(input);
 }
 
 static void	parseName(const std::string& input, Server& server, int& lineCount)
 {
 	if (server.serverName != "")
-	{
-		file.close();
-		errorExit("Invalid configuration file", lineCount);
-	}
+		closeAndExit("Invalid configuration file", lineCount);
 	server.serverName = input;
 }
 
 static void	parseErrorPage(const std::string& input, Server& server, int& lineCount)
 {
 	if (server.errorLocation != "")
-	{
-		file.close();
-		errorExit("Invalid configuration file", lineCount);
-	}
+		closeAndExit("Invalid configuration file", lineCount);
 	server.errorLocation = input;
 }
 
 static void	parseBodySize(const std::string& input, Server& server, int& lineCount)
 {
 	if (server.bodySize != -1)
-	{
-		file.close();
-		errorExit("Invalid configuration file", lineCount);
-	}
+		closeAndExit("Invalid configuration file", lineCount);
 	server.bodySize = std::stoi(input);
 }
 
@@ -59,6 +50,12 @@ static void	removeWhiteSpaces(std::string& line)
 	line.erase(line.find_last_not_of(" \t\r\n") + 1, std::string::npos);
 }
 
+template<typename Container>
+static void	checkIfEmpty(const Container& var, bool (Container::*method)() const, int& lineCount)
+{
+	if ((var.*method)() == false)
+		closeAndExit("Invalid configuration file", lineCount);
+}
 
 static void	parseLocation(const std::string& input, Server& server, int& lineCount)
 {
@@ -73,44 +70,34 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 	server.locations.insert({line, location});
 	while (file.eof() == false)
 	{
+		std::stringstream	s_line;
+
 		std::getline(file, line, '\n');
 		removeWhiteSpaces(line);
 		lineCount++;
 		if (line == "}")
 			break;
-		std::stringstream	s_line;
 		s_line.str(line);
 		s_line >> tmp;
 		if (tmp == "methods")
 		{
-			if (server.locations[path].methods.empty() == false)
-			{
-				file.close();
-				errorExit("Invalid configuration file", lineCount);
-			}
+			checkIfEmpty(server.locations[path].methods, &std::vector<std::string>::empty, lineCount);
 			while (s_line >> tmp)
 				server.locations[path].methods.push_back(tmp);
 		}
 		else if (tmp == "cgi_extensions")
 		{
-			if (server.locations[path].cgiExtensions.empty() == false)
-			{
-				file.close();
-				errorExit("Invalid configuration file", lineCount);
-			}
+			checkIfEmpty(server.locations[path].cgiExtensions, &std::vector<std::string>::empty, lineCount);
 			while ((s_line >> tmp).eof() == false)
 				server.locations[path].cgiExtensions.push_back(tmp);
 		}
 		else
 		{
-			// std::map<std::string, std::string>& tmp_map = server.locations[path].dirs;
 			std::map<std::string, std::string>::iterator it;
+
 			it = server.locations[path].dirs.find(tmp);
 			if (it == server.locations[path].dirs.end())
-			{
-				file.close();
-				errorExit("Invalid location variable", lineCount);
-			}
+				closeAndExit("Invalid location variable", lineCount);
 			s_line >> tmp;
 			it->second = tmp;
 		}
@@ -177,8 +164,7 @@ void	WebServer::parseConfigurations(const std::string& fileLocation)
 		catch (std::exception& e)
 		{
 			std::cerr << e.what() << std::endl;
-			file.close();
-			errorExit("Error in configuration file", lineCount);
+			closeAndExit("Error during parsing configuration file", lineCount);
 		}
 	}
 	file.close();

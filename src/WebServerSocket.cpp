@@ -9,7 +9,7 @@ static void	setupSocket(int& sock)
 		errorExit(strerror(errno), -1);
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &options, sizeof(options)) == -1)
 		errorExit(strerror(errno), -1);
-	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK) == -1);
+	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK) == -1)
 		errorExit(strerror(errno), -1);
 }
 
@@ -35,7 +35,7 @@ void	WebServer::initialize()
 {
 	sockaddr_in	serverAddress{};
 
-	for (Server it : servers)
+	for (Server& it : servers)
 	{
 		setupSocket(it.socket);
 		bindSocket(serverAddress, it);
