@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstring>
 #include <errno.h>
 #include <fcntl.h>
@@ -38,8 +39,9 @@ class	WebServer
 
 	/* Private variables	*/
 
-	std::vector<Server>			servers;
-	std::vector<struct pollfd>	pollDescriptors;
+	std::vector<Server>					servers;
+	std::vector<struct pollfd>			pollDescriptors;
+	std::map<int, struct HttpRequest>	requests;
 	
 	/*	Private functions	*/
 
@@ -48,6 +50,8 @@ class	WebServer
 	void	printServerStruct(const Server& toPrint)	const;
 	bool	isServerSocket(int socket);
 	void	acceptConnection(int serverSocket);
+	void	closeConnection(int fd);
+	time_t	getTime();
 
 	void	handleClientRead(int clientFd);
 	void	handleClientWrite(int clientFd);

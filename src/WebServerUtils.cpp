@@ -61,3 +61,8 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	}
 	return (fileDescriptors);
 }
+
+time_t	WebServer::getTime()
+{
+	return (std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+}

@@ -28,6 +28,7 @@ void	WebServer::acceptConnection(int serverSocket)
 	if (fcntl(clientFd, F_SETFL, fcntl(clientFd, F_GETFL, 0) | O_NONBLOCK) == -1)
 		errorExit(strerror(errno), -1);
 	pollDescriptors.push_back({clientFd, POLLIN, 0});
+	requests.emplace(clientFd, HttpRequest{});
 	std::cout << "Accepted new connection" << std::endl;
 }
 
