@@ -11,7 +11,7 @@
 #define PORT 3000
 #define BUFFER_SIZE 1024
 #define MAX_CLIENT 10
-
+    
 void handle_client(int client_socket) {
     char buffer[BUFFER_SIZE];
     std::memset(buffer, 0, BUFFER_SIZE);
