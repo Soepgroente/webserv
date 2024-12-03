@@ -18,8 +18,9 @@
 #include <unistd.h>
 #include <vector>
 
-
 #define FOREVER 1
+
+#define ERRORPAGE "404"
 
 struct	Server;
 
@@ -53,10 +54,28 @@ class	WebServer
 	void	closeConnection(int fd);
 	time_t	getTime();
 
+	void	interpretRequest(HttpRequest& request);
+
 	void	handleClientRead(int clientFd);
 	void	handleClientWrite(int clientFd);
+
+	std::string	showErrorPage(std::string error);
 
 	std::vector<struct pollfd>	createPollArray();
 };
 
-void	errorExit(std::string errorMessage, int errorLocation);
+/*	Template functions	*/
+
+template <typename T>
+void	printVector(std::vector<T>& toPrint)
+{
+	for (T& it : toPrint)
+	{
+		std::cout << it << std::endl;
+	}
+}
+
+/*	Utility functions	*/
+
+void						errorExit(std::string errorMessage, int errorLocation);
+std::vector<std::string>	stringSplit(std::string toSplit);

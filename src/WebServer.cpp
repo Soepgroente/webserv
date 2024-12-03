@@ -48,7 +48,6 @@ void	WebServer::loopadydoopady()
 				}
 				else
 				{
-					std::cout << pollDescriptors[i].fd << std::endl;
 					handleClientRead(pollDescriptors[i].fd);
 				}
 			}
