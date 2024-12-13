@@ -13,7 +13,7 @@ struct	HttpRequest
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
-	bool						isValidRequest = true;
+	bool						isValidRequest = false;
 
 	std::string					response;
 };

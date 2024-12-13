@@ -70,14 +70,9 @@ void	WebServer::interpretRequest(HttpRequest& request)
 	bool (*func[4])(HttpRequest&, size_t) = {&getMethods, &getHost, &getContentType, &getContentLength};
 	
 	request.splitRequest = stringSplit(request.rawRequest);
-	for (size_t i = 0; i < request.splitRequest.size(); i++)
+	for (size_t i = 0; i < request.splitRequest.size() && count < 4; i++)
 	{
 		count += func[count](request, i);
-		if (count > 3)
-		{
-			request.isValidRequest = false;
-			break ;
-		}
 	}
 	std::cout << request;
 	exit(0);
