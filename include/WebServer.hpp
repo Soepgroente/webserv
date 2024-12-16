@@ -49,10 +49,11 @@ class	WebServer
 	void	initialize();
 	void	loopadydoopady();
 	void	printServerStruct(const Server& toPrint)	const;
-	bool	isServerSocket(int socket);
+	bool	isServerSocket(int socket)	const;
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int fd);
-	time_t	getTime();
+	time_t	getTime()	const;
+	bool	timeout(time_t lastPinged)	const;
 
 	void	interpretRequest(HttpRequest& request);
 

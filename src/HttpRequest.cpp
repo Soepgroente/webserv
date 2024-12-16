@@ -10,5 +10,9 @@ std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 	out << "path: " << p.path << std::endl;
 	out << "protocol: " << p.protocol << std::endl;
 	out << "content type: " << p.contentType << std::endl;
+	out << "request is valid: " << p.isValidRequest << std::endl;
+	out << "header is parsed: " << p.headerIsParsed << std::endl;
+	out << "body: " << p.body << std::endl;
+	out << "response: " << p.response << std::endl;
 	return (out);
 }

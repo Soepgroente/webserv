@@ -13,7 +13,9 @@ struct	HttpRequest
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
+	std::string					body;
 	bool						isValidRequest = false;
+	bool						headerIsParsed = false;
 
 	std::string					response;
 };

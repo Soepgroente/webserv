@@ -41,9 +41,9 @@ void	errorExit(std::string errorMessage, int errorLocation)
 	std::exit(EXIT_FAILURE);
 }
 
-bool	WebServer::isServerSocket(int socket)
+bool	WebServer::isServerSocket(int socket)	const
 {
-	for (Server& it : servers)
+	for (const Server& it : servers)
 	{
 		if (it.socket == socket)
 			return (true);
@@ -62,7 +62,14 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	return (fileDescriptors);
 }
 
-time_t	WebServer::getTime()
+time_t	WebServer::getTime()	const
 {
 	return (std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+}
+
+bool	WebServer::timeout(time_t lastPinged)	const
+{
+	if (this->getTime() - lastPinged > 10000000)
+		return (true);
+	return (false);
 }
