@@ -2,14 +2,10 @@
 
 #define BUFFERSIZE 8 * 1024
 
-void	WebServer::handleClientWrite(int clientFd)
-{
-	(void)clientFd;
-}
-
 void	WebServer::closeConnection(int fd)
 {
 	close(fd);
+	requests.erase(fd);
 	for (size_t i = 0; i < pollDescriptors.size(); i++)
 	{
 		if (pollDescriptors[i].fd == fd)
@@ -18,6 +14,7 @@ void	WebServer::closeConnection(int fd)
 			break ;
 		}
 	}
+	std::cout << "Closed connection" << std::endl;
 }
 
 static bool	getContentType(HttpRequest& req, size_t i)
@@ -68,8 +65,10 @@ static bool	requestIsFinished(const HttpRequest& request)
 		if (request.body.size() == request.contentLength)
 			return (true);
 	}
-	else if (request.rawRequest.size() >= 4 && request.rawRequest.substr(request.rawRequest.length() - 4) == "\r\n\r\n")
+	else if (request.splitRequest.back().empty() == true)
+	{
 		return (true);
+	}
 	return (false);
 }
 
@@ -92,10 +91,9 @@ static void	parseHeaders(HttpRequest& request)
 
 static void	parseBody(HttpRequest& request)
 {
-	size_t	rawSize = request.rawRequest.size();
-
-	request.body += request.rawRequest;
-	request.rawRequest.erase(request.rawRequest.begin(), request.rawRequest.begin() + rawSize);
+	if (request.contentLength == request.splitRequest.back().size())
+		request.body += request.splitRequest.back();
+	// request.rawRequest.erase(request.rawRequest.begin(), request.rawRequest.end());
 }
 
 void	WebServer::interpretRequest(HttpRequest& request)
@@ -106,25 +104,8 @@ void	WebServer::interpretRequest(HttpRequest& request)
 	parseBody(request);
 	if (requestIsFinished(request) == false)
 		return ;
-	std::cout << request;
-	exit(0);
-	// GET / HTTP/1.1
-	// Host: 127.0.0.1:8080
-	// Connection: keep-alive
-	// Cache-Control: max-age=0
-	// sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
-	// sec-ch-ua-mobile: ?0
-	// sec-ch-ua-platform: "Linux"
-	// Upgrade-Insecure-Requests: 1
-	// User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
-	// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-	// Sec-Fetch-Site: none
-	// Sec-Fetch-Mode: navigate
-	// Sec-Fetch-User: ?1
-	// Sec-Fetch-Dest: document
-	// Accept-Encoding: gzip, deflate, br, zstd
-	// Accept-Language: en-US,en;q=0.9\r\n
-	// \r\n
+	
+	// std::cout << request;
 }
 
 void	WebServer::handleClientRead(int clientFd)
@@ -132,6 +113,11 @@ void	WebServer::handleClientRead(int clientFd)
 	ssize_t		readBytes;
 	std::string	buffer;
 
+	if (timeout(requests[clientFd].lastRead) == true)
+	{
+		closeConnection(clientFd);
+		return ;
+	}
 	buffer.resize(BUFFERSIZE);
 	readBytes = read(clientFd, &buffer[0], BUFFERSIZE);
 	if (readBytes == -1)

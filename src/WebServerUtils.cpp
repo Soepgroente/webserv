@@ -69,7 +69,9 @@ time_t	WebServer::getTime()	const
 
 bool	WebServer::timeout(time_t lastPinged)	const
 {
-	if (this->getTime() - lastPinged > 10000000)
+	if (lastPinged == 0)
+		return (false);
+	if (this->getTime() - lastPinged > 5)
 		return (true);
 	return (false);
 }

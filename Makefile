@@ -10,6 +10,7 @@ CPPFILES	:=	HttpRequest.cpp \
 				WebServerErrors.cpp \
 				WebServerParse.cpp \
 				WebServerRequests.cpp \
+				WebServerResponse.cpp \
 				WebServerSocket.cpp \
 				WebServerUtils.cpp \
 				utils.cpp \
