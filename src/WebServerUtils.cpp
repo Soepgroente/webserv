@@ -75,3 +75,13 @@ bool	WebServer::timeout(time_t lastPinged)	const
 		return (true);
 	return (false);
 }
+
+size_t	WebServer::getPollfdIndex(int fdToFind)
+{
+	for (size_t i = 0; i < pollDescriptors.size(); i++)
+	{
+		if (pollDescriptors[i].fd == fdToFind)
+			return (i);
+	}
+	return (SIZE_MAX);
+}

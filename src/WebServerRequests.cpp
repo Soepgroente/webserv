@@ -6,14 +6,7 @@ void	WebServer::closeConnection(int fd)
 {
 	close(fd);
 	requests.erase(fd);
-	for (size_t i = 0; i < pollDescriptors.size(); i++)
-	{
-		if (pollDescriptors[i].fd == fd)
-		{
-			pollDescriptors.erase(pollDescriptors.begin() + i);
-			break ;
-		}
-	}
+	pollDescriptors.erase(pollDescriptors.begin() + getPollfdIndex(fd)); // this can go out of bounds if we don't have this fd stored
 	std::cout << "Closed connection" << std::endl;
 }
 
@@ -72,40 +65,37 @@ static bool	requestIsFinished(const HttpRequest& request)
 	return (false);
 }
 
-static void	parseHeaders(HttpRequest& request)
+static bool	parseHeaders(HttpRequest& request)
 {
 	Server		server;
 	int			count = 0;
 	bool (*func[4])(HttpRequest&, size_t) = {&getMethods, &getHost, &getContentType, &getContentLength};
 	
 	if (request.rawRequest.find("\r\n\r\n") == std::string::npos || request.host.size() != 0)
-		return ;
+		return (false);
 	request.splitRequest = stringSplit(request.rawRequest);
 	for (size_t i = 0; i < request.splitRequest.size() && count < 4; i++)
 	{
 		count += func[count](request, i);
 	}
 	request.rawRequest.erase(request.rawRequest.begin(), request.rawRequest.begin() + request.rawRequest.find("\r\n\r\n") + 4);
-	request.headerIsParsed = true;
+	return (true);
 }
 
 static void	parseBody(HttpRequest& request)
 {
 	if (request.contentLength == request.splitRequest.back().size())
 		request.body += request.splitRequest.back();
-	// request.rawRequest.erase(request.rawRequest.begin(), request.rawRequest.end());
 }
 
-void	WebServer::interpretRequest(HttpRequest& request)
+void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 {
 	parseHeaders(request);
-	if (request.headerIsParsed == false)
-		return ;
 	parseBody(request);
-	if (requestIsFinished(request) == false)
-		return ;
-	
-	// std::cout << request;
+	if (requestIsFinished(request) == true)
+	{
+		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
+	}
 }
 
 void	WebServer::handleClientRead(int clientFd)
@@ -141,44 +131,5 @@ void	WebServer::handleClientRead(int clientFd)
 	buffer.resize(readBytes);
 	requests[clientFd].lastRead = getTime();
 	requests[clientFd].rawRequest += buffer;
-	interpretRequest(requests[clientFd]);
+	interpretRequest(requests[clientFd], clientFd);
 }
-
-// POST /Server_1_uploads/new_upload HTTP/1.1
-// Host: 127.0.0.1:8080
-// User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0
-// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-// Accept-Language: en-US,en;q=0.5
-// Accept-Encoding: gzip, deflate, br, zstd
-// Content-Type: application/x-www-form-urlencoded
-// Content-Length: 250
-// Origin: http://127.0.0.1:8080
-// DNT: 1
-// Connection: keep-alive
-// Referer: http://127.0.0.1:8080/postMethod.html
-// Upgrade-Insecure-Requests: 1
-// Sec-Fetch-Dest: document
-// Sec-Fetch-Mode: navigate
-// Sec-Fetch-Site: same-origin
-// Sec-Fetch-User: ?1
-// Priority: u=0, i
-
-
-// POST /Server_1_uploads/new_upload HTTP/1.1
-// Host: 127.0.0.1:8080
-// User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0
-// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-// Accept-Language: en-US,en;q=0.5
-// Accept-Encoding: gzip, deflate, br, zstd
-// Content-Type: application/x-www-form-urlencoded
-// Content-Length: 11
-// Origin: http://127.0.0.1:8080
-// DNT: 1
-// Connection: keep-alive
-// Referer: http://127.0.0.1:8080/postMethod.html
-// Upgrade-Insecure-Requests: 1
-// Sec-Fetch-Dest: document
-// Sec-Fetch-Mode: navigate
-// Sec-Fetch-Site: same-origin
-// Sec-Fetch-User: ?1
-// Priority: u=0, i

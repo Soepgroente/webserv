@@ -2,6 +2,12 @@
 
 void	WebServer::handleClientWrite(int clientFd)
 {
-	(void)clientFd;
-	write(clientFd, response.c_str(), response.size());
+	std::string respondre = "YO MAMA";
+
+	std::stringstream response;
+	response << "HTTP/1.1 200 OK\r\n" << "Content-Length: 7" << "\r\n";
+	response << "Content-Type: " << "text/html" << "\r\n\r\n" << respondre;
+
+	pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
+	write(clientFd, response.str().c_str(), response.str().size());
 }

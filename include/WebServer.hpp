@@ -55,14 +55,13 @@ class	WebServer
 	time_t	getTime()	const;
 	bool	timeout(time_t lastPinged)	const;
 
-	void	interpretRequest(HttpRequest& request);
-
+	void	interpretRequest(HttpRequest& request, int clientFd);
 	void	handleClientRead(int clientFd);
 	void	handleClientWrite(int clientFd);
 
-	std::string	showErrorPage(std::string error);
-
+	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
+	size_t						getPollfdIndex(int fdToFind);
 };
 
 /*	Template functions	*/
