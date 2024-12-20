@@ -35,10 +35,12 @@ void	WebServer::initialize()
 {
 	sockaddr_in	serverAddress{};
 
+	serverShouldRun = true;
 	for (Server& it : servers)
 	{
 		setupSocket(it.socket);
 		bindSocket(serverAddress, it);
 		listenSocket(it.socket);
 	}
+	set_signals();
 }

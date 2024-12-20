@@ -1,5 +1,7 @@
 #include "WebServer.hpp"
 
+bool*	ptr;
+
 void	WebServer::printServerStruct(const Server& toPrint)	const
 {
 	std::cout << "Host: " << toPrint.host << std::endl;
@@ -84,4 +86,18 @@ size_t	WebServer::getPollfdIndex(int fdToFind)
 			return (i);
 	}
 	return (SIZE_MAX);
+}
+
+static void	exitGracefullyOnSignal(int signal)
+{
+	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
+	*ptr = false;
+}
+
+void	WebServer::set_signals()
+{
+	ptr = &serverShouldRun;
+	signal(SIGINT, &exitGracefullyOnSignal);
+	signal(SIGTERM, &exitGracefullyOnSignal);
+	signal(SIGQUIT, SIG_IGN);
 }

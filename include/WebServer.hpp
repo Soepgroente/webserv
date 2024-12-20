@@ -11,12 +11,15 @@
 #include <map>
 #include <netdb.h>
 #include <poll.h>
-#include "Server.hpp"
+#include <signal.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
+
+#include "Server.hpp"
+#include "Utils.hpp"
 
 #define FOREVER 1
 
@@ -43,6 +46,7 @@ class	WebServer
 	std::vector<Server>					servers;
 	std::vector<struct pollfd>			pollDescriptors;
 	std::map<int, struct HttpRequest>	requests;
+	bool								serverShouldRun;
 	
 	/*	Private functions	*/
 
@@ -62,6 +66,7 @@ class	WebServer
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
 	size_t						getPollfdIndex(int fdToFind);
+	void						set_signals();
 };
 
 /*	Template functions	*/

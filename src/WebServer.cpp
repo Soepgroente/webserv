@@ -34,7 +34,7 @@ void	WebServer::acceptConnection(int serverSocket)
 
 void	WebServer::loopadydoopady()
 {
-	while (FOREVER)
+	while (serverShouldRun == true)
 	{
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 			errorExit("Poll function failed", -1);
@@ -63,8 +63,5 @@ void	WebServer::startTheThing()
 {
 	initialize();
 	pollDescriptors = createPollArray();
-
 	loopadydoopady();
-	// for (Server it : servers)
-	// 	printServerStruct(it);
 }
