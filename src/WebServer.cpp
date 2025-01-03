@@ -6,6 +6,7 @@ WebServer::~WebServer()
 	{
 		if (it.fd != -1)
 		{
+			// send message to unfinished requests
 			shutdown(it.fd, SHUT_RDWR);	// wanna check if we can use this function and whether it is helpful at all?
 			close(it.fd);
 		}

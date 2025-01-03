@@ -98,8 +98,7 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 			it = server.locations[path].dirs.find(tmp);
 			if (it == server.locations[path].dirs.end())
 				closeAndExit("Invalid location variable", lineCount);
-			s_line >> tmp;
-			it->second = tmp;
+			s_line >> it->second;
 		}
 	}
 }
