@@ -43,13 +43,14 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 $(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
-	$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME) 
+	@$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME)
+	@if [ $$? -eq 0 ]; then echo "\033[32mSuccess\033[0m"; fi
 
 $(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
-	$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
+	@$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
-	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
+	@$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
 
 clean:
 	rm -rf $(OBJ_DIR)
