@@ -1,6 +1,4 @@
 #include "WebServer.hpp"
-
-#include "WebServer.hpp"
 #include <fstream>
 
 void WebServer::handleClientWrite(int clientFd)
@@ -11,14 +9,14 @@ void WebServer::handleClientWrite(int clientFd)
     if (request.method == "GET")
     {
         // GET işlemi: Dosyayı oku ve yanıtla
-        std::ifstream inFile(request.path);
+        std::ifstream inFile("." + request.path, std::ios::binary);
         if (inFile.is_open())
         {
             std::stringstream buffer;
             buffer << inFile.rdbuf();
             inFile.close();
             std::string body = buffer.str();
-            response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body;
+            response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body; // I don't know if the content-type is necessary here, I saw that firefox understands it automatically
         }
         else
         {
@@ -58,6 +56,7 @@ void WebServer::handleClientWrite(int clientFd)
         response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
     }
 
+    // std::cout << response << std::endl;
     ssize_t writtenBytes = write(clientFd, response.c_str(), response.size());
 
     if (writtenBytes == -1)
