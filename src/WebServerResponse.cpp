@@ -1,7 +1,7 @@
 #include "WebServer.hpp"
 #include <fstream>
 
-void WebServer::handleClientWrite(int clientFd)
+bool	WebServer::handleClientWrite(int clientFd)
 {
     HttpRequest& request = requests[clientFd];
     std::string& response = request.response;
@@ -63,7 +63,7 @@ void WebServer::handleClientWrite(int clientFd)
     {
         std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
         closeConnection(clientFd);
-        return;
+        return false;
     }
     if (static_cast<size_t>(writtenBytes) < response.size())
     {
@@ -74,6 +74,7 @@ void WebServer::handleClientWrite(int clientFd)
         pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
         response.clear();
     }
+	return true;
 }
 
 /* void	WebServer::handleClientWrite(int clientFd)

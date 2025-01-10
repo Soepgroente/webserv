@@ -1,7 +1,7 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -flto -Ofast # -g -fsanitize=address  
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-fsanitize=address  -flto 
 OS			:= $(shell uname)
 HEADERS		:= -I include
 

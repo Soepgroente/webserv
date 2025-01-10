@@ -1,0 +1,27 @@
+
+Create default error pages
+
+	*find out which error pages are required
+	*create them/generate them
+	-413 entity too large
+
+CGI
+
+	∗ Because you won’t call the CGI directly, use the full path as PATH_INFO.
+
+Have a website to demo webserv
+
+	*be able to upload files
+	*GET POST DELETE (Selim)
+	*if you click upload button, it must send the correct upload folder to upload in
+
+Stress test the fuck out of the server
+
+	*Try to overload with requests
+	*Check for memory management / proper error handling
+
+From subject:
+
+	*The first server for a host:port will be the default for this host:port (that means
+		it will answer to all the requests that don’t belong to an other server).
+	

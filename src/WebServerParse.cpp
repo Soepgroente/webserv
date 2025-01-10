@@ -42,6 +42,8 @@ static void	parseBodySize(const std::string& input, Server& server, int& lineCou
 	if (server.bodySize != -1)
 		closeAndExit("Invalid configuration file", lineCount);
 	server.bodySize = std::stoi(input);
+	// if (server.bodySize > MAXBODYSIZE)
+		// do a thing
 }
 
 static void	removeWhiteSpaces(std::string& line)

@@ -22,7 +22,7 @@
 #include "Utils.hpp"
 
 #define FOREVER 1
-
+#define MAXBODYSIZE 1000000
 #define ERRORPAGE "404"
 
 struct	Server;
@@ -60,8 +60,8 @@ class	WebServer
 	bool	timeout(time_t lastPinged)	const;
 
 	void	interpretRequest(HttpRequest& request, int clientFd);
-	void	handleClientRead(int clientFd);
-	void	handleClientWrite(int clientFd);
+	bool	handleClientRead(int clientFd);
+	bool	handleClientWrite(int clientFd);
 
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();

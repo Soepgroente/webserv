@@ -30,6 +30,8 @@ static bool	getContentLength(HttpRequest& req, size_t i)
 		return (false);
 	}
 	req.contentLength = std::stoi(req.splitRequest[i].substr(16));
+	// if (req.contentLength > MAXBODYSIZE)
+		//do a thing
 	return (true);
 }
 
@@ -90,7 +92,8 @@ static void	parseBody(HttpRequest& request)
 
 void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 {
-	parseHeaders(request);
+	if (parseHeaders(request) == false)
+		return ;
 	parseBody(request);
 	if (requestIsFinished(request) == true)
 	{
@@ -98,7 +101,7 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 	}
 }
 
-void	WebServer::handleClientRead(int clientFd)
+bool	WebServer::handleClientRead(int clientFd)
 {
 	ssize_t		readBytes;
 	std::string	buffer;
@@ -106,7 +109,7 @@ void	WebServer::handleClientRead(int clientFd)
 	if (timeout(requests[clientFd].lastRead) == true)
 	{
 		closeConnection(clientFd);
-		return ;
+		return false;
 	}
 	buffer.resize(BUFFERSIZE);
 	readBytes = read(clientFd, &buffer[0], BUFFERSIZE);
@@ -126,10 +129,11 @@ void	WebServer::handleClientRead(int clientFd)
 	else if (readBytes == 0)
 	{
 		closeConnection(clientFd);
-		return ;
+		return false;
 	}
 	buffer.resize(readBytes);
 	requests[clientFd].lastRead = getTime();
 	requests[clientFd].rawRequest += buffer;
 	interpretRequest(requests[clientFd], clientFd);
+	return true;
 }
