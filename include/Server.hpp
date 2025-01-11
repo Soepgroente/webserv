@@ -7,6 +7,8 @@
 
 struct Location
 {
+	bool		directoryListing;
+
 	std::vector<std::string>	methods;
 	std::vector<std::string>	cgiExtensions;
 

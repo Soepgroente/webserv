@@ -49,12 +49,14 @@ void	WebServer::loopadydoopady()
 				}
 				else
 				{
-					handleClientRead(pollDescriptors[i].fd);
+					if (handleClientRead(pollDescriptors[i].fd) == false)
+						i--;
 				}
 			}
 			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				handleClientWrite(pollDescriptors[i].fd);
+				if (handleClientWrite(pollDescriptors[i].fd) == false)
+					i--;
 			}
 		}
 	}
