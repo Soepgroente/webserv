@@ -10,7 +10,6 @@ void WebServer::handleClientWrite(int clientFd)
 
     if (request.method == "GET")
     {
-        // GET işlemi: Dosyayı oku ve yanıtla
         std::ifstream inFile(request.path);
         if (inFile.is_open())
         {
@@ -27,7 +26,6 @@ void WebServer::handleClientWrite(int clientFd)
     }
     else if (request.method == "POST")
     {
-        // POST işlemi: Veriyi kaydet
         std::ofstream outFile("/path/to/save/data.txt");
         if (outFile.is_open())
         {
@@ -42,7 +40,6 @@ void WebServer::handleClientWrite(int clientFd)
     }
     else if (request.method == "DELETE")
     {
-        // DELETE işlemi: Dosyayı sil
         if (remove(request.path.c_str()) == 0)
         {
             response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
@@ -54,7 +51,6 @@ void WebServer::handleClientWrite(int clientFd)
     }
     else
     {
-        // Desteklenmeyen yöntemler için 405 Method Not Allowed yanıtı
         response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
     }
 
