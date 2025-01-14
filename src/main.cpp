@@ -1,11 +1,7 @@
 #include "WebServer.hpp"
 
-bool webServerShouldExit;
-
 void	startWebserver(const std::string& config)
 {
-	webServerShouldExit = false;
-
 	while (FOREVER)
 	{
 		try

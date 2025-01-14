@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstring>
 #include <errno.h>
+#include <exception>
 #include <fcntl.h>
 #include <fstream>
 #include <functional>
@@ -18,6 +19,7 @@
 #include <unistd.h>
 #include <vector>
 
+#include "Client.hpp"
 #include "Server.hpp"
 #include "Utils.hpp"
 
@@ -26,6 +28,12 @@
 #define ERRORPAGE "404"
 
 struct	Server;
+
+struct	FileDezzies
+{
+	struct	pollfd;
+	int		writeFd;
+};
 
 class	WebServer
 {
@@ -44,8 +52,8 @@ class	WebServer
 	/* Private variables	*/
 
 	std::vector<Server>					servers;
+	std::vector<Client>					clients;
 	std::vector<struct pollfd>			pollDescriptors;
-	std::map<int, struct HttpRequest>	requests;
 	bool								serverShouldRun;
 	
 	/*	Private functions	*/
@@ -67,6 +75,10 @@ class	WebServer
 	std::vector<struct pollfd>	createPollArray();
 	size_t						getPollfdIndex(int fdToFind);
 	void						set_signals();
+
+	void	launchCGI(Client& client, int clientFd);
+	Client&	getClient(int clientFd);
+	size_t	getClientIndex(int clientFd) const;
 };
 
 /*	Template functions	*/

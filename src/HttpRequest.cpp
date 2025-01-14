@@ -8,6 +8,7 @@ std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 	out << "port: " << p.port << std::endl;
 	out << "method: " << p.method << std::endl;
 	out << "path: " << p.path << std::endl;
+	out << "file type: " << p.fileType << std::endl;
 	out << "protocol: " << p.protocol << std::endl;
 	out << "content type: " << p.contentType << std::endl;
 	out << "request is valid: " << p.isValidRequest << std::endl;

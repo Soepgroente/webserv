@@ -1,4 +1,5 @@
 #pragma once
+
 #include "WebServer.hpp"
 
 struct	HttpRequest
@@ -14,6 +15,7 @@ struct	HttpRequest
 	std::string					protocol;
 	std::string					contentType;
 	std::string					body;
+	std::string					fileType;
 	bool						isValidRequest = false;
 	// bool						headerIsParsed = false;
 

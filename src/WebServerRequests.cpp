@@ -2,10 +2,18 @@
 
 #define BUFFERSIZE 8 * 1024
 
+size_t	WebServer::getClientIndex(int clientFd)	const
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getFd() == clientFd || clients[i].getCgiFd() == clientFd)
+			return (i);
+	}
+}
+
 void	WebServer::closeConnection(int fd)
 {
-	close(fd);
-	requests.erase(fd);
+	clients.erase(clients.begin() + getClientIndex(fd));
 	pollDescriptors.erase(pollDescriptors.begin() + getPollfdIndex(fd)); // this can go out of bounds if we don't have this fd stored
 	std::cout << "Closed connection" << std::endl;
 }
@@ -98,18 +106,34 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 	if (requestIsFinished(request) == true)
 	{
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
+		try
+		{
+			request.fileType = request.path.substr(request.path.find_last_of('.'));
+		}
+		catch (std::out_of_range& e){}
+	}
+}
+
+Client&	WebServer::getClient(int clientFd)
+{
+	for (Client& client : clients)
+	{
+		if (client.getFd() == clientFd || client.getCgiFd() == clientFd)
+			return (client);
 	}
 }
 
 bool	WebServer::handleClientRead(int clientFd)
 {
-	ssize_t		readBytes;
-	std::string	buffer;
+	ssize_t			readBytes;
+	std::string		buffer;
+	Client&			client = getClient(clientFd);
+	HttpRequest&	request = client.getRequest();
 
-	if (timeout(requests[clientFd].lastRead) == true)
+	if (timeout(request.lastRead) == true)
 	{
 		closeConnection(clientFd);
-		return false;
+		return (false);
 	}
 	buffer.resize(BUFFERSIZE);
 	readBytes = read(clientFd, &buffer[0], BUFFERSIZE);
@@ -123,17 +147,21 @@ bool	WebServer::handleClientRead(int clientFd)
 		else
 		{
 			std::cerr << "Error number: " << errno << " Error msg: " << strerror(errno) << std::endl;
-			errorExit("Read failed", -1);
+			throw std::runtime_error("Error reading from client_fd");
 		}
 	}
 	else if (readBytes == 0)
 	{
 		closeConnection(clientFd);
-		return false;
+		return (false);
 	}
 	buffer.resize(readBytes);
-	requests[clientFd].lastRead = getTime();
-	requests[clientFd].rawRequest += buffer;
-	interpretRequest(requests[clientFd], clientFd);
-	return true;
+	request.lastRead = getTime();
+	request.rawRequest += buffer;
+	interpretRequest(request, clientFd);
+	if (request.fileType == ".out")
+	{
+		client.setCgiStatus(launchCgi);
+	}
+	return (true);
 }
