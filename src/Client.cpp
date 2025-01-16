@@ -1,7 +1,8 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), cgiFd(-1), cgiStatus(cgiIsFalse)
+Client::Client(int serverSocket, const Server& in) : fd(-1), cgiFd(-1), cgiStatus(cgiIsFalse), server(in)
 {
+	initializeSocket(serverSocket);
 }
 
 Client::~Client()
@@ -11,12 +12,22 @@ Client::~Client()
 		close(cgiFd);
 }
 
+Client::Client(const Client& other) : fd(other.fd), cgiFd(other.cgiFd), request(other.request), cgiStatus(other.cgiStatus), server(other.server)
+{
+}
+
+Client&	Client::operator=(const Client& other)
+{
+	Client* tmp = new Client(other);
+	return (*tmp);
+}
+
 int	Client::getFd() const
 {
 	return (fd);
 }
 
-void	Client::setFd(int serverSocket)
+void	Client::initializeSocket(int serverSocket)
 {
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(sockaddr_in);
@@ -39,7 +50,7 @@ void	Client::setCgiFd(int newFd)
 	cgiFd = newFd;
 }
 
-struct HttpRequest&	Client::getRequest()
+HttpRequest&	Client::getRequest()
 {
 	return (request);
 }
@@ -57,4 +68,9 @@ void	Client::setCgiStatus(int status)
 int	Client::getCgiStatus() const
 {
 	return (cgiStatus);
+}
+
+const Server&	Client::getServer() const
+{
+	return (server);
 }

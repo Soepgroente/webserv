@@ -12,7 +12,8 @@ void	startWebserver(const std::string& config)
 		}
 		catch (std::exception& e)
 		{
-			std::cerr << "A tragic error has occured 😭" << std::endl;
+			std::cerr << "A tragic error has occured 😭 " << e.what() << std::endl;
+			std::exit(1);
 		}
 	}
 }

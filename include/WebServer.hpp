@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <chrono>
 #include <cstring>
 #include <errno.h>
@@ -28,12 +29,7 @@
 #define ERRORPAGE "404"
 
 struct	Server;
-
-struct	FileDezzies
-{
-	struct	pollfd;
-	int		writeFd;
-};
+class	Client;
 
 class	WebServer
 {
@@ -70,15 +66,17 @@ class	WebServer
 	void	interpretRequest(HttpRequest& request, int clientFd);
 	bool	handleClientRead(int clientFd);
 	bool	handleClientWrite(int clientFd);
+	void	parseCgiOutput(Client& client);
 
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
 	size_t						getPollfdIndex(int fdToFind);
 	void						set_signals();
 
-	void	launchCGI(Client& client, int clientFd);
-	Client&	getClient(int clientFd);
+	void	launchCGI(Client& client);
+	Client*	getClient(int clientFd);
 	size_t	getClientIndex(int clientFd) const;
+	const Server&	getServer(int serverSocket);
 };
 
 /*	Template functions	*/

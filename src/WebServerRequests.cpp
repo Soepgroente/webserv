@@ -9,6 +9,7 @@ size_t	WebServer::getClientIndex(int clientFd)	const
 		if (clients[i].getFd() == clientFd || clients[i].getCgiFd() == clientFd)
 			return (i);
 	}
+	throw std::runtime_error("Client not indexed");
 }
 
 void	WebServer::closeConnection(int fd)
@@ -108,27 +109,33 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
 		try
 		{
+			puts("SETTIN FILETYPE BABY WOOOHOOO");
 			request.fileType = request.path.substr(request.path.find_last_of('.'));
 		}
 		catch (std::out_of_range& e){}
 	}
 }
 
-Client&	WebServer::getClient(int clientFd)
+Client*	WebServer::getClient(int clientFd)
 {
 	for (Client& client : clients)
 	{
 		if (client.getFd() == clientFd || client.getCgiFd() == clientFd)
-			return (client);
+			return (&client);
 	}
+	if (this->clients.empty() == true)
+		return (nullptr);
+	throw std::runtime_error("Client not found");
 }
 
 bool	WebServer::handleClientRead(int clientFd)
 {
 	ssize_t			readBytes;
 	std::string		buffer;
-	Client&			client = getClient(clientFd);
-	HttpRequest&	request = client.getRequest();
+	Client*			client = getClient(clientFd);
+
+	assert(client != nullptr);
+	HttpRequest&	request = client->getRequest();
 
 	if (timeout(request.lastRead) == true)
 	{
@@ -136,7 +143,7 @@ bool	WebServer::handleClientRead(int clientFd)
 		return (false);
 	}
 	buffer.resize(BUFFERSIZE);
-	readBytes = read(clientFd, &buffer[0], BUFFERSIZE);
+	readBytes = read(clientFd, buffer.data(), BUFFERSIZE);
 	if (readBytes == -1)
 	{
 		if (errno != EWOULDBLOCK)
@@ -161,7 +168,33 @@ bool	WebServer::handleClientRead(int clientFd)
 	interpretRequest(request, clientFd);
 	if (request.fileType == ".out")
 	{
-		client.setCgiStatus(launchCgi);
+		puts("HI IM HERE");
+		client->setCgiStatus(parseCgi);
 	}
 	return (true);
+}
+
+void	WebServer::parseCgiOutput(Client& client)
+{
+	ssize_t			readBytes;
+	std::string		buffer;
+	// HttpRequest&	request = client.getRequest();
+
+	buffer.resize(BUFFERSIZE);
+	readBytes = read(client.getCgiFd(), buffer.data(), BUFFERSIZE);
+	if (readBytes == -1)
+	{
+		if (errno != EWOULDBLOCK)
+		{
+			std::cerr << "Client_fd read error" << std::endl;
+			// handleError(strerror(errno));
+		}
+		else
+		{
+			std::cerr << "Error number: " << errno << " Error msg: " << strerror(errno) << std::endl;
+			throw std::runtime_error("Error reading from client_fd");
+		}
+	}
+	std::cout << buffer << std::endl;
+	client.setCgiStatus(launchCgi);
 }

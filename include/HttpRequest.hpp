@@ -1,6 +1,7 @@
 #pragma once
 
-#include "WebServer.hpp"
+#include <iostream>
+#include <vector>
 
 struct	HttpRequest
 {

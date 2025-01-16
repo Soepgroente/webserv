@@ -5,9 +5,11 @@ CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-fsanitize=add
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
-CPPFILES	:=	HttpRequest.cpp \
+CPPFILES	:=	Client.cpp \
+				HttpRequest.cpp \
 				signals.cpp \
 				WebServer.cpp \
+				WebServerCGI.cpp \
 				WebServerErrors.cpp \
 				WebServerParse.cpp \
 				WebServerRequests.cpp \

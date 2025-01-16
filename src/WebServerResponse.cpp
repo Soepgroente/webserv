@@ -3,7 +3,7 @@
 
 bool	WebServer::handleClientWrite(int clientFd)
 {
-    HttpRequest& request = requests[clientFd];
+    HttpRequest& request = clients[getClientIndex(clientFd)].getRequest();
     std::string& response = request.response;
 
     if (request.method == "GET")
