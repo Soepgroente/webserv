@@ -63,6 +63,10 @@ class	WebServer
 	bool	handleClientRead(int clientFd);
 	bool	handleClientWrite(int clientFd);
 
+	std::string getCurrentTime() const;
+	std::string getMimeType(const std::string& path) const;
+	std::string showErrorPage(const std::string& error) const;
+
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
 	size_t						getPollfdIndex(int fdToFind);

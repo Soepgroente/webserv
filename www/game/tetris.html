@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Tetris</title>
+        <script src="tetris.js"></script>
+        <link rel="stylesheet" href="tetris.css" />
+    </head>
+    <body onLoad="tetris_run()">
+        <h1>Tetris</h1>
+        <div id="flex-container">
+            <!-- empty table, this will be the tetris field -->
+            <table id="tetris"></table>
+            <div id="side-info">
+                <h2 hidden id="game-over">Game Over!</h2>
+                <h3>Score: <span id="score"></span></h3>
+                <h3>Level: <span id="level"></span></h3>
+                <h3>High score: <span id="high-score"></span></h3>
+                <h3>Controls:</h3>
+                <table id="controls">
+                    <tr><td>Left</td><td>&larr;</td></tr>
+                    <tr><td>Right</td><td>&rarr;</td></tr>
+                    <tr><td>Down</td><td>&darr;</td></tr>
+                    <tr><td>Drop</td><td>Space bar</td></tr>
+                    <tr><td>Rotate clockwise</td><td>&uarr;</td></tr>
+                    <tr><td>Rotate counter clockwise</td><td>Q</td></tr>
+                    <tr><td>Pause</td><td>P</td></tr>
+                    <tr><td>New Game</td><td>N</td></tr>
+                    <tr><td>Set level</td><td>[0 - 9]</td></tr>
+                </table>
+            </div>
+        </div>
+        <a href="/">go home</a>
+    </body>
+</html>

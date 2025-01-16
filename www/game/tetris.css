@@ -1,0 +1,19 @@
+#tetris {
+    /* tetris field table should have a ratio 2:1 */
+    border: 1px solid black;
+    width: 300px;
+    height: 600px;
+    empty-cells: show;
+}
+#controls {
+    border-spacing: 10px;
+}
+#flex-container {
+    display: flex;
+}
+#side-info {
+    margin-left: 50px;
+}
+#game-over {
+    color: red;
+}

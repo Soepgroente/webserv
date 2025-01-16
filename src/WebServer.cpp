@@ -37,7 +37,7 @@ void	WebServer::loopadydoopady()
 {
 	while (serverShouldRun == true)
 	{
-		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
+		if (poll(pollDescriptors.data(), pollDescriptors.size(), 1000) == -1)
 			errorExit("Poll function failed", -1);
 		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{

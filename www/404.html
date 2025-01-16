@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404: Not Found</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; /* Display items vertically */
+            justify-content: center; /* Align items to the center vertically */
+            align-items: center;
+            height: 100vh;
+            background-color: #222; /* Dark background color */
+            color: #ddd; /* Text color */
+            font-family: Arial, sans-serif; /* Use Arial font */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 10vw; /* Adjust the size as needed */
+            margin: 0;
+            margin-bottom: 10px; /* Add some space below the error code */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add drop shadow */
+        }
+
+        .message {
+            font-size: 3rem; /* Increase the font size of the message */
+            font-weight: bold; /* Make the message bold */
+            margin: 0;
+        }
+
+        .link {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 1.2rem; /* Make the link a bit smaller than the message */
+            margin-top: 20px; /* Add space between text and link */
+        }
+
+        .link:hover {
+            color: #0056b3; /* Darker color on hover */
+        }
+        
+        img {
+            max-width: 100%;
+            max-height: 50%;
+            height: auto; /* Ensure that the image maintains its aspect ratio */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/error_img/404.jpg" alt="404 err">
+        <div class="error-code">404</div>
+        <div class="message" style="font-size: 4rem; font-weight: bold;">Not Found in root</div>
+        <a class="link" href="/">go home</a>
+    </div>
+</body>
+</html>
