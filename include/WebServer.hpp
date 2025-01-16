@@ -94,3 +94,4 @@ void	printVector(std::vector<T>& toPrint)
 
 void						errorExit(std::string errorMessage, int errorLocation);
 std::vector<std::string>	stringSplit(std::string toSplit);
+std::ostream&				operator<<(std::ostream& out, const std::vector<struct pollfd>& p);

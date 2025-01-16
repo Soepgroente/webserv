@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int serverSocket, const Server& in) : fd(-1), cgiFd(-1), cgiStatus(cgiIsFalse), server(in)
+Client::Client(int serverSocket, const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), server(in)
 {
 	initializeSocket(serverSocket);
 }
@@ -73,4 +73,13 @@ int	Client::getCgiStatus() const
 const Server&	Client::getServer() const
 {
 	return (server);
+}
+
+std::ostream&	operator<<(std::ostream& out, const Client& p)
+{
+	out << "Client fd: " << p.getFd() << std::endl;
+	out << "Client cgiFd: " << p.getCgiFd() << std::endl;
+	out << "Client cgiStatus: " << p.getCgiStatus() << std::endl;
+	out << "Client server fd: " << p.getServer().socket << std::endl;
+	return (out);
 }

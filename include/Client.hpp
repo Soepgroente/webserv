@@ -48,3 +48,5 @@ class Client
 	int					cgiStatus;
 	const Server&		server;
 };
+
+std::ostream&	operator<<(std::ostream& out, const Client& p);

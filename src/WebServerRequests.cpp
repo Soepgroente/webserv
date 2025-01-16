@@ -14,8 +14,13 @@ size_t	WebServer::getClientIndex(int clientFd)	const
 
 void	WebServer::closeConnection(int fd)
 {
+	int clientIndex = getClientIndex(fd);
+	int pollIndex = getPollfdIndex(fd);
+	int cgiPollIndex = getPollfdIndex(clients[clientIndex].getCgiFd());
+
 	clients.erase(clients.begin() + getClientIndex(fd));
-	pollDescriptors.erase(pollDescriptors.begin() + getPollfdIndex(fd)); // this can go out of bounds if we don't have this fd stored
+	pollDescriptors.erase(pollDescriptors.begin() + pollIndex); // this can go out of bounds if we don't have this fd stored
+	pollDescriptors.erase(pollDescriptors.begin() + cgiPollIndex);
 	std::cout << "Closed connection" << std::endl;
 }
 
@@ -116,15 +121,18 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 	}
 }
 
-Client*	WebServer::getClient(int clientFd)
+Client*	WebServer::getClient(int fileDes)
 {
 	for (Client& client : clients)
 	{
-		if (client.getFd() == clientFd || client.getCgiFd() == clientFd)
+		if (client.getFd() == fileDes || client.getCgiFd() == fileDes)
 			return (&client);
 	}
 	if (this->clients.empty() == true)
 		return (nullptr);
+	if (isServerSocket(fileDes) == true)
+		return (nullptr);
+	// std::cout << "Client_fd: " << clientFd << std::endl;
 	throw std::runtime_error("Client not found");
 }
 
@@ -168,7 +176,6 @@ bool	WebServer::handleClientRead(int clientFd)
 	interpretRequest(request, clientFd);
 	if (request.fileType == ".out")
 	{
-		puts("HI IM HERE");
 		client->setCgiStatus(parseCgi);
 	}
 	return (true);

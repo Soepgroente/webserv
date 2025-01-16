@@ -23,10 +23,13 @@ const Server&	WebServer::getServer(int serverSocket)
 	throw std::runtime_error("Server not found");
 }
 
-void	WebServer::acceptConnection(int serverSocket)
+void	WebServer::acceptConnection(int serverSocket) // we keep duplicating our Client and associated pollfd
 {
 	clients.push_back({serverSocket, getServer(serverSocket)});
+	std::cout << clients.back() << std::endl;
+	std::cout << "Client array size: " << clients.size() << std::endl;
 	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+	std::cout << "Poll descriptor array: " << pollDescriptors << std::endl;
 	std::cout << "Accepted new connection" << std::endl;
 }
 
@@ -36,7 +39,8 @@ void	WebServer::loopadydoopady()
 	{
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 			throw std::runtime_error("Failed to poll");
-		for (size_t i = 0; i < pollDescriptors.size(); i++)
+		size_t size = pollDescriptors.size();
+		for (size_t i = 0; i < size; i++)
 		{
 			Client* client = getClient(pollDescriptors[i].fd);
 			
@@ -45,6 +49,7 @@ void	WebServer::loopadydoopady()
 				if (isServerSocket(pollDescriptors[i].fd) == true)
 				{
 					acceptConnection(pollDescriptors[i].fd);
+					assert(clients.empty() == false);
 				}
 				else if (client != nullptr && client->getCgiStatus() == parseCgi)
 				{
@@ -57,6 +62,7 @@ void	WebServer::loopadydoopady()
 			}
 			else if (client != nullptr && (pollDescriptors[i].revents & POLLOUT) != 0)
 			{
+				assert(clients.empty() == false);
 				if (client->getCgiStatus() == launchCgi)
 					launchCGI(*client);
 				else if (handleClientWrite(pollDescriptors[i].fd) == false)
@@ -71,4 +77,17 @@ void	WebServer::startTheThing()
 	initialize();
 	pollDescriptors = createPollArray();
 	loopadydoopady();
+}
+
+std::ostream&	operator<<(std::ostream& out, const std::vector<pollfd>& p)
+{
+	for (size_t i = 0; i < p.size(); i++)
+	{
+		out << "Index: " << i << std::endl;
+		out << "Pollfd: " << p[i].fd << std::endl;
+		out << "Events: " << p[i].events << std::endl;
+		out << "Revents: " << p[i].revents << std::endl;
+		out << std::endl;
+	}
+	return (out);
 }
