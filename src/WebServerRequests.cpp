@@ -12,14 +12,34 @@ size_t	WebServer::getClientIndex(int clientFd)	const
 	throw std::runtime_error("Client not indexed");
 }
 
+Client*	WebServer::getClient(int fileDes)
+{
+	if (this->clients.empty() == true)
+		return (nullptr);
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes)
+		{
+			return (&clients[i]);
+		}
+	}
+	if (isServerSocket(fileDes) == true)
+		return (nullptr);
+	// std::cout << "Client_fd: " << clientFd << std::endl;
+	throw std::runtime_error("Client not found");
+}
+
 void	WebServer::closeConnection(int fd)
 {
 	int clientIndex = getClientIndex(fd);
 	int pollIndex = getPollfdIndex(fd);
 	int cgiPollIndex = getPollfdIndex(clients[clientIndex].getCgiFd());
 
+	if (clients[clientIndex].getCgiFd() != -1)
+		close(clients[clientIndex].getCgiFd());
+	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + getClientIndex(fd));
-	pollDescriptors.erase(pollDescriptors.begin() + pollIndex); // this can go out of bounds if we don't have this fd stored
+	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + cgiPollIndex);
 	std::cout << "Closed connection" << std::endl;
 }
@@ -114,36 +134,16 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
 		try
 		{
-			puts("SETTIN FILETYPE BABY WOOOHOOO");
 			request.fileType = request.path.substr(request.path.find_last_of('.'));
 		}
 		catch (std::out_of_range& e){}
 	}
 }
 
-Client*	WebServer::getClient(int fileDes)
-{
-	if (this->clients.empty() == true)
-		return (nullptr);
-	for (size_t i = 0; i < clients.size(); i++)
-	{
-		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes)
-		{
-			std::cout << "in function: " << &clients[i] << std::endl;
-			return (&clients[i]);
-		}
-	}
-	if (isServerSocket(fileDes) == true)
-		return (nullptr);
-	// std::cout << "Client_fd: " << clientFd << std::endl;
-	throw std::runtime_error("Client not found");
-}
-
-bool	WebServer::handleClientRead(int clientFd)
+bool	WebServer::handleClientRead(Client* client, int clientFd)
 {
 	ssize_t			readBytes;
 	std::string		buffer;
-	Client*			client = getClient(clientFd);
 
 	assert(client != nullptr);
 	HttpRequest&	request = client->getRequest();
@@ -157,18 +157,9 @@ bool	WebServer::handleClientRead(int clientFd)
 	readBytes = read(clientFd, buffer.data(), BUFFERSIZE);
 	if (readBytes == -1)
 	{
-		if (errno != EWOULDBLOCK)
-		{
-			std::cerr << "Client_fd read error" << std::endl;
-			// handleError(strerror(errno));
-		}
-		else
-		{
-			std::cerr << "Error number: " << errno << " Error msg: " << strerror(errno) << std::endl;
-			throw std::runtime_error("Error reading from client_fd");
-		}
+		throw std::runtime_error("Error reading from client_fd");
 	}
-	else if (readBytes == 0)
+	if (readBytes == 0)
 	{
 		closeConnection(clientFd);
 		return (false);
@@ -179,7 +170,7 @@ bool	WebServer::handleClientRead(int clientFd)
 	interpretRequest(request, clientFd);
 	if (request.fileType == ".out")
 	{
-		client->setCgiStatus(parseCgi);
+		client->setCgiStatus(launchCgi);
 	}
 	return (true);
 }
@@ -194,17 +185,8 @@ void	WebServer::parseCgiOutput(Client& client)
 	readBytes = read(client.getCgiFd(), buffer.data(), BUFFERSIZE);
 	if (readBytes == -1)
 	{
-		if (errno != EWOULDBLOCK)
-		{
-			std::cerr << "Client_fd read error" << std::endl;
-			// handleError(strerror(errno));
-		}
-		else
-		{
-			std::cerr << "Error number: " << errno << " Error msg: " << strerror(errno) << std::endl;
-			throw std::runtime_error("Error reading from client_fd");
-		}
+		throw std::runtime_error("Error reading from client_fd");
 	}
 	std::cout << buffer << std::endl;
-	client.setCgiStatus(launchCgi);
+	client.setCgiStatus(cgiIsFalse);
 }

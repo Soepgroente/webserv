@@ -56,7 +56,6 @@ class	WebServer
 
 	void	initialize();
 	void	loopadydoopady();
-	void	printServerStruct(const Server& toPrint)	const;
 	bool	isServerSocket(int socket)	const;
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int fd);
@@ -64,7 +63,7 @@ class	WebServer
 	bool	timeout(time_t lastPinged)	const;
 
 	void	interpretRequest(HttpRequest& request, int clientFd);
-	bool	handleClientRead(int clientFd);
+	bool	handleClientRead(Client* client, int clientFd);
 	bool	handleClientWrite(int clientFd);
 	void	parseCgiOutput(Client& client);
 

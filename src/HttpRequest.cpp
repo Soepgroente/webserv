@@ -1,5 +1,33 @@
 #include "HttpRequest.hpp"
 
+HttpRequest::HttpRequest(const HttpRequest& other)
+{
+	if (this != &other)
+		*this = other;
+}
+
+HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
+{
+	if (this != &other)
+	{
+		rawRequest = other.rawRequest;
+		lastRead = other.lastRead;
+		contentLength = other.contentLength;
+		splitRequest = other.splitRequest;
+		host = other.host;
+		port = other.port;
+		method = other.method;
+		path = other.path;
+		protocol = other.protocol;
+		contentType = other.contentType;
+		body = other.body;
+		fileType = other.fileType;
+		isValidRequest = other.isValidRequest;
+		response = other.response;
+	}
+	return (*this);
+}
+
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 {
 	out << "last read: " << p.lastRead << std::endl;

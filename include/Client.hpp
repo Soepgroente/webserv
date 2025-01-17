@@ -12,8 +12,8 @@
 enum cgiStatus
 {
 	cgiIsFalse,
-	launchCgi,
-	parseCgi
+	parseCgi,
+	launchCgi
 };
 
 struct HttpRequest;
@@ -34,18 +34,17 @@ class Client
 	int		getCgiStatus() const;
 	int		getCgiFd() const;
 	void	setCgiFd(int newFd);
-	void	setRequest(const HttpRequest& newRequest);
-	const Server&	getServer() const;
 
-	HttpRequest& getRequest();
+	const Server&	getServer() const;
+	HttpRequest&	getRequest();
 
 	private:
 
 	int					fd;
 	int					cgiFd;
+	int					cgiStatus;
 	HttpRequest			request;
 	std::string			response;
-	int					cgiStatus;
 	const Server&		server;
 };
 

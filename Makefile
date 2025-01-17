@@ -8,6 +8,7 @@ HEADERS		:= -I include
 CPPFILES	:=	Client.cpp \
 				HttpRequest.cpp \
 				signals.cpp \
+				Server.cpp \
 				WebServer.cpp \
 				WebServerCGI.cpp \
 				WebServerErrors.cpp \

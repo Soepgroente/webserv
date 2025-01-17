@@ -23,44 +23,49 @@ const Server&	WebServer::getServer(int serverSocket)
 	throw std::runtime_error("Server not found");
 }
 
-void	WebServer::acceptConnection(int serverSocket) // we keep duplicating our Client and associated pollfd
+void	WebServer::acceptConnection(int serverSocket)
 {
-	clients.push_back({serverSocket, getServer(serverSocket)});
-	std::cout << clients.back() << std::endl;
-	std::cout << "address of last client element: " << &(clients.back()) << std::endl;
-	std::cout << "Client array size: " << clients.size() << std::endl;
+	Client	client(serverSocket, getServer(serverSocket));
+
+	for (Client& tmp : this->clients)
+	{
+		if (tmp.getFd() == client.getFd())
+			throw std::runtime_error("Client already exists");
+	}
+	clients.push_back(client);
+	// clients.push_back({serverSocket, getServer(serverSocket)});
 	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
-	std::cout << "Poll descriptor array: " << pollDescriptors << std::endl;
-	std::cout << "Accepted new connection" << std::endl;
+	std::cout << "Accepted connection" << std::endl;
 }
 
 void	WebServer::loopadydoopady()
 {
 	while (serverShouldRun == true)
 	{
-		size_t size = pollDescriptors.size();
-
-		if (poll(pollDescriptors.data(), size, 0) == -1)
+		int amountOfEvents;
+		
+		amountOfEvents = poll(pollDescriptors.data(), pollDescriptors.size(), 0);
+		if (amountOfEvents == -1)
 			throw std::runtime_error("Failed to poll");
-		// std::cout << "Poll descriptor array:\n-------" << pollDescriptors << std::endl;
-
+		if (amountOfEvents == 0)
+			continue ;
 		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
+			if (pollDescriptors[i].revents == 0)
+				continue ;
 			Client* client = getClient(pollDescriptors[i].fd);
 
-			std::cout << "In poll loopadydoopady " << client << std::endl;
-			
-			if ((pollDescriptors[i].revents & POLLIN) != 0)
+			if (isServerSocket(pollDescriptors[i].fd) == true)
 			{
-				if (isServerSocket(pollDescriptors[i].fd) == true)
+				acceptConnection(pollDescriptors[i].fd);
+			}
+			else if ((pollDescriptors[i].revents & POLLIN) != 0)
+			{
+				if (client != nullptr && client->getCgiStatus() == parseCgi)
 				{
-					acceptConnection(pollDescriptors[i].fd);
+					parseCgiOutput(*client);
 				}
-				// else if (client != nullptr && client->getCgiStatus() == parseCgi)
-				// {
-				// 	parseCgiOutput(*client);
-				// }
-				else if (handleClientRead(pollDescriptors[i].fd) == false)
+				if (handleClientRead(client, pollDescriptors[i].fd) == false)
 				{
 					i--;
 				}
@@ -72,7 +77,6 @@ void	WebServer::loopadydoopady()
 				else if (handleClientWrite(pollDescriptors[i].fd) == false)
 					i--;
 			}
-			sleep(1);
 		}
 	}
 }

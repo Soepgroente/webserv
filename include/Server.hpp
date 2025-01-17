@@ -35,3 +35,5 @@ struct	Server
 
 	std::map<std::string, struct Location>	locations;
 };
+
+std::ostream&	operator<<(std::ostream& out, const struct Server& p);

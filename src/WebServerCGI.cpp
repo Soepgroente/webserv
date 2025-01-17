@@ -1,6 +1,6 @@
 #include "WebServer.hpp"
 
-const std::string defaultCgiLocation = "../CGI/cgi.py";
+const std::string defaultCgiLocation = "./CGI/cgi.py";
 
 static char** getArgs(std::string cgiLocation)
 {
@@ -57,7 +57,6 @@ void	WebServer::launchCGI(Client& client)
 	{
 		std::string	cgiLocation = client.getServer().cgiPath;
 
-		std::cout << "HELLO IM A BABY PROCESS" << std::endl;
 		if (cgiLocation.empty() == true)
 			cgiLocation = defaultCgiLocation;
 		close(pipeFd[0]);
@@ -73,4 +72,5 @@ void	WebServer::launchCGI(Client& client)
 	}
 	pollDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	client.setCgiFd(pipeFd[0]);
+	client.setCgiStatus(parseCgi);
 }

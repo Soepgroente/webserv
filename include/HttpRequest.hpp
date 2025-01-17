@@ -5,6 +5,12 @@
 
 struct	HttpRequest
 {
+	HttpRequest() = default;
+	~HttpRequest() = default;
+	HttpRequest(const HttpRequest& other);
+
+	HttpRequest&	operator=(const HttpRequest& other);
+
 	std::string					rawRequest;
 	time_t						lastRead;
 	size_t						contentLength;
