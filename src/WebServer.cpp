@@ -27,6 +27,7 @@ void	WebServer::acceptConnection(int serverSocket) // we keep duplicating our Cl
 {
 	clients.push_back({serverSocket, getServer(serverSocket)});
 	std::cout << clients.back() << std::endl;
+	std::cout << "address of last client element: " << &(clients.back()) << std::endl;
 	std::cout << "Client array size: " << clients.size() << std::endl;
 	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 	std::cout << "Poll descriptor array: " << pollDescriptors << std::endl;
@@ -37,24 +38,28 @@ void	WebServer::loopadydoopady()
 {
 	while (serverShouldRun == true)
 	{
-		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
-			throw std::runtime_error("Failed to poll");
 		size_t size = pollDescriptors.size();
-		for (size_t i = 0; i < size; i++)
+
+		if (poll(pollDescriptors.data(), size, 0) == -1)
+			throw std::runtime_error("Failed to poll");
+		// std::cout << "Poll descriptor array:\n-------" << pollDescriptors << std::endl;
+
+		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
 			Client* client = getClient(pollDescriptors[i].fd);
+
+			std::cout << "In poll loopadydoopady " << client << std::endl;
 			
 			if ((pollDescriptors[i].revents & POLLIN) != 0)
 			{
 				if (isServerSocket(pollDescriptors[i].fd) == true)
 				{
 					acceptConnection(pollDescriptors[i].fd);
-					assert(clients.empty() == false);
 				}
-				else if (client != nullptr && client->getCgiStatus() == parseCgi)
-				{
-					parseCgiOutput(*client);
-				}
+				// else if (client != nullptr && client->getCgiStatus() == parseCgi)
+				// {
+				// 	parseCgiOutput(*client);
+				// }
 				else if (handleClientRead(pollDescriptors[i].fd) == false)
 				{
 					i--;
@@ -62,12 +67,12 @@ void	WebServer::loopadydoopady()
 			}
 			else if (client != nullptr && (pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				assert(clients.empty() == false);
 				if (client->getCgiStatus() == launchCgi)
 					launchCGI(*client);
 				else if (handleClientWrite(pollDescriptors[i].fd) == false)
 					i--;
 			}
+			sleep(1);
 		}
 	}
 }

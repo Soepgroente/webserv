@@ -123,13 +123,16 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 
 Client*	WebServer::getClient(int fileDes)
 {
-	for (Client& client : clients)
-	{
-		if (client.getFd() == fileDes || client.getCgiFd() == fileDes)
-			return (&client);
-	}
 	if (this->clients.empty() == true)
 		return (nullptr);
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes)
+		{
+			std::cout << "in function: " << &clients[i] << std::endl;
+			return (&clients[i]);
+		}
+	}
 	if (isServerSocket(fileDes) == true)
 		return (nullptr);
 	// std::cout << "Client_fd: " << clientFd << std::endl;
