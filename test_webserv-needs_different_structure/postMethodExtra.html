@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f0f0f0;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label, input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #0066cc;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Submit Your Data</h1>
+    <form id="uploadForm" method="POST">
+        <label for="data">Data:</label>
+        <input type="text" id="data" name="data" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // Function to generate a unique identifier using the current timestamp
+        function generateUniqueId() {
+            return Date.now();
+        }
+
+        // Set the form action with a unique filename each time the page is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('uploadForm');
+            var uniqueId = generateUniqueId();
+            form.action = 'Server_1_uploads/upload_' + uniqueId + '.txt'; // Adjust the extension as needed
+        });
+    </script>
+</body>
+</html>
