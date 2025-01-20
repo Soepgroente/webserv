@@ -1,77 +1,88 @@
 #include "WebServer.hpp"
 #include <fstream>
 
-bool	WebServer::handleClientWrite(int clientFd)
+static bool	handleGet(Client& client, std::string& buffer)
 {
-    HttpRequest& request = clients[getClientIndex(clientFd)].getRequest();
-    std::string& response = request.response;
+	// GET işlemi: Dosyayı oku ve yanıtla
+	std::ifstream inFile("." + client.getRequest().path, std::ios::binary);
+	if (inFile.is_open())
+	{
+		std::stringstream buf;
+		buf << inFile.rdbuf();
+		inFile.close();
+		std::string body = buf.str();
+		buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body; // I don't know if the content-type is necessary here, I saw that firefox understands it automatically
+	}
+	else
+	{
+		buffer = HttpResponse::defaultResponses["404"];
+	}
+	return (true);
+}
 
-    if (request.method == "GET")
-    {
-        // GET işlemi: Dosyayı oku ve yanıtla
-        std::ifstream inFile("." + request.path, std::ios::binary);
-        if (inFile.is_open())
-        {
-            std::stringstream buffer;
-            buffer << inFile.rdbuf();
-            inFile.close();
-            std::string body = buffer.str();
-            response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body; // I don't know if the content-type is necessary here, I saw that firefox understands it automatically
-        }
-        else
-        {
-            response = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        }
-    }
-    else if (request.method == "POST")
-    {
-        std::ofstream outFile("/path/to/save/data.txt");
-        if (outFile.is_open())
-        {
-            outFile << request.body;
-            outFile.close();
-            response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-        }
-        else
-        {
-            response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
-        }
-    }
-    else if (request.method == "DELETE")
-    {
-        if (remove(request.path.c_str()) == 0)
-        {
-            response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-        }
-        else
-        {
-            response = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        }
-    }
-    else
-    {
-        response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
-    }
+static bool	handlePost(Client& client, std::string& buffer)
+{
+	std::ofstream outFile(client.getRequest().path, std::ios::binary);
+	if (outFile.is_open())
+	{
+		outFile << client.getRequest().body;
+		outFile.close();
+		buffer = HttpResponse::defaultResponses["200"];
+	}
+	else
+	{
+		buffer = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+	}
+	return (true);
+}
 
-    // std::cout << response << std::endl;
-    ssize_t writtenBytes = write(clientFd, response.c_str(), response.size());
+static bool	handleDelete(Client& client, std::string& buffer)
+{
+	if (remove(client.getRequest().path.c_str()) == 0)
+	{
+		buffer = HttpResponse::defaultResponses["200"];
+	}
+	else
+	{
+		buffer = HttpResponse::defaultResponses["404"];
+	}
+	return (true);
+}
+
+bool	WebServer::replyToClient(std::string& buffer, int clientFd)
+{
+    ssize_t writtenBytes = write(clientFd, buffer.c_str(), buffer.size());
 
     if (writtenBytes == -1)
     {
         std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
         closeConnection(clientFd);
-        return false;
+        return (false);
     }
-    if (static_cast<size_t>(writtenBytes) < response.size())
+    if (static_cast<size_t>(writtenBytes) < buffer.size())
     {
-        response.erase(0, writtenBytes);
+        buffer.erase(0, writtenBytes);
     }
     else
     {
         pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
-        response.clear();
+        buffer.clear();
     }
-	return true;
+	return (true);
+}
+
+bool	WebServer::handleClientWrite(Client& client, int clientFd)
+{
+	std::string& buffer = client.getResponse().buffer;
+
+	std::map<std::string, std::function<bool(Client&, std::string&)>> methods =
+	{{"GET", &handleGet},
+	{"POST", &handlePost},
+	{"DELETE", &handleDelete}};
+
+    if (methods[client.getRequest().method](client, buffer) == true)
+		return (replyToClient(buffer, clientFd));
+	return (false);
 }
 
 /* void	WebServer::handleClientWrite(int clientFd)

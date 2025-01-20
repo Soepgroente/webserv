@@ -64,18 +64,20 @@ class	WebServer
 
 	void	interpretRequest(HttpRequest& request, int clientFd);
 	bool	handleClientRead(Client* client, int clientFd);
-	bool	handleClientWrite(int clientFd);
+	bool	handleClientWrite(Client& client, int clientFd);
 	void	parseCgiOutput(Client& client);
 
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
 	size_t						getPollfdIndex(int fdToFind);
 	void						set_signals();
+	Client*						getClient(int clientFd);
+	size_t						getClientIndex(int clientFd) const;
+	const Server&				getServer(int serverSocket);
 
 	void	launchCGI(Client& client);
-	Client*	getClient(int clientFd);
-	size_t	getClientIndex(int clientFd) const;
-	const Server&	getServer(int serverSocket);
+	bool	replyToClient(std::string& buffer, int clientFd);
+
 };
 
 /*	Template functions	*/

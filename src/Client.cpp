@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(int serverSocket, const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), server(in)	
+Client::Client(int serverSocket, const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), response(HttpResponse()), server(in)	
 {
 	initializeSocket(serverSocket);
 }
@@ -10,7 +10,7 @@ Client::~Client()
 }
 
 Client::Client(const Client& other) : fd(other.fd), cgiFd(other.cgiFd), \
-	cgiStatus(other.cgiStatus), request(other.request), server(other.server)
+	cgiStatus(other.cgiStatus), request(other.request), response(other.response), server(other.server)
 {
 }
 
@@ -51,6 +51,11 @@ void	Client::setCgiFd(int newFd)
 HttpRequest&	Client::getRequest()
 {
 	return (request);
+}
+
+HttpResponse&	Client::getResponse()
+{
+	return (response);
 }
 
 void	Client::setCgiStatus(int status)

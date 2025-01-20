@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 #include "Server.hpp"
 
 enum cgiStatus
@@ -37,6 +38,7 @@ class Client
 
 	const Server&	getServer() const;
 	HttpRequest&	getRequest();
+	HttpResponse&	getResponse();
 
 	private:
 
@@ -44,7 +46,7 @@ class Client
 	int					cgiFd;
 	int					cgiStatus;
 	HttpRequest			request;
-	std::string			response;
+	HttpResponse		response;
 	const Server&		server;
 };
 

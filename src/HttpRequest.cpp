@@ -2,8 +2,7 @@
 
 HttpRequest::HttpRequest(const HttpRequest& other)
 {
-	if (this != &other)
-		*this = other;
+	*this = other;
 }
 
 HttpRequest&	HttpRequest::operator=(const HttpRequest& other)

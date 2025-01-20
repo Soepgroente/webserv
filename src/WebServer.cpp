@@ -74,7 +74,7 @@ void	WebServer::loopadydoopady()
 			{
 				if (client->getCgiStatus() == launchCgi)
 					launchCGI(*client);
-				else if (handleClientWrite(pollDescriptors[i].fd) == false)
+				else if (handleClientWrite(*client, pollDescriptors[i].fd) == false)
 					i--;
 			}
 		}
