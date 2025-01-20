@@ -31,7 +31,7 @@ static bool	handlePost(Client& client, std::string& buffer)
 	}
 	else
 	{
-		buffer = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+		buffer = HttpResponse::defaultResponses["500"];
 	}
 	return (true);
 }
@@ -51,6 +51,16 @@ static bool	handleDelete(Client& client, std::string& buffer)
 
 bool	WebServer::replyToClient(std::string& buffer, int clientFd)
 {
+	int pollIndex = getPollfdIndex(clientFd);
+
+	if (buffer.empty() == true)
+	{
+		assert(pollIndex != -1);
+        pollDescriptors[pollIndex].events = POLLIN;
+		return (true);
+	}
+	assert(buffer.size() != 0);
+	assert(buffer.c_str() != nullptr);
     ssize_t writtenBytes = write(clientFd, buffer.c_str(), buffer.size());
 
     if (writtenBytes == -1)
@@ -63,11 +73,11 @@ bool	WebServer::replyToClient(std::string& buffer, int clientFd)
     {
         buffer.erase(0, writtenBytes);
     }
-    else
-    {
-        pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
-        buffer.clear();
-    }
+	if (buffer.empty() == true)
+	{
+		assert(pollIndex != -1);
+        pollDescriptors[pollIndex].events = POLLIN;
+	}
 	return (true);
 }
 
@@ -84,26 +94,3 @@ bool	WebServer::handleClientWrite(Client& client, int clientFd)
 		return (replyToClient(buffer, clientFd));
 	return (false);
 }
-
-/* void	WebServer::handleClientWrite(int clientFd)
-{
-
-    requests[clientFd].response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello World!";
-    ssize_t writtenBytes = write(clientFd, requests[clientFd].response.c_str(), requests[clientFd].response.size());
-
-    if (writtenBytes == -1)
-    {
-        std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
-        closeConnection(clientFd);
-        return;
-    }
-    if (static_cast<size_t>(writtenBytes) < requests[clientFd].response.size())
-    {
-        requests[clientFd].response.erase(0, writtenBytes);
-    }
-    else
-    {
-        pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
-        requests[clientFd].response.clear();
-    }
-} */

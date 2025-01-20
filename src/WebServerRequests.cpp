@@ -35,12 +35,10 @@ void	WebServer::closeConnection(int fd)
 	int pollIndex = getPollfdIndex(fd);
 	int cgiPollIndex = getPollfdIndex(clients[clientIndex].getCgiFd());
 
-	if (clients[clientIndex].getCgiFd() != -1)
-		close(clients[clientIndex].getCgiFd());
-	close(clients[clientIndex].getFd());
-	clients.erase(clients.begin() + getClientIndex(fd));
+	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
-	pollDescriptors.erase(pollDescriptors.begin() + cgiPollIndex);
+	if (cgiPollIndex != -1)
+		pollDescriptors.erase(pollDescriptors.begin() + cgiPollIndex);
 	std::cout << "Closed connection" << std::endl;
 }
 
@@ -131,6 +129,7 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 	parseBody(request);
 	if (requestIsFinished(request) == true)
 	{
+		assert(getPollfdIndex(clientFd) != -1);
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
 		try
 		{

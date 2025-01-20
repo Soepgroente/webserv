@@ -25,7 +25,8 @@
 #include "Utils.hpp"
 
 #define FOREVER 1
-#define MAXBODYSIZE 1000000
+#define YOURMOM 1000000
+#define MAXBODYSIZE YOURMOM
 #define ERRORPAGE "404"
 
 struct	Server;
@@ -69,7 +70,7 @@ class	WebServer
 
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
-	size_t						getPollfdIndex(int fdToFind);
+	int							getPollfdIndex(int fdToFind);
 	void						set_signals();
 	Client*						getClient(int clientFd);
 	size_t						getClientIndex(int clientFd) const;
@@ -77,7 +78,8 @@ class	WebServer
 
 	void	launchCGI(Client& client);
 	bool	replyToClient(std::string& buffer, int clientFd);
-
+	void	addClient(int serverSocket);
+	void	removeClient(int fd);
 };
 
 /*	Template functions	*/

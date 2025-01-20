@@ -25,7 +25,7 @@ class Client
 	
 	Client() = delete;
 	~Client();
-	Client(int serverSocket, const Server& in);
+	Client(const Server& in);
 	Client(const Client& other);
 	Client& operator=(const Client& other);
 

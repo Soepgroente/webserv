@@ -25,15 +25,7 @@ const Server&	WebServer::getServer(int serverSocket)
 
 void	WebServer::acceptConnection(int serverSocket)
 {
-	Client	client(serverSocket, getServer(serverSocket));
-
-	for (Client& tmp : this->clients)
-	{
-		if (tmp.getFd() == client.getFd())
-			throw std::runtime_error("Client already exists");
-	}
-	clients.push_back(client);
-	// clients.push_back({serverSocket, getServer(serverSocket)});
+	addClient(serverSocket);
 	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 	std::cout << "Accepted connection" << std::endl;
 }

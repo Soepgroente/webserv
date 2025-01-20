@@ -1,8 +1,7 @@
 #include "Client.hpp"
 
-Client::Client(int serverSocket, const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), response(HttpResponse()), server(in)	
+Client::Client(const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), response(HttpResponse()), server(in)	
 {
-	initializeSocket(serverSocket);
 }
 
 Client::~Client()

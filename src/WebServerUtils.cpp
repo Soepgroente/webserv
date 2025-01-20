@@ -46,12 +46,14 @@ bool	WebServer::timeout(time_t lastPinged)	const
 	return (false);
 }
 
-size_t	WebServer::getPollfdIndex(int fdToFind)
+int	WebServer::getPollfdIndex(int fdToFind)
 {
+	if (fdToFind == -1)
+		return (-1);
 	for (size_t i = 0; i < pollDescriptors.size(); i++)
 	{
 		if (pollDescriptors[i].fd == fdToFind)
-			return (i);
+			return (static_cast<int>(i));
 	}
 	throw std::runtime_error("Pollfd not found");
 }
@@ -68,4 +70,31 @@ void	WebServer::set_signals()
 	signal(SIGINT, &exitGracefullyOnSignal);
 	signal(SIGTERM, &exitGracefullyOnSignal);
 	signal(SIGQUIT, SIG_IGN);
+}
+
+static bool	duplicateClient(const std::vector<Client>& clients, const Client& client)
+{
+	for (const Client& tmp : clients)
+	{
+		if (tmp.getFd() == client.getFd())
+			return (true);
+	}
+	return (false);
+}
+
+void	WebServer::addClient(int serverSocket)
+{
+	Client	newClient(getServer(serverSocket));
+
+	newClient.initializeSocket(serverSocket);
+	assert(duplicateClient(clients, newClient) == false);
+	clients.push_back(newClient);
+}
+
+void	WebServer::removeClient(int clientIndex)
+{
+	if (clients[clientIndex].getCgiFd() != -1)
+		close(clients[clientIndex].getCgiFd());
+	close(clients[clientIndex].getFd());
+	clients.erase(clients.begin() + clientIndex);
 }
