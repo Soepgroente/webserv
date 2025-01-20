@@ -7,6 +7,8 @@
 
 struct Location
 {
+	bool		directoryListing;
+
 	std::vector<std::string>	methods;
 	std::vector<std::string>	cgiExtensions;
 
@@ -29,6 +31,9 @@ struct	Server
 	std::string	serverName;
 	std::string	errorLocation;
 	std::string	host;
+	std::string	cgiPath;
 
 	std::map<std::string, struct Location>	locations;
 };
+
+std::ostream&	operator<<(std::ostream& out, const struct Server& p);

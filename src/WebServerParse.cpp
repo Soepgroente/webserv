@@ -42,6 +42,8 @@ static void	parseBodySize(const std::string& input, Server& server, int& lineCou
 	if (server.bodySize != -1)
 		closeAndExit("Invalid configuration file", lineCount);
 	server.bodySize = std::stoi(input);
+	// if (server.bodySize > MAXBODYSIZE)
+		// do a thing
 }
 
 static void	removeWhiteSpaces(std::string& line)
@@ -98,8 +100,7 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 			it = server.locations[path].dirs.find(tmp);
 			if (it == server.locations[path].dirs.end())
 				closeAndExit("Invalid location variable", lineCount);
-			s_line >> tmp;
-			it->second = tmp;
+			s_line >> it->second;
 		}
 	}
 }

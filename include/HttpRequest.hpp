@@ -1,8 +1,16 @@
 #pragma once
-#include "WebServer.hpp"
+
+#include <iostream>
+#include <vector>
 
 struct	HttpRequest
 {
+	HttpRequest() = default;
+	~HttpRequest() = default;
+	HttpRequest(const HttpRequest& other);
+
+	HttpRequest&	operator=(const HttpRequest& other);
+
 	std::string					rawRequest;
 	time_t						lastRead;
 	size_t						contentLength;
@@ -13,7 +21,10 @@ struct	HttpRequest
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
-	bool						isValidRequest = true;
+	std::string					body;
+	std::string					fileType;
+	bool						isValidRequest = false;
+	// bool						headerIsParsed = false;
 
 	std::string					response;
 };

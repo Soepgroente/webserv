@@ -6,54 +6,76 @@ WebServer::~WebServer()
 	{
 		if (it.fd != -1)
 		{
+			// send message to unfinished requests
 			shutdown(it.fd, SHUT_RDWR);	// wanna check if we can use this function and whether it is helpful at all?
 			close(it.fd);
 		}
 	}
 }
 
+const Server&	WebServer::getServer(int serverSocket)
+{
+	for (Server& server : servers)
+	{
+		if (server.socket == serverSocket)
+			return (server);
+	}
+	throw std::runtime_error("Server not found");
+}
+
 void	WebServer::acceptConnection(int serverSocket)
 {
-	int					clientFd;
-	struct sockaddr_in	clientAddress;
-	socklen_t			clientAddressLength = sizeof(sockaddr_in);
+	Client	client(serverSocket, getServer(serverSocket));
 
-	clientFd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), \
-		&clientAddressLength);
-	if (clientFd == -1)
+	for (Client& tmp : this->clients)
 	{
-		std::cerr << "Client was not accepted." << std::endl;
-		return ;
+		if (tmp.getFd() == client.getFd())
+			throw std::runtime_error("Client already exists");
 	}
-	if (fcntl(clientFd, F_SETFL, fcntl(clientFd, F_GETFL, 0) | O_NONBLOCK) == -1)
-		errorExit(strerror(errno), -1);
-	pollDescriptors.push_back({clientFd, POLLIN, 0});
-	requests.emplace(clientFd, HttpRequest{});
-	std::cout << "Accepted new connection" << std::endl;
+	clients.push_back(client);
+	// clients.push_back({serverSocket, getServer(serverSocket)});
+	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+	std::cout << "Accepted connection" << std::endl;
 }
 
 void	WebServer::loopadydoopady()
 {
-	while (FOREVER)
+	while (serverShouldRun == true)
 	{
-		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
-			errorExit("Poll function failed", -1);
+		int amountOfEvents;
+		
+		amountOfEvents = poll(pollDescriptors.data(), pollDescriptors.size(), 0);
+		if (amountOfEvents == -1)
+			throw std::runtime_error("Failed to poll");
+		if (amountOfEvents == 0)
+			continue ;
 		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
-			if ((pollDescriptors[i].revents & POLLIN) != 0)
+			if (pollDescriptors[i].revents == 0)
+				continue ;
+			Client* client = getClient(pollDescriptors[i].fd);
+
+			if (isServerSocket(pollDescriptors[i].fd) == true)
 			{
-				if (isServerSocket(pollDescriptors[i].fd) == true)
+				acceptConnection(pollDescriptors[i].fd);
+			}
+			else if ((pollDescriptors[i].revents & POLLIN) != 0)
+			{
+				if (client != nullptr && client->getCgiStatus() == parseCgi)
 				{
-					acceptConnection(pollDescriptors[i].fd);
+					parseCgiOutput(*client);
 				}
-				else
+				if (handleClientRead(client, pollDescriptors[i].fd) == false)
 				{
-					handleClientRead(pollDescriptors[i].fd);
+					i--;
 				}
 			}
-			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
+			else if (client != nullptr && (pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				handleClientWrite(pollDescriptors[i].fd);
+				if (client->getCgiStatus() == launchCgi)
+					launchCGI(*client);
+				else if (handleClientWrite(pollDescriptors[i].fd) == false)
+					i--;
 			}
 		}
 	}
@@ -63,8 +85,18 @@ void	WebServer::startTheThing()
 {
 	initialize();
 	pollDescriptors = createPollArray();
-
 	loopadydoopady();
-	// for (Server it : servers)
-	// 	printServerStruct(it);
+}
+
+std::ostream&	operator<<(std::ostream& out, const std::vector<pollfd>& p)
+{
+	for (size_t i = 0; i < p.size(); i++)
+	{
+		out << "Index: " << i << std::endl;
+		out << "Pollfd: " << p[i].fd << std::endl;
+		out << "Events: " << p[i].events << std::endl;
+		out << "Revents: " << p[i].revents << std::endl;
+		out << std::endl;
+	}
+	return (out);
 }
