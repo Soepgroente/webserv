@@ -11,10 +11,12 @@ struct	HttpRequest
 
 	HttpRequest&	operator=(const HttpRequest& other);
 
+	void			clear();
+
 	std::string					rawRequest;
-	time_t						lastRead;
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
+	std::string					connectionType;
 	std::string					host;
 	std::string					port;
 	std::string					method;
@@ -23,10 +25,7 @@ struct	HttpRequest
 	std::string					contentType;
 	std::string					body;
 	std::string					fileType;
-	bool						isValidRequest = false;
-	// bool						headerIsParsed = false;
-
-	std::string					response;
+	bool						isValidRequest;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);

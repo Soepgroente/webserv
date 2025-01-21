@@ -39,9 +39,15 @@ class Client
 	const Server&	getServer() const;
 	HttpRequest&	getRequest();
 	HttpResponse&	getResponse();
+	time_t			getLatestPing() const;
+	time_t			setPingTime();
+	time_t			getTimeout() const;
+	time_t			getTime()	const;
 
 	private:
 
+	time_t				latestPing;
+	time_t				timeout;
 	int					fd;
 	int					cgiFd;
 	int					cgiStatus;

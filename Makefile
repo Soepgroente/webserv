@@ -13,7 +13,7 @@ CPPFILES	:=	Client.cpp \
 				WebServer.cpp \
 				WebServerCGI.cpp \
 				WebServerErrors.cpp \
-				WebServerParse.cpp \
+				WebServerParseConfig.cpp \
 				WebServerRequests.cpp \
 				WebServerResponse.cpp \
 				WebServerSocket.cpp \

@@ -37,11 +37,11 @@ time_t	WebServer::getTime()	const
 	return (std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 }
 
-bool	WebServer::timeout(time_t lastPinged)	const
+bool	WebServer::timeout(time_t lastPinged, time_t timeout)	const
 {
 	if (lastPinged == 0)
 		return (false);
-	if (this->getTime() - lastPinged > 5)
+	if (getTime() - lastPinged > timeout)
 		return (true);
 	return (false);
 }

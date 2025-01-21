@@ -20,6 +20,26 @@ Client&	Client::operator=(const Client& other)
 	return (*tmp);
 }
 
+time_t	Client::getLatestPing() const
+{
+	return (latestPing);
+}
+
+time_t	Client::getTime() const
+{
+	return (time(nullptr));
+}
+
+time_t	Client::setPingTime()
+{
+	return (latestPing = getTime());
+}
+
+time_t	Client::getTimeout() const
+{
+	return (timeout);
+}
+
 int	Client::getFd() const
 {
 	return (fd);

@@ -14,6 +14,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include <signal.h>
+#include <sstream>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -61,11 +62,11 @@ class	WebServer
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int fd);
 	time_t	getTime()	const;
-	bool	timeout(time_t lastPinged)	const;
+	bool	timeout(time_t lastPinged, time_t timeout)	const;
 
 	void	interpretRequest(HttpRequest& request, int clientFd);
-	bool	handleClientRead(Client* client, int clientFd);
-	bool	handleClientWrite(Client& client, int clientFd);
+	bool	handleRequest(Client* client, int clientFd);
+	bool	handleResponse(Client& client, int clientFd);
 	void	parseCgiOutput(Client& client);
 
 	std::string					showErrorPage(std::string error);
@@ -80,6 +81,8 @@ class	WebServer
 	bool	replyToClient(std::string& buffer, int clientFd);
 	void	addClient(int serverSocket);
 	void	removeClient(int fd);
+	void	removeInactiveConnections();
+	void	checkConnectionStatuses();
 };
 
 /*	Template functions	*/

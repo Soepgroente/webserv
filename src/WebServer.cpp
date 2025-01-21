@@ -2,14 +2,9 @@
 
 WebServer::~WebServer()
 {
-	for (pollfd it : pollDescriptors)
+	for (Client& client : clients)
 	{
-		if (it.fd != -1)
-		{
-			// send message to unfinished requests
-			shutdown(it.fd, SHUT_RDWR);	// wanna check if we can use this function and whether it is helpful at all?
-			close(it.fd);
-		}
+		closeConnection(client.getFd());
 	}
 }
 
@@ -30,17 +25,31 @@ void	WebServer::acceptConnection(int serverSocket)
 	std::cout << "Accepted connection" << std::endl;
 }
 
+void	WebServer::removeInactiveConnections()
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		{
+			closeConnection(clients[i].getFd());
+			pollDescriptors.erase(pollDescriptors.begin() + i);
+			i--;
+		}
+	}
+}
+
+void	WebServer::checkConnectionStatuses()
+{
+	if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
+		throw std::runtime_error("Failed to poll");
+	removeInactiveConnections();
+}
+
 void	WebServer::loopadydoopady()
 {
 	while (serverShouldRun == true)
 	{
-		int amountOfEvents;
-		
-		amountOfEvents = poll(pollDescriptors.data(), pollDescriptors.size(), 0);
-		if (amountOfEvents == -1)
-			throw std::runtime_error("Failed to poll");
-		if (amountOfEvents == 0)
-			continue ;
+		checkConnectionStatuses();
 		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
 			if (pollDescriptors[i].revents == 0)
@@ -57,7 +66,7 @@ void	WebServer::loopadydoopady()
 				{
 					parseCgiOutput(*client);
 				}
-				if (handleClientRead(client, pollDescriptors[i].fd) == false)
+				if (handleRequest(client, pollDescriptors[i].fd) == false)
 				{
 					i--;
 				}
@@ -66,7 +75,7 @@ void	WebServer::loopadydoopady()
 			{
 				if (client->getCgiStatus() == launchCgi)
 					launchCGI(*client);
-				else if (handleClientWrite(*client, pollDescriptors[i].fd) == false)
+				else if (handleResponse(*client, pollDescriptors[i].fd) == false)
 					i--;
 			}
 		}

@@ -81,7 +81,7 @@ bool	WebServer::replyToClient(std::string& buffer, int clientFd)
 	return (true);
 }
 
-bool	WebServer::handleClientWrite(Client& client, int clientFd)
+bool	WebServer::handleResponse(Client& client, int clientFd)
 {
 	std::string& buffer = client.getResponse().buffer;
 
