@@ -1,6 +1,9 @@
 #include "Client.hpp"
 
-Client::Client(const Server& in) : cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), response(HttpResponse()), server(in)	
+Client::Client(const Server& in) : 
+	timeout(DEFAULT_TIMEOUT), remainingRequests(INT_MAX), status(clientIsActive), \
+	cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), \
+	response(HttpResponse()), server(in)
 {
 }
 
@@ -8,8 +11,11 @@ Client::~Client()
 {
 }
 
-Client::Client(const Client& other) : fd(other.fd), cgiFd(other.cgiFd), \
-	cgiStatus(other.cgiStatus), request(other.request), response(other.response), server(other.server)
+Client::Client(const Client& other) : 
+	latestPing(other.latestPing), timeout(other.timeout), \
+	remainingRequests(other.remainingRequests), status(other.status), \
+	fd(other.fd), cgiFd(other.cgiFd), cgiStatus(other.cgiStatus), \
+	request(other.request), response(other.response), server(other.server)
 {
 }
 
@@ -30,9 +36,9 @@ time_t	Client::getTime() const
 	return (time(nullptr));
 }
 
-time_t	Client::setPingTime()
+void	Client::setPingTime()
 {
-	return (latestPing = getTime());
+	latestPing = getTime();
 }
 
 time_t	Client::getTimeout() const
@@ -92,11 +98,43 @@ const Server&	Client::getServer() const
 	return (server);
 }
 
+void	Client::setTimeout(time_t newTimeout)
+{
+	if (newTimeout != 0)
+		timeout = newTimeout;
+}
+
+void	Client::receivedRequest()
+{
+	remainingRequests--;
+	if (remainingRequests == 0)
+		status = clientShouldClose;
+}
+
+void	Client::setRemainingRequests(int input)
+{
+	remainingRequests = input;
+}
+
+int	Client::getRemainingRequests() const
+{
+	return (remainingRequests);
+}
+
+int	Client::getClientStatus() const
+{
+	return (status);
+}
+
 std::ostream&	operator<<(std::ostream& out, const Client& p)
 {
 	out << "Client fd: " << p.getFd() << std::endl;
 	out << "Client cgiFd: " << p.getCgiFd() << std::endl;
 	out << "Client cgiStatus: " << p.getCgiStatus() << std::endl;
 	out << "Client server fd: " << p.getServer().socket << std::endl;
+	out << "Client latest ping: " << p.getLatestPing() << std::endl;
+	out << "Client timeout: " << p.getTimeout() << std::endl;
+	out << "Client remaining requests: " << p.getRemainingRequests() << std::endl;
+	out << "Client status: " << p.getClientStatus() << std::endl;
 	return (out);
 }

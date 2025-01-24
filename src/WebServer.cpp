@@ -5,6 +5,7 @@ WebServer::~WebServer()
 	for (Client& client : clients)
 	{
 		closeConnection(client.getFd());
+		// poll descriptors?
 	}
 }
 
@@ -29,20 +30,54 @@ void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		if (clients[i].getClientStatus() == clientShouldClose || \
+			timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(clients[i].getFd());
-			pollDescriptors.erase(pollDescriptors.begin() + i);
 			i--;
 		}
 	}
 }
 
+void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
+{
+	if (isServerSocket(position) == true)
+	{
+		acceptConnection(fd);
+		return ;
+	}
+	assert(client != nullptr);
+	if (client == nullptr)
+	{
+		return ;
+	}
+	if (client->getCgiStatus() == parseCgi)
+	{
+		parseCgiOutput(*client);
+	}
+	else if (handleRequest(*client, fd) == false)
+	{
+		position--;
+	}
+}
+
+void	WebServer::handleOutgoing(Client& client, size_t& position, int fd)
+{
+	if (client.getCgiStatus() == launchCgi)
+	{
+		launchCGI(client);
+	}
+	else if (handleResponse(client, fd) == false)
+	{
+		position--;
+	}
+}
+
 void	WebServer::checkConnectionStatuses()
 {
+	removeInactiveConnections();
 	if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 		throw std::runtime_error("Failed to poll");
-	removeInactiveConnections();
 }
 
 void	WebServer::loopadydoopady()
@@ -56,27 +91,12 @@ void	WebServer::loopadydoopady()
 				continue ;
 			Client* client = getClient(pollDescriptors[i].fd);
 
-			if (isServerSocket(pollDescriptors[i].fd) == true)
+			if ((pollDescriptors[i].revents & POLLIN) != 0)
+				handleIncoming(client, i, pollDescriptors[i].fd);
+			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				acceptConnection(pollDescriptors[i].fd);
-			}
-			else if ((pollDescriptors[i].revents & POLLIN) != 0)
-			{
-				if (client != nullptr && client->getCgiStatus() == parseCgi)
-				{
-					parseCgiOutput(*client);
-				}
-				if (handleRequest(client, pollDescriptors[i].fd) == false)
-				{
-					i--;
-				}
-			}
-			else if (client != nullptr && (pollDescriptors[i].revents & POLLOUT) != 0)
-			{
-				if (client->getCgiStatus() == launchCgi)
-					launchCGI(*client);
-				else if (handleResponse(*client, pollDescriptors[i].fd) == false)
-					i--;
+				assert(client != nullptr);
+				handleOutgoing(*client, i, pollDescriptors[i].fd);
 			}
 		}
 	}

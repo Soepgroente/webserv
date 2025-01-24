@@ -1,7 +1,5 @@
 #include "WebServer.hpp"
 
-#define BUFFERSIZE 8 * 1024
-
 size_t	WebServer::getClientIndex(int clientFd)	const
 {
 	for (size_t i = 0; i < clients.size(); i++)
@@ -42,84 +40,85 @@ void	WebServer::closeConnection(int fd)
 	std::cout << "Closed connection" << std::endl;
 }
 
-static bool	getContentType(HttpRequest& req, size_t i)
+static bool	getContentType(Client& client, HttpRequest& request, size_t i)
 {
-	if (req.splitRequest[i].size() <= 14)
-		return (false);
-	if (req.splitRequest[i].substr(0, 14) != "Content-Type: ")
-		return (false);
-	req.contentType = req.splitRequest[i].substr(14);
+	(void)client;
+	request.contentType = request.splitRequest[i].substr(14);
 	return (true);
 }
 
-static bool	getContentLength(HttpRequest& req, size_t i)
+static bool	getContentLength(Client& client, HttpRequest& request, size_t i)
 {
-	if (req.splitRequest[i].size() <= 16)
-		return (false);
-	if (req.splitRequest[i].substr(0, 16) != "Content-Length: ")
-	{
-		std::cout << req.splitRequest[i].substr(0, 16) << std::endl;
-		return (false);
-	}
-	req.contentLength = std::stoi(req.splitRequest[i].substr(16));
-	// if (req.contentLength > MAXBODYSIZE)
+	(void)client;
+	request.contentLength = std::stoi(request.splitRequest[i].substr(16));
+	// if (request.contentLength > MAXBODYSIZE)
 		//do a thing
 	return (true);
 }
 
-static bool	getHost(HttpRequest& req, size_t i)
+static bool	getHost(Client& client, HttpRequest& request, size_t i)
 {
-	size_t	splitter = req.splitRequest[i].find_last_of(':');
+	(void)client;
+	size_t	splitter = request.splitRequest[i].find_last_of(':');
 
-	req.host = req.splitRequest[i].substr(6, splitter - 6);
-	req.port = req.splitRequest[i].substr(splitter + 1);
+	request.host = request.splitRequest[i].substr(6, splitter - 6);
+	request.port = request.splitRequest[i].substr(splitter + 1);
 	return (true);
 }
 
-static bool	getMethods(HttpRequest& req, size_t i)
+static bool	getMethods(Client& client, HttpRequest& request, size_t i)
 {
+	(void)client;
     std::stringstream	stream;
 
-	stream.str(req.splitRequest[i]);
-	stream >> req.method >> req.path >> req.protocol;
+	stream.str(request.splitRequest[i]);
+	stream >> request.method >> request.path >> request.protocol;
 	return (true);
 }
 
 static bool	requestIsFinished(const HttpRequest& request)
 {
-	if (request.contentLength != 0)
-	{
-		if (request.body.size() == request.contentLength)
-			return (true);
-	}
-	else if (request.splitRequest.back().empty() == true)
+	if (request.contentLength == 0 || request.body.size() == request.contentLength)
 	{
 		return (true);
 	}
 	return (false);
 }
 
-static bool	getConnectionType(HttpRequest& req, size_t i)
+static bool	getConnectionType(Client& client, HttpRequest& request, size_t i)
 {
-	if (req.splitRequest[i].size() <= 12)
-		return (false);
-	if (req.splitRequest[i].substr(0, 12) != "Connection: ")
-		return (false);
-	req.connectionType = req.splitRequest[i].substr(12);
+	(void)client;
+	request.connectionType = request.splitRequest[i].substr(12);
 	return (true);
 }
 
-static bool	parseHeaders(HttpRequest& request)
+static bool	getKeepAlive(Client& client, HttpRequest& request, size_t i)
 {
-	if (request.rawRequest.find("\r\n\r\n") == std::string::npos || request.host.size() != 0)
-		return (false); // put this here, otherwise it gets tricky handling strings that are half-finished etc
+	if (request.connectionType != "Keep-Alive")
+	{
+		request.status = requestIsInvalid;
+		return (false);
+	}
+	std::string&	req = request.splitRequest[i];
+	client.setTimeout(std::stoi(req.substr(req.find_first_of("timeout=") + 8, req.find_first_of(','))));
+	client.setRemainingRequests(std::stoi(req.substr(req.find_first_of("max=") + 4)));
+	return (true);
+}
 
-	std::map<std::string, std::function<bool(HttpRequest&, size_t)>> parseFunctions = 
+static bool	parseHeaders(Client& client, HttpRequest& request)
+{
+	if (request.status == headerIsParsed)
+		return (true);
+	if (request.rawRequest.find("\r\n\r\n") == std::string::npos)
+		return (false);
+
+	std::map<std::string, std::function<bool(Client&, HttpRequest&, size_t)>> parseFunctions = 
 	{
 		{"GET", &getMethods},
 		{"POST", &getMethods},
 		{"DELETE", &getMethods},
 		{"Connection:", &getConnectionType},
+		{"Keep-Alive:", &getKeepAlive},
 		{"Host:", &getHost},
 		{"Content-Type:", &getContentType},
 		{"Content-Length:", &getContentLength}
@@ -131,7 +130,7 @@ static bool	parseHeaders(HttpRequest& request)
 
 		if (parseFunctions.find(firstWord) != parseFunctions.end())
 		{
-			if (parseFunctions[firstWord](request, i) == false)
+			if (parseFunctions[firstWord](client, request, i) == false)
 			{
 				// set isValidRequest to false & respond with error message
 				return (false);
@@ -139,23 +138,29 @@ static bool	parseHeaders(HttpRequest& request)
 		}
 	}
 	request.rawRequest.erase(request.rawRequest.begin(), request.rawRequest.begin() + request.rawRequest.find("\r\n\r\n") + 4);
+	request.status = headerIsParsed;
 	return (true);
 }
 
 static void	parseBody(HttpRequest& request)
 {
-	if (request.contentLength == request.splitRequest.back().size() + request.body.size())
-		request.body += request.splitRequest.back();
+	if (request.contentLength == request.rawRequest.size())
+	{
+		request.status = bodyIsParsed;
+		request.body = request.rawRequest; // delete the body variable later to not make huge copies unnecessarily
+	}
 }
 
-void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
+void	WebServer::interpretRequest(Client& client, HttpRequest& request, int clientFd)
 {
-	if (parseHeaders(request) == false)
+	if (parseHeaders(client, request) == false)
 		return ;
-	parseBody(request);
-	if (requestIsFinished(request) == true)
+	if (requestIsFinished(request) == false)
+		parseBody(request);
+	else
 	{
 		assert(getPollfdIndex(clientFd) != -1);
+		client.receivedRequest();
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
@@ -165,13 +170,11 @@ void	WebServer::interpretRequest(HttpRequest& request, int clientFd)
 	}
 }
 
-bool	WebServer::handleRequest(Client* client, int clientFd)
+bool	WebServer::handleRequest(Client& client, int clientFd)
 {
 	ssize_t			readBytes;
 	std::string		buffer;
-
-	assert(client != nullptr);
-	HttpRequest&	request = client->getRequest();
+	HttpRequest&	request = client.getRequest();
 
 	buffer.resize(BUFFERSIZE);
 	readBytes = read(clientFd, buffer.data(), BUFFERSIZE);
@@ -179,18 +182,18 @@ bool	WebServer::handleRequest(Client* client, int clientFd)
 	{
 		throw std::runtime_error("Error reading from client_fd");
 	}
-	if (readBytes == 0)
+	if (readBytes == 0) // does poll do this to us?
 	{
 		closeConnection(clientFd);
 		return (false);
 	}
 	buffer.resize(readBytes);
-	client->setPingTime();
+	client.setPingTime();
 	request.rawRequest += buffer;
-	interpretRequest(request, clientFd);
+	interpretRequest(client, request, clientFd);
 	if (request.fileType == ".out")
 	{
-		client->setCgiStatus(launchCgi);
+		client.setCgiStatus(launchCgi);
 	}
 	return (true);
 }

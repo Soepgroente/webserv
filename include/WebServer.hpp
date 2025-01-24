@@ -26,9 +26,7 @@
 #include "Utils.hpp"
 
 #define FOREVER 1
-#define YOURMOM 1000000
-#define MAXBODYSIZE YOURMOM
-#define ERRORPAGE "404"
+#define BUFFERSIZE 8 * 1024
 
 struct	Server;
 class	Client;
@@ -58,14 +56,14 @@ class	WebServer
 
 	void	initialize();
 	void	loopadydoopady();
-	bool	isServerSocket(int socket)	const;
+	bool	isServerSocket(size_t position)	const;
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int fd);
 	time_t	getTime()	const;
 	bool	timeout(time_t lastPinged, time_t timeout)	const;
 
-	void	interpretRequest(HttpRequest& request, int clientFd);
-	bool	handleRequest(Client* client, int clientFd);
+	void	interpretRequest(Client& client, HttpRequest& request, int clientFd);
+	bool	handleRequest(Client& client, int clientFd);
 	bool	handleResponse(Client& client, int clientFd);
 	void	parseCgiOutput(Client& client);
 
@@ -83,6 +81,8 @@ class	WebServer
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
 	void	checkConnectionStatuses();
+	void	handleIncoming(Client* client, size_t& position, int fd);
+	void	handleOutgoing(Client& client, size_t& position, int fd);
 };
 
 /*	Template functions	*/

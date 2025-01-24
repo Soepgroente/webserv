@@ -11,14 +11,9 @@ void	errorExit(std::string errorMessage, int errorLocation)
 	std::exit(EXIT_FAILURE);
 }
 
-bool	WebServer::isServerSocket(int socket)	const
+bool	WebServer::isServerSocket(size_t position)	const
 {
-	for (const Server& it : servers)
-	{
-		if (it.socket == socket)
-			return (true);
-	}
-	return (false);
+	return (position < servers.size());
 }
 
 std::vector<struct pollfd>	WebServer::createPollArray()

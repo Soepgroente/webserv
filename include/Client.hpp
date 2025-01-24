@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fcntl.h>
+#include <limits.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -10,11 +11,19 @@
 #include "HttpResponse.hpp"
 #include "Server.hpp"
 
+#define DEFAULT_TIMEOUT 10
+
 enum cgiStatus
 {
 	cgiIsFalse,
 	parseCgi,
 	launchCgi
+};
+
+enum clientStatus
+{
+	clientIsActive,
+	clientShouldClose
 };
 
 struct HttpRequest;
@@ -40,14 +49,21 @@ class Client
 	HttpRequest&	getRequest();
 	HttpResponse&	getResponse();
 	time_t			getLatestPing() const;
-	time_t			setPingTime();
+	void			setPingTime();
+	void			setTimeout(time_t newTimeout);
 	time_t			getTimeout() const;
 	time_t			getTime()	const;
+	void			receivedRequest();
+	void			setRemainingRequests(int input);
+	int				getRemainingRequests() const;
+	int				getClientStatus() const;
 
 	private:
 
 	time_t				latestPing;
 	time_t				timeout;
+	int					remainingRequests;
+	int					status;
 	int					fd;
 	int					cgiFd;
 	int					cgiStatus;

@@ -3,6 +3,13 @@
 #include <iostream>
 #include <vector>
 
+enum RequestStatus
+{
+	requestIsInvalid,
+	headerIsParsed,
+	bodyIsParsed
+};
+
 struct	HttpRequest
 {
 	HttpRequest() = default;
@@ -17,6 +24,7 @@ struct	HttpRequest
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
 	std::string					connectionType;
+	std::string					keepAlive;
 	std::string					host;
 	std::string					port;
 	std::string					method;
@@ -25,7 +33,7 @@ struct	HttpRequest
 	std::string					contentType;
 	std::string					body;
 	std::string					fileType;
-	bool						isValidRequest;
+	int							status;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);
