@@ -31,29 +31,19 @@ bool	WebServer::handleGet(Client& client, std::string& buffer)
 			std::cerr << "Error reading from file: " << strerror(errno) << std::endl;
 			close(client.getFileFd());
 			client.setFileFd(-1);
-			buffer = HttpResponse::defaultResponses["500"];
+			buffer = HttpResponse::defaultResponses[500];
 			return (true);
 		}
 		if (bytesRead == 0)
 		{
 			close(client.getFileFd());
 			client.setFileFd(-1);
-			buffer = HttpResponse::defaultResponses["200"];
+			buffer = HttpResponse::defaultResponses[200];
 			return (true);
 		}
 		buffer = std::string(fileBuffer, bytesRead);
 		return (true);
 	}
-	int fd = open(client.getRequest().path.c_str(), O_RDONLY);
-	if (fd == -1)
-	{
-		buffer = HttpResponse::defaultResponses["404"];
-		return (true);
-	}
-	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
-		throw std::runtime_error("Failed to set file fd to non-blocking");
-	client.setFileFd(fd);
-	pollDescriptors.push_back({fd, POLLIN, 0});
 	// buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body; // I don't know if the content-type is necessary here, I saw that firefox understands it automatically
 	return (true);
 }
@@ -65,11 +55,11 @@ bool	WebServer::handlePost(Client& client, std::string& buffer)
 	{
 		outFile << client.getRequest().body;
 		outFile.close();
-		buffer = HttpResponse::defaultResponses["200"];
+		buffer = HttpResponse::defaultResponses[200];
 	}
 	else
 	{
-		buffer = HttpResponse::defaultResponses["500"];
+		buffer = HttpResponse::defaultResponses[500];
 	}
 	return (true);
 }
@@ -78,11 +68,11 @@ bool	WebServer::handleDelete(Client& client, std::string& buffer)
 {
 	if (remove(client.getRequest().path.c_str()) == 0)
 	{
-		buffer = HttpResponse::defaultResponses["200"];
+		buffer = HttpResponse::defaultResponses[200];
 	}
 	else
 	{
-		buffer = HttpResponse::defaultResponses["404"];
+		buffer = HttpResponse::defaultResponses[404];
 	}
 	return (true);
 }
@@ -130,11 +120,6 @@ bool	WebServer::handleResponse(Client& client, int clientFd)
 		{"POST", &WebServer::handlePost},
 		{"DELETE", &WebServer::handleDelete}
 	};
-	// std::map<std::string, std::function<bool(Client&, std::string&)>> methods =
-	// {{"GET", std::bind(&WebServer::handleGet, this, std::placeholders::_1, std::placeholders::_2)},
-	// {"POST", std::bind(&WebServer::handlePost, this, std::placeholders::_1, std::placeholders::_2)},
-	// {"DELETE", std::bind(&WebServer::handleDelete, this, std::placeholders::_1, std::placeholders::_2)}};
-
     if (methods[client.getRequest().method](this, client, buffer) == true)
 		return (replyToClient(buffer, clientFd));
 	return (false);

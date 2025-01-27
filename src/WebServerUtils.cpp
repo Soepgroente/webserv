@@ -101,3 +101,19 @@ void	WebServer::closeAndResetFd(int& fd)
 	fd = -1;
 	pollDescriptors.erase(pollDescriptors.begin() + pollFdIndex);
 }
+
+int	WebServer::openFile(const char* path)
+{
+	int fd = open(path, O_RDONLY);
+	if (fd == -1)
+	{
+		throw std::runtime_error("Failed to open file even though it exists");
+	}
+	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
+	{
+		close(fd);
+		throw std::runtime_error("Failed to set file fd to non-blocking");
+	}
+	pollDescriptors.push_back({fd, POLLIN, 0});
+	return (fd);
+}

@@ -5,9 +5,10 @@
 
 enum RequestStatus
 {
-	requestIsInvalid,
 	headerIsParsed,
-	bodyIsParsed
+	bodyIsParsed,
+	requestIsInvalid = 400,
+	requestNotFound = 404,
 };
 
 struct	HttpRequest

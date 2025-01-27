@@ -14,5 +14,5 @@ struct HttpResponse
 
 	std::string		buffer;
 	std::ofstream	out;
-	static std::map<std::string, std::string> defaultResponses;
+	static std::map<int, std::string> defaultResponses;
 };

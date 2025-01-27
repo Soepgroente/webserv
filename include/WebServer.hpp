@@ -91,7 +91,16 @@ class	WebServer
 	bool	handlePost(Client& client, std::string& buffer);
 	bool	handleDelete(Client& client, std::string& buffer);
 
+	int		openFile(const char* path);
 	void	closeAndResetFd(int& fd);
+
+	bool	parseHeaders(Client& client, HttpRequest& request);
+	bool	getContentType(Client& client, HttpRequest& request, size_t i);
+	bool	getContentLength(Client& client, HttpRequest& request, size_t i);
+	bool	getHost(Client& client, HttpRequest& request, size_t i);
+	bool	getKeepAlive(Client& client, HttpRequest& request, size_t i);
+	bool	getConnectionType(Client& client, HttpRequest& request, size_t i);
+	bool	getMethods(Client& client, HttpRequest& request, size_t i);
 };
 
 /*	Template functions	*/

@@ -40,23 +40,23 @@ void	WebServer::closeConnection(int fd)
 	std::cout << "Closed connection" << std::endl;
 }
 
-static bool	getContentType(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getContentType(Client& client, HttpRequest& request, size_t i)
 {
 	(void)client;
 	request.contentType = request.splitRequest[i].substr(14);
 	return (true);
 }
 
-static bool	getContentLength(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getContentLength(Client& client, HttpRequest& request, size_t i)
 {
 	(void)client;
 	request.contentLength = std::stoi(request.splitRequest[i].substr(16));
-	// if (request.contentLength > MAXBODYSIZE)
-		//do a thing
+	if (static_cast<int32_t>(request.contentLength) > client.getServer().maxBodySize)
+		request.status = requestIsInvalid;
 	return (true);
 }
 
-static bool	getHost(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getHost(Client& client, HttpRequest& request, size_t i)
 {
 	(void)client;
 	size_t	splitter = request.splitRequest[i].find_last_of(':');
@@ -66,7 +66,7 @@ static bool	getHost(Client& client, HttpRequest& request, size_t i)
 	return (true);
 }
 
-static bool	getMethods(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getMethods(Client& client, HttpRequest& request, size_t i)
 {
     std::stringstream	stream;
 
@@ -76,11 +76,14 @@ static bool	getMethods(Client& client, HttpRequest& request, size_t i)
 	const std::filesystem::path path = request.path;
 	if (std::filesystem::exists(path) == false)
 	{
-		request.status = requestIsInvalid;
+		request.status = requestNotFound;
 		return (false);
 	}
 	if (std::filesystem::is_regular_file(path))
+	{
+		openFile(path.c_str());
 		client.setClientStatus(readingFromFile);
+	}
     else if (std::filesystem::is_directory(path))
 	{
 		const std::map<std::string, Location>& locations = client.getServer().locations;
@@ -99,23 +102,27 @@ static bool	getMethods(Client& client, HttpRequest& request, size_t i)
 	return (true);
 }
 
-static bool	requestIsFinished(const HttpRequest& request)
+static bool	requestIsFinished(Client& client, const HttpRequest& request)
 {
-	if (request.contentLength == 0 || request.body.size() == request.contentLength)
+	if (request.body.size() == request.contentLength) // alex is a scaredy cat and wants to confirm this is ok
+	{
+		client.setClientStatus(clientShouldRespond);
+	}
+	if (client.getClientStatus() == clientShouldRespond)
 	{
 		return (true);
 	}
 	return (false);
 }
 
-static bool	getConnectionType(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getConnectionType(Client& client, HttpRequest& request, size_t i)
 {
 	(void)client;
 	request.connectionType = request.splitRequest[i].substr(12);
 	return (true);
 }
 
-static bool	getKeepAlive(Client& client, HttpRequest& request, size_t i)
+bool	WebServer::getKeepAlive(Client& client, HttpRequest& request, size_t i)
 {
 	if (request.connectionType != "Keep-Alive")
 	{
@@ -128,23 +135,29 @@ static bool	getKeepAlive(Client& client, HttpRequest& request, size_t i)
 	return (true);
 }
 
-static bool	parseHeaders(Client& client, HttpRequest& request)
+static void	setDefaultResponse(Client& client, HttpResponse& response)
+{
+	response.buffer = HttpResponse::defaultResponses.at(client.getClientStatus());
+	client.setClientStatus(clientShouldRespond);
+}
+
+bool	WebServer::parseHeaders(Client& client, HttpRequest& request)
 {
 	if (request.status == headerIsParsed)
 		return (true);
 	if (request.rawRequest.find("\r\n\r\n") == std::string::npos)
 		return (false);
 
-	std::map<std::string, std::function<bool(Client&, HttpRequest&, size_t)>> parseFunctions = 
+	const std::map<std::string, std::function<bool(WebServer*, Client&, HttpRequest&, size_t)>> parseFunctions = 
 	{
-		{"GET", &getMethods},
-		{"POST", &getMethods},
-		{"DELETE", &getMethods},
-		{"Connection:", &getConnectionType},
-		{"Keep-Alive:", &getKeepAlive},
-		{"Host:", &getHost},
-		{"Content-Type:", &getContentType},
-		{"Content-Length:", &getContentLength}
+		{"GET", &WebServer::getMethods},
+		{"POST", &WebServer::getMethods},
+		{"DELETE", &WebServer::getMethods},
+		{"Connection:", &WebServer::getConnectionType},
+		{"Keep-Alive:", &WebServer::getKeepAlive},
+		{"Host:", &WebServer::getHost},
+		{"Content-Type:", &WebServer::getContentType},
+		{"Content-Length:", &WebServer::getContentLength}
 	};
 	request.splitRequest = stringSplit(request.rawRequest);
 	for (size_t i = 0; i < request.splitRequest.size(); i++)
@@ -153,10 +166,10 @@ static bool	parseHeaders(Client& client, HttpRequest& request)
 
 		if (parseFunctions.find(firstWord) != parseFunctions.end())
 		{
-			if (parseFunctions[firstWord](client, request, i) == false)
+			if (parseFunctions.at(firstWord)(this, client, request, i) == false)
 			{
-				// set isValidRequest to false & respond with error message
-				return (false);
+				setDefaultResponse(client, client.getResponse());
+				return (true);
 			}
 		}
 	}
@@ -167,7 +180,9 @@ static bool	parseHeaders(Client& client, HttpRequest& request)
 
 static void	parseBody(HttpRequest& request)
 {
-	if (request.contentLength == request.rawRequest.size())
+	if (request.contentLength == 0 && request.rawRequest.size() > 0)
+		request.status = requestIsInvalid;
+	else if (request.contentLength == request.rawRequest.size())
 	{
 		request.body = request.rawRequest; // delete the body variable later to not make huge copies unnecessarily
 		request.status = bodyIsParsed;
@@ -178,7 +193,7 @@ void	WebServer::interpretRequest(Client& client, HttpRequest& request, int clien
 {
 	if (parseHeaders(client, request) == false)
 		return ;
-	if (requestIsFinished(request) == false)
+	if (requestIsFinished(client, request) == false)
 		parseBody(request);
 	else
 	{
