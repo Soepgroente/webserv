@@ -27,16 +27,15 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	return (fileDescriptors);
 }
 
-time_t	WebServer::getTime()	const
+int64_t	WebServer::getTime()
 {
-	return (std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+	return (std::chrono::duration_cast<std::chrono::milliseconds>\
+		(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
-bool	WebServer::timeout(time_t lastPinged, time_t timeout)	const
+bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 {
-	if (lastPinged == 0)
-		return (false);
-	if (getTime() - lastPinged > timeout)
+	if (WebServer::getTime() - lastPinged > timeout)
 		return (true);
 	return (false);
 }
@@ -92,4 +91,13 @@ void	WebServer::removeClient(int clientIndex)
 		close(clients[clientIndex].getCgiFd());
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
+}
+
+void	WebServer::closeAndResetFd(int& fd)
+{
+	int pollFdIndex = getPollfdIndex(fd);
+
+	close(fd);
+	fd = -1;
+	pollDescriptors.erase(pollDescriptors.begin() + pollFdIndex);
 }

@@ -10,20 +10,20 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Server.hpp"
+#include "WebServer.hpp"
 
-#define DEFAULT_TIMEOUT 10
-
-enum cgiStatus
-{
-	cgiIsFalse,
-	parseCgi,
-	launchCgi
-};
+#define DEFAULT_TIMEOUT 10000
 
 enum clientStatus
 {
+	parseCgi,
+	launchCgi,
+	writeCgiResults,
 	clientIsActive,
-	clientShouldClose
+	clientShouldRespond,
+	clientShouldClose,
+	readingFromFile,
+	showDirectory
 };
 
 struct HttpRequest;
@@ -39,34 +39,34 @@ class Client
 	Client& operator=(const Client& other);
 
 	int		getFd() const;
+	int		getFileFd() const;
+	void	setFileFd(int newFd);
 	void	initializeSocket(int newFd);
-	void	setCgiStatus(int status);
-	int		getCgiStatus() const;
 	int		getCgiFd() const;
 	void	setCgiFd(int newFd);
 
 	const Server&	getServer() const;
 	HttpRequest&	getRequest();
 	HttpResponse&	getResponse();
-	time_t			getLatestPing() const;
+	int64_t			getLatestPing() const;
 	void			setPingTime();
-	void			setTimeout(time_t newTimeout);
-	time_t			getTimeout() const;
-	time_t			getTime()	const;
+	void			setTimeout(int64_t newTimeout);
+	int64_t			getTimeout() const;
 	void			receivedRequest();
 	void			setRemainingRequests(int input);
 	int				getRemainingRequests() const;
 	int				getClientStatus() const;
+	void			setClientStatus(int newStatus);
 
 	private:
 
-	time_t				latestPing;
-	time_t				timeout;
+	int64_t				latestPing;
+	int64_t				timeout;
 	int					remainingRequests;
 	int					status;
 	int					fd;
+	int					fileFd;
 	int					cgiFd;
-	int					cgiStatus;
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server&		server;

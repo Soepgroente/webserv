@@ -33,7 +33,7 @@ struct	Server
 	std::string	host;
 	std::string	cgiPath;
 
-	std::map<std::string, struct Location>	locations;
+	std::map<std::string, Location>	locations;
 };
 
 std::ostream&	operator<<(std::ostream& out, const struct Server& p);

@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <exception>
 #include <fcntl.h>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -42,6 +43,8 @@ class	WebServer
 
 	void	parseConfigurations(const std::string& fileLocation);
 	void	startTheThing();
+	
+	static int64_t	getTime();
 
 	private:
 
@@ -53,14 +56,14 @@ class	WebServer
 	bool								serverShouldRun;
 	
 	/*	Private functions	*/
+	
 
 	void	initialize();
 	void	loopadydoopady();
 	bool	isServerSocket(size_t position)	const;
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int fd);
-	time_t	getTime()	const;
-	bool	timeout(time_t lastPinged, time_t timeout)	const;
+	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
 	void	interpretRequest(Client& client, HttpRequest& request, int clientFd);
 	bool	handleRequest(Client& client, int clientFd);
@@ -83,6 +86,12 @@ class	WebServer
 	void	checkConnectionStatuses();
 	void	handleIncoming(Client* client, size_t& position, int fd);
 	void	handleOutgoing(Client& client, size_t& position, int fd);
+
+	bool	handleGet(Client& client, std::string& buffer);
+	bool	handlePost(Client& client, std::string& buffer);
+	bool	handleDelete(Client& client, std::string& buffer);
+
+	void	closeAndResetFd(int& fd);
 };
 
 /*	Template functions	*/

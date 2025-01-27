@@ -16,7 +16,7 @@ Client*	WebServer::getClient(int fileDes)
 		return (nullptr);
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes)
+		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes || clients[i].getFileFd() == fileDes)
 		{
 			return (&clients[i]);
 		}
@@ -68,11 +68,34 @@ static bool	getHost(Client& client, HttpRequest& request, size_t i)
 
 static bool	getMethods(Client& client, HttpRequest& request, size_t i)
 {
-	(void)client;
     std::stringstream	stream;
 
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
+
+	const std::filesystem::path path = request.path;
+	if (std::filesystem::exists(path) == false)
+	{
+		request.status = requestIsInvalid;
+		return (false);
+	}
+	if (std::filesystem::is_regular_file(path))
+		client.setClientStatus(readingFromFile);
+    else if (std::filesystem::is_directory(path))
+	{
+		const std::map<std::string, Location>& locations = client.getServer().locations;
+
+		if (locations.find(request.path) != locations.end())
+		{
+			if (locations.at(request.path).directoryListing == true)
+        		client.setClientStatus(showDirectory);
+		}
+		else
+		{
+			request.status = requestIsInvalid;
+			return (false);
+		}
+	}
 	return (true);
 }
 
@@ -146,8 +169,8 @@ static void	parseBody(HttpRequest& request)
 {
 	if (request.contentLength == request.rawRequest.size())
 	{
-		request.status = bodyIsParsed;
 		request.body = request.rawRequest; // delete the body variable later to not make huge copies unnecessarily
+		request.status = bodyIsParsed;
 	}
 }
 
@@ -162,6 +185,14 @@ void	WebServer::interpretRequest(Client& client, HttpRequest& request, int clien
 		assert(getPollfdIndex(clientFd) != -1);
 		client.receivedRequest();
 		pollDescriptors[getPollfdIndex(clientFd)].events = POLLOUT;
+		if (request.method != "GET")
+		{
+			client.setClientStatus(clientShouldRespond);
+		}
+		else
+		{
+			client.setClientStatus(readingFromFile);
+		}
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
@@ -184,16 +215,20 @@ bool	WebServer::handleRequest(Client& client, int clientFd)
 	}
 	if (readBytes == 0) // does poll do this to us?
 	{
+		puts("Readbytes == 0");
 		closeConnection(clientFd);
 		return (false);
 	}
 	buffer.resize(readBytes);
-	client.setPingTime();
 	request.rawRequest += buffer;
 	interpretRequest(client, request, clientFd);
-	if (request.fileType == ".out")
+	if (request.status == requestIsInvalid)
 	{
-		client.setCgiStatus(launchCgi);
+		client.setClientStatus(clientShouldRespond);
+	}
+	if (request.fileType == ".cgi")
+	{
+		client.setClientStatus(launchCgi);
 	}
 	return (true);
 }
@@ -208,8 +243,7 @@ void	WebServer::parseCgiOutput(Client& client)
 	readBytes = read(client.getCgiFd(), buffer.data(), BUFFERSIZE);
 	if (readBytes == -1)
 	{
-		throw std::runtime_error("Error reading from client_fd");
+		throw std::runtime_error("Error reading from client_fd parsing CGI output");
 	}
-	std::cout << buffer << std::endl;
-	client.setCgiStatus(cgiIsFalse);
+	client.getResponse().buffer += buffer;
 }

@@ -2,6 +2,7 @@
 
 WebServer::~WebServer()
 {
+	puts("Destructor called");
 	for (Client& client : clients)
 	{
 		closeConnection(client.getFd());
@@ -31,8 +32,9 @@ void	WebServer::removeInactiveConnections()
 	for (size_t i = 0; i < clients.size(); i++)
 	{
 		if (clients[i].getClientStatus() == clientShouldClose || \
-			timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
+			puts("inactive connecti0n");
 			closeConnection(clients[i].getFd());
 			i--;
 		}
@@ -41,19 +43,24 @@ void	WebServer::removeInactiveConnections()
 
 void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
 {
-	if (isServerSocket(position) == true)
-	{
-		acceptConnection(fd);
-		return ;
-	}
-	assert(client != nullptr);
-	if (client == nullptr)
-	{
-		return ;
-	}
-	if (client->getCgiStatus() == parseCgi)
+	// if ()
+	if (client->getClientStatus() == parseCgi)
 	{
 		parseCgiOutput(*client);
+	}
+	else if (client->getClientStatus() == readingFromFile)
+	{
+		ssize_t			readBytes;
+		std::string		buffer;
+		HttpResponse&	response = client->getResponse();
+
+		buffer.resize(BUFFERSIZE);
+		readBytes = read(client->getFileFd(), buffer.data(), BUFFERSIZE);
+		if (readBytes == -1)
+		{
+			throw std::runtime_error("Error reading from client_fd");
+		}
+		response.buffer += buffer;
 	}
 	else if (handleRequest(*client, fd) == false)
 	{
@@ -63,7 +70,7 @@ void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
 
 void	WebServer::handleOutgoing(Client& client, size_t& position, int fd)
 {
-	if (client.getCgiStatus() == launchCgi)
+	if (client.getClientStatus() == launchCgi)
 	{
 		launchCGI(client);
 	}
@@ -89,13 +96,26 @@ void	WebServer::loopadydoopady()
 		{
 			if (pollDescriptors[i].revents == 0)
 				continue ;
+			if (isServerSocket(i) == true)
+			{
+				acceptConnection(pollDescriptors[i].fd);
+				continue ;
+			}
 			Client* client = getClient(pollDescriptors[i].fd);
 
-			if ((pollDescriptors[i].revents & POLLIN) != 0)
-				handleIncoming(client, i, pollDescriptors[i].fd);
-			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
+			assert(client != nullptr);
+			client->setPingTime();
+			if ((pollDescriptors[i].revents & POLLHUP) != 0)
 			{
-				assert(client != nullptr);
+				closeAndResetFd(pollDescriptors[i].fd);
+				client->setClientStatus(clientShouldRespond);
+			}
+			else if ((pollDescriptors[i].revents & POLLIN) != 0)
+			{
+				handleIncoming(client, i, pollDescriptors[i].fd);
+			}
+			else if ((pollDescriptors[i].revents & POLLOUT) != 0 && client->getClientStatus() == clientShouldRespond)
+			{
 				handleOutgoing(*client, i, pollDescriptors[i].fd);
 			}
 		}

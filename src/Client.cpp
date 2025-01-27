@@ -1,8 +1,8 @@
 #include "Client.hpp"
 
 Client::Client(const Server& in) : 
-	timeout(DEFAULT_TIMEOUT), remainingRequests(INT_MAX), status(clientIsActive), \
-	cgiFd(-1), cgiStatus(cgiIsFalse), request(HttpRequest()), \
+	latestPing(INT64_MAX), timeout(DEFAULT_TIMEOUT), remainingRequests(INT_MAX), status(clientIsActive), \
+	fd(-1), fileFd(-1),	cgiFd(-1), request(HttpRequest()), \
 	response(HttpResponse()), server(in)
 {
 }
@@ -14,7 +14,7 @@ Client::~Client()
 Client::Client(const Client& other) : 
 	latestPing(other.latestPing), timeout(other.timeout), \
 	remainingRequests(other.remainingRequests), status(other.status), \
-	fd(other.fd), cgiFd(other.cgiFd), cgiStatus(other.cgiStatus), \
+	fd(other.fd), fileFd(other.fileFd), cgiFd(other.cgiFd), \
 	request(other.request), response(other.response), server(other.server)
 {
 }
@@ -26,22 +26,17 @@ Client&	Client::operator=(const Client& other)
 	return (*tmp);
 }
 
-time_t	Client::getLatestPing() const
+int64_t	Client::getLatestPing() const
 {
 	return (latestPing);
 }
 
-time_t	Client::getTime() const
-{
-	return (time(nullptr));
-}
-
 void	Client::setPingTime()
 {
-	latestPing = getTime();
+	latestPing = WebServer::getTime();
 }
 
-time_t	Client::getTimeout() const
+int64_t	Client::getTimeout() const
 {
 	return (timeout);
 }
@@ -49,6 +44,16 @@ time_t	Client::getTimeout() const
 int	Client::getFd() const
 {
 	return (fd);
+}
+
+int	Client::getFileFd() const
+{
+	return (fileFd);
+}
+
+void	Client::setFileFd(int newFd)
+{
+	fileFd = newFd;
 }
 
 void	Client::initializeSocket(int serverSocket)
@@ -83,22 +88,12 @@ HttpResponse&	Client::getResponse()
 	return (response);
 }
 
-void	Client::setCgiStatus(int status)
-{
-	cgiStatus = status;
-}
-
-int	Client::getCgiStatus() const
-{
-	return (cgiStatus);
-}
-
 const Server&	Client::getServer() const
 {
 	return (server);
 }
 
-void	Client::setTimeout(time_t newTimeout)
+void	Client::setTimeout(int64_t newTimeout)
 {
 	if (newTimeout != 0)
 		timeout = newTimeout;
@@ -126,11 +121,15 @@ int	Client::getClientStatus() const
 	return (status);
 }
 
+void	Client::setClientStatus(int newStatus)
+{
+	status = newStatus;
+}
+
 std::ostream&	operator<<(std::ostream& out, const Client& p)
 {
 	out << "Client fd: " << p.getFd() << std::endl;
 	out << "Client cgiFd: " << p.getCgiFd() << std::endl;
-	out << "Client cgiStatus: " << p.getCgiStatus() << std::endl;
 	out << "Client server fd: " << p.getServer().socket << std::endl;
 	out << "Client latest ping: " << p.getLatestPing() << std::endl;
 	out << "Client timeout: " << p.getTimeout() << std::endl;
