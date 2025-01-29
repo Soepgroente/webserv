@@ -1,32 +1,40 @@
 #pragma once
-#include "WebServer.hpp"
+
+#include <iostream>
+#include <vector>
+
+enum RequestStatus
+{
+	headerIsParsed,
+	bodyIsParsed,
+	requestIsInvalid = 400,
+	requestNotFound = 404,
+};
 
 struct HttpRequest
 {
-    std::string rawRequest;
-    time_t lastRead;
-    size_t contentLength;
-    std::vector<std::string> splitRequest;
-    std::string host;
-    std::string port;
-    std::string method;
-    std::string path;
-    std::string protocol;
-    std::string contentType;
-    std::string body;
-    bool isValidRequest = false;
-    std::string response;
-    std::map<std::string, std::string> headers;
+	HttpRequest() = default;
+	~HttpRequest() = default;
+	HttpRequest(const HttpRequest& other);
 
-    std::string getHeader(const std::string& headerName) const
-    {
-        std::map<std::string, std::string>::const_iterator it = headers.find(headerName);
-        if (it != headers.end())
-        {
-            return it->second;
-        }
-        return "";
-    }
+	HttpRequest&	operator=(const HttpRequest& other);
+
+	void			clear();
+
+	std::string					rawRequest;
+	size_t						contentLength;
+	std::vector<std::string> 	splitRequest;
+	std::string					connectionType;
+	std::string					keepAlive;
+	std::string					host;
+	std::string					port;
+	std::string					method;
+	std::string					path;
+	std::string					protocol;
+	std::string					contentType;
+	std::string					body;
+	std::string					fileType;
+	int							status;
 };
 
 std::ostream& operator<<(std::ostream& out, struct HttpRequest& p);

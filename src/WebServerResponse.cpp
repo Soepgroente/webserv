@@ -1,158 +1,125 @@
 #include "WebServer.hpp"
 
-std::string WebServer::getCurrentTime() const
+// static std::string	getMimeType(const std::string& fileType)
+// {
+//     if (dotPos == std::string::npos)
+//         return "text/plain";
+//     std::string extension = path.substr(dotPos + 1);
+//     if (extension == "html") return "text/html";
+//     if (extension == "css") return "text/css";
+//     if (extension == "js") return "application/javascript";
+//     if (extension == "png") return "image/png";
+//     if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
+//     if (extension == "gif") return "image/gif";
+//     return "application/octet-stream";
+// }
+
+bool	WebServer::handleGet(Client& client, std::string& buffer)
 {
-    char date[1000];
-    time_t now = time(0);
-    struct tm tm = *gmtime(&now);
-    strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S %Z", &tm);
-    return std::string(date);
+	if (client.getClientStatus() == writeCgiResults)
+	{
+		buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(client.getResponse().buffer.size()) + "\r\nContent-Type: image/svg+xml\r\n\r\n" + client.getResponse().buffer;
+		return (true);
+	}
+	if (client.getFileFd() != -1)
+	{
+		char fileBuffer[BUFFERSIZE];
+		ssize_t bytesRead = read(client.getFileFd(), fileBuffer, BUFFERSIZE);
+		if (bytesRead == -1)
+		{
+			std::cerr << "Error reading from file: " << strerror(errno) << std::endl;
+			close(client.getFileFd());
+			client.setFileFd(-1);
+			buffer = HttpResponse::defaultResponses[500];
+			return (true);
+		}
+		if (bytesRead == 0)
+		{
+			close(client.getFileFd());
+			client.setFileFd(-1);
+			buffer = HttpResponse::defaultResponses[200];
+			return (true);
+		}
+		buffer = std::string(fileBuffer, bytesRead);
+		return (true);
+	}
+	// buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body; // I don't know if the content-type is necessary here, I saw that firefox understands it automatically
+	return (true);
 }
 
-std::string WebServer::getMimeType(const std::string& path) const
+bool	WebServer::handlePost(Client& client, std::string& buffer)
 {
-    size_t dotPos = path.find_last_of(".");
-    if (dotPos == std::string::npos)
-        return "text/plain";
-    std::string extension = path.substr(dotPos + 1);
-    if (extension == "html") return "text/html";
-    if (extension == "css") return "text/css";
-    if (extension == "js") return "application/javascript";
-    if (extension == "png") return "image/png";
-    if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
-    if (extension == "gif") return "image/gif";
-    return "application/octet-stream";
+	std::ofstream outFile(client.getRequest().path, std::ios::binary);
+	if (outFile.is_open())
+	{
+		outFile << client.getRequest().body;
+		outFile.close();
+		buffer = HttpResponse::defaultResponses[200];
+	}
+	else
+	{
+		buffer = HttpResponse::defaultResponses[500];
+	}
+	return (true);
 }
 
-std::string WebServer::showErrorPage(const std::string& error) const
+bool	WebServer::handleDelete(Client& client, std::string& buffer)
 {
-    std::ifstream file("error_pages/" + error + ".html");
-    std::stringstream stream;
-    if (file.is_open())
-    {
-        stream << file.rdbuf();
-        file.close();
-    }
-    return stream.str();
+	if (remove(client.getRequest().path.c_str()) == 0)
+	{
+		buffer = HttpResponse::defaultResponses[200];
+	}
+	else
+	{
+		buffer = HttpResponse::defaultResponses[404];
+	}
+	return (true);
 }
 
-bool WebServer::handleClientWrite(int clientFd)
+bool	WebServer::replyToClient(std::string& buffer, int clientFd)
 {
-    HttpRequest& request = requests[clientFd];
-    std::string& response = request.response;
+	int pollIndex = getPollfdIndex(clientFd);
 
-    if (request.method == "HEAD" || request.method == "GET")
-    {
-        std::ifstream inFile("." + request.path, std::ios::binary);
-        if (inFile.is_open())
-        {
-            std::stringstream buffer;
-            buffer << inFile.rdbuf();
-            inFile.close();
-            std::string body = buffer.str();
-            response = "HTTP/1.1 200 OK\r\n";
-            response += "Content-Length: " + std::to_string(body.size()) + "\r\n";
-            response += "Content-Type: " + getMimeType(request.path) + "\r\n"; // getMimeType kullanımı
-            response += "Cache-Control: no-cache\r\n";
-            response += "Connection: " + std::string(request.getHeader("connection") == "keep-alive" ? "keep-alive" : "close") + "\r\n";
-            response += "Server: MyWebServer\r\n";
-            response += "Date: " + getCurrentTime() + "\r\n";
-            if (request.method == "GET")
-            {
-                response += "\r\n" + body;
-            }
-            else
-            {
-                response += "\r\n";
-            }
-        }
-        else
-        {
-            std::string errorBody = showErrorPage("404");
-            response = "HTTP/1.1 404 Not Found\r\n";
-            response += "Content-Type: text/html\r\n";
-            response += "Content-Length: " + std::to_string(errorBody.size()) + "\r\n";
-            response += "\r\n" + errorBody;
-        }
-    }
-    else if (request.method == "POST")
-    {
-        std::ofstream outFile("./www/uploads/data.txt");
-        if (outFile.is_open())
-        {
-            outFile << request.body;
-            outFile.close();
-            response = "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n";
-        }
-        else
-        {
-            std::string errorBody = showErrorPage("500");
-            response = "HTTP/1.1 500 Internal Server Error\r\n";
-            response += "Content-Type: text/html\r\n";
-            response += "Content-Length: " + std::to_string(errorBody.size()) + "\r\n";
-            response += "\r\n" + errorBody;
-        }
-    }
-    else if (request.method == "PUT")
-    {
-        std::ofstream outFile("." + request.path, std::ios::binary);
-        if (outFile.is_open())
-        {
-            outFile << request.body;
-            outFile.close();
-            response = "HTTP/1.1 201 Created\r\n";
-            response += "Content-Length: 0\r\n";
-            response += "Content-Type: " + getMimeType(request.path) + "\r\n"; // getMimeType kullanımı
-            response += "\r\n";
-        }
-        else
-        {
-            std::string errorBody = showErrorPage("500");
-            response = "HTTP/1.1 500 Internal Server Error\r\n";
-            response += "Content-Type: text/html\r\n";
-            response += "Content-Length: " + std::to_string(errorBody.size()) + "\r\n";
-            response += "\r\n" + errorBody;
-        }
-    }
-    else if (request.method == "DELETE")
-    {
-        if (remove(("./www" + request.path).c_str()) == 0)
-        {
-            response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-        }
-        else
-        {
-            std::string errorBody = showErrorPage("404");
-            response = "HTTP/1.1 404 Not Found\r\n";
-            response += "Content-Type: text/html\r\n";
-            response += "Content-Length: " + std::to_string(errorBody.size()) + "\r\n";
-            response += "\r\n" + errorBody;
-        }
-    }
-    else
-    {
-        std::string errorBody = showErrorPage("405");
-        response = "HTTP/1.1 405 Method Not Allowed\r\n";
-        response += "Content-Type: text/html\r\n";
-        response += "Content-Length: " + std::to_string(errorBody.size()) + "\r\n";
-        response += "\r\n" + errorBody;
-    }
+	if (buffer.empty() == true)
+	{
+		assert(pollIndex != -1);
+        pollDescriptors[pollIndex].events = POLLIN;
+		return (true);
+	}
+	assert(buffer.size() != 0);
+	assert(buffer.c_str() != nullptr);
+    ssize_t writtenBytes = write(clientFd, buffer.c_str(), buffer.size());
 
-    ssize_t writtenBytes = write(clientFd, response.c_str(), response.size());
     if (writtenBytes == -1)
     {
         std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
         closeConnection(clientFd);
-        return false;
+        return (false);
     }
-    if (static_cast<size_t>(writtenBytes) < response.size())
+    if (static_cast<size_t>(writtenBytes) < buffer.size())
     {
-        response.erase(0, writtenBytes);
+        buffer.erase(0, writtenBytes);
+		std::cout << "size of buffer: " << buffer.size() << std::endl;
     }
-    else
-    {
+	if (buffer.size() == 0)
+	{
+		puts("I'm triggered");
         pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
-        response.clear();
-    }
-    return true;
+	}
+	return (true);
+}
+
+bool	WebServer::handleResponse(Client& client, int clientFd)
+{
+	std::string& buffer = client.getResponse().buffer;
+
+	std::map<std::string, std::function<bool(WebServer*, Client&, std::string&)>> methods =
+	{
+		{"GET", &WebServer::handleGet},
+		{"POST", &WebServer::handlePost},
+		{"DELETE", &WebServer::handleDelete}
+	};
+    if (methods[client.getRequest().method](this, client, buffer) == true)
+		return (replyToClient(buffer, clientFd));
+	return (false);
 }

@@ -39,11 +39,11 @@ static void	parseErrorPage(const std::string& input, Server& server, int& lineCo
 
 static void	parseBodySize(const std::string& input, Server& server, int& lineCount)
 {
-	if (server.bodySize != -1)
+	if (server.maxBodySize != -1)
 		closeAndExit("Invalid configuration file", lineCount);
-	server.bodySize = std::stoi(input);
-	// if (server.bodySize > MAXBODYSIZE)
-		// do a thing
+	server.maxBodySize = std::stoi(input);
+	if (server.maxBodySize > MAXBODYSIZE)
+		closeAndExit("Invalid configuration file (body size too large)", lineCount);
 }
 
 static void	removeWhiteSpaces(std::string& line)
@@ -121,7 +121,7 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		{"location", &parseLocation},
 	};
 
-	server.bodySize = -1;
+	server.maxBodySize = -1;
 	while (line == "")
 	{
 		std::getline(file, line, '\n');
