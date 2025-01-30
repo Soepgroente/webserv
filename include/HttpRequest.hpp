@@ -21,7 +21,7 @@ struct	HttpRequest
 
 	void			clear();
 
-	std::string					rawRequest;
+	std::string					buffer;
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
 	std::string					connectionType;

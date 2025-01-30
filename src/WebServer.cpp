@@ -31,7 +31,7 @@ void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientStatus() == clientShouldClose || \
+		if (clients[i].getClientStatus() == CLOSING || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			puts("inactive connecti0n");
@@ -43,24 +43,14 @@ void	WebServer::removeInactiveConnections()
 
 void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
 {
-	// if ()
+
 	if (client->getClientStatus() == parseCgi)
 	{
 		parseCgiOutput(*client);
 	}
 	else if (client->getClientStatus() == readingFromFile)
 	{
-		ssize_t			readBytes;
-		std::string		buffer;
-		HttpResponse&	response = client->getResponse();
-
-		buffer.resize(BUFFERSIZE);
-		readBytes = read(client->getFileFd(), buffer.data(), BUFFERSIZE);
-		if (readBytes == -1)
-		{
-			throw std::runtime_error("Error reading from client_fd");
-		}
-		response.buffer += buffer;
+		client->readFromFile();
 	}
 	else if (handleRequest(*client, fd) == false)
 	{
@@ -74,10 +64,8 @@ void	WebServer::handleOutgoing(Client& client, size_t& position, int fd)
 	{
 		launchCGI(client);
 	}
-	else if (handleResponse(client, fd) == false)
-	{
-		position--;
-	}
+	else
+		handleResponse(client, fd);
 }
 
 void	WebServer::checkConnectionStatuses()
@@ -108,13 +96,13 @@ void	WebServer::loopadydoopady()
 			if ((pollDescriptors[i].revents & POLLHUP) != 0)
 			{
 				closeAndResetFd(pollDescriptors[i].fd);
-				client->setClientStatus(clientShouldRespond);
+				client->setClientStatus(RESPONDING);
 			}
 			else if ((pollDescriptors[i].revents & POLLIN) != 0)
 			{
-				handleIncoming(client, i, pollDescriptors[i].fd);
+				client->handleIncomingRequest();
 			}
-			else if ((pollDescriptors[i].revents & POLLOUT) != 0 && client->getClientStatus() == clientShouldRespond)
+			else if ((pollDescriptors[i].revents & POLLOUT) != 0 && client->getClientStatus() == RESPONDING)
 			{
 				handleOutgoing(*client, i, pollDescriptors[i].fd);
 			}

@@ -30,8 +30,6 @@ HttpResponse::HttpResponse(const HttpResponse& other)
 	*this = other;
 }
 
-/*	careful, we're not copying ofstream variable	*/
-
 HttpResponse&	HttpResponse::operator=(const HttpResponse& other)
 {
 	if (this != &other)

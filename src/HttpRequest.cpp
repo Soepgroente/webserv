@@ -9,7 +9,7 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 {
 	if (this != &other)
 	{
-		rawRequest = other.rawRequest;
+		buffer = other.buffer;
 		contentLength = other.contentLength;
 		splitRequest = other.splitRequest;
 		host = other.host;
@@ -27,7 +27,7 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 
 void	HttpRequest::clear()
 {
-	rawRequest.clear();
+	buffer.clear();
 	contentLength = 0;
 	splitRequest.clear();
 	host.clear();

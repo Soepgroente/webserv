@@ -6,6 +6,9 @@ OS			:= $(shell uname)
 HEADERS		:= -I include
 
 CPPFILES	:=	Client.cpp \
+				ClientIn.cpp \
+				ClientOut.cpp \
+				ClientUtils.cpp \
 				HttpRequest.cpp \
 				HttpResponse.cpp \
 				signals.cpp \

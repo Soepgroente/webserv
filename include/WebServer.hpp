@@ -45,6 +45,7 @@ class	WebServer
 	void	startTheThing();
 	
 	static int64_t	getTime();
+	int		openFile(const char* path);
 
 	private:
 
@@ -67,7 +68,7 @@ class	WebServer
 
 	void	interpretRequest(Client& client, HttpRequest& request, int clientFd);
 	bool	handleRequest(Client& client, int clientFd);
-	bool	handleResponse(Client& client, int clientFd);
+	void	handleResponse(Client& client, int clientFd);
 	void	parseCgiOutput(Client& client);
 
 	std::string					showErrorPage(std::string error);
@@ -79,7 +80,6 @@ class	WebServer
 	const Server&				getServer(int serverSocket);
 
 	void	launchCGI(Client& client);
-	bool	replyToClient(std::string& buffer, int clientFd);
 	void	addClient(int serverSocket);
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
@@ -91,16 +91,7 @@ class	WebServer
 	bool	handlePost(Client& client, std::string& buffer);
 	bool	handleDelete(Client& client, std::string& buffer);
 
-	int		openFile(const char* path);
 	void	closeAndResetFd(int& fd);
-
-	bool	parseHeaders(Client& client, HttpRequest& request);
-	bool	getContentType(Client& client, HttpRequest& request, size_t i);
-	bool	getContentLength(Client& client, HttpRequest& request, size_t i);
-	bool	getHost(Client& client, HttpRequest& request, size_t i);
-	bool	getKeepAlive(Client& client, HttpRequest& request, size_t i);
-	bool	getConnectionType(Client& client, HttpRequest& request, size_t i);
-	bool	getMethods(Client& client, HttpRequest& request, size_t i);
 };
 
 /*	Template functions	*/

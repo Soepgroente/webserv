@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <fcntl.h>
 #include <limits.h>
@@ -19,9 +20,9 @@ enum clientStatus
 	parseCgi,
 	launchCgi,
 	writeCgiResults,
-	clientIsActive,
-	clientShouldRespond,
-	clientShouldClose,
+	LISTENING,
+	RESPONDING,
+	CLOSING,
 	readingFromFile,
 	showDirectory
 };
@@ -52,24 +53,41 @@ class Client
 	void			setPingTime();
 	void			setTimeout(int64_t newTimeout);
 	int64_t			getTimeout() const;
-	void			receivedRequest();
 	void			setRemainingRequests(int input);
 	int				getRemainingRequests() const;
 	int				getClientStatus() const;
-	void			setClientStatus(int newStatus);
+	void			setClientStatus(clientStatus newStatus);
+
+	void			readFromFile();
+	void			writeToClient();
+	void			handleIncomingRequest();
+	void			readIncomingRequest();
 
 	private:
 
+	bool	requestIsFinished();
+
+	void	interpretRequest();
+	bool	parseHeaders();
+	bool	getContentType(size_t i);
+	bool	getContentLength(size_t i);
+	bool	getHost(size_t i);
+	bool	getKeepAlive(size_t i);
+	bool	getConnectionType(size_t i);
+	bool	getMethods(size_t i);
+
 	int64_t				latestPing;
 	int64_t				timeout;
+	size_t				writePos;
 	int					remainingRequests;
-	int					status;
+	clientStatus		status;
 	int					fd;
 	int					fileFd;
 	int					cgiFd;
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server&		server;
+	struct pollfd*		pollDescriptor;
 };
 
 std::ostream&	operator<<(std::ostream& out, const Client& p);
