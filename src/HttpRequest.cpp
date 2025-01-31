@@ -18,7 +18,6 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		path = other.path;
 		protocol = other.protocol;
 		contentType = other.contentType;
-		body = other.body;
 		fileType = other.fileType;
 		status = other.status;
 	}
@@ -36,7 +35,6 @@ void	HttpRequest::clear()
 	path.clear();
 	protocol.clear();
 	contentType.clear();
-	body.clear();
 	fileType.clear();
 	status = requestIsInvalid;
 }
@@ -52,7 +50,6 @@ std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 	out << "path: " << p.path << std::endl;
 	out << "protocol: " << p.protocol << std::endl;
 	out << "content type: " << p.contentType << std::endl;
-	out << "body: " << p.body << std::endl;
 	out << "file type: " << p.fileType << std::endl;
 	out << "status: " << p.status << std::endl;
 	return (out);

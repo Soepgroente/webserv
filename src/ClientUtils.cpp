@@ -30,16 +30,6 @@ void	Client::setFileFd(int newFd)
 	fileFd = newFd;
 }
 
-int	Client::getCgiFd() const
-{
-	return (cgiFd);
-}
-
-void	Client::setCgiFd(int newFd)
-{
-	cgiFd = newFd;
-}
-
 HttpRequest&	Client::getRequest()
 {
 	return (request);
@@ -84,7 +74,6 @@ void	Client::setClientStatus(clientStatus newStatus)
 std::ostream&	operator<<(std::ostream& out, const Client& p)
 {
 	out << "Client fd: " << p.getFd() << std::endl;
-	out << "Client cgiFd: " << p.getCgiFd() << std::endl;
 	out << "Client server fd: " << p.getServer().socket << std::endl;
 	out << "Client latest ping: " << p.getLatestPing() << std::endl;
 	out << "Client timeout: " << p.getTimeout() << std::endl;

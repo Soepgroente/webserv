@@ -6,7 +6,7 @@ void	Client::readIncomingRequest()
 	std::string	tmp;
 
 	tmp.resize(BUFFERSIZE);
-	readBytes = read(fd, tmp.data(), BUFFERSIZE);
+	readBytes = read(fd, &tmp[0], BUFFERSIZE);
 	if (readBytes == -1)
 	{
 		std::cerr << "Error reading from client_fd: " << strerror(errno) << std::endl;
@@ -14,10 +14,7 @@ void	Client::readIncomingRequest()
 		return ;
 	}
 	request.buffer += tmp;
-	if (readBytes < BUFFERSIZE)
-	{
-		interpretRequest();
-	}
+	interpretRequest();
 }
 
 void	Client::readFromFile()
@@ -26,7 +23,7 @@ void	Client::readFromFile()
 	std::string	buffer;
 
 	buffer.resize(BUFFERSIZE);
-	readBytes = read(fileFd, buffer.data(), BUFFERSIZE);
+	readBytes = read(fileFd, &buffer[0], BUFFERSIZE);
 	if (readBytes == -1)
 	{
 		std::cerr << "Error reading from fileFd: " << strerror(errno) << std::endl;
@@ -36,21 +33,10 @@ void	Client::readFromFile()
 		return ;
 	}
 	response.buffer += buffer;
-	if (readBytes < BUFFERSIZE)
+	if (readBytes == 0)
 	{
 		close(fileFd);
 		fileFd = -1;
 		status = RESPONDING;
 	}
-}
-
-void	Client::handleIncomingRequest()
-{
-	std::map<clientStatus, std::function<void (Client*)>> incomingMethods =
-	{
-		{LISTENING, &Client::readIncomingRequest},
-		{parseCgi, &Client::readFromFile},
-		{readingFromFile, &Client::readFromFile},
-	};
-	incomingMethods[status](this);
 }

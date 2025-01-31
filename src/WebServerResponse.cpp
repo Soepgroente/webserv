@@ -17,7 +17,7 @@
 
 bool	WebServer::handleGet(Client& client, std::string& buffer)
 {
-	if (client.getClientStatus() == writeCgiResults)
+	if (client.getClientStatus() == RESPONDING)
 	{
 		buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(client.getResponse().buffer.size()) + "\r\nContent-Type: image/svg+xml\r\n\r\n" + client.getResponse().buffer;
 		return (true);
@@ -53,7 +53,7 @@ bool	WebServer::handlePost(Client& client, std::string& buffer)
 	std::ofstream outFile(client.getRequest().path, std::ios::binary);
 	if (outFile.is_open())
 	{
-		outFile << client.getRequest().body;
+		outFile << client.getRequest().buffer;
 		outFile.close();
 		buffer = HttpResponse::defaultResponses[200];
 	}
@@ -77,7 +77,7 @@ bool	WebServer::handleDelete(Client& client, std::string& buffer)
 	return (true);
 }
 
-void	WebServer::handleResponse(Client& client, int clientFd)
+void	WebServer::handleResponse(Client& client)
 {
 	std::string& buffer = client.getResponse().buffer;
 

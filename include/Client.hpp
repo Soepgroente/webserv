@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 #include <fcntl.h>
 #include <limits.h>
@@ -17,9 +18,7 @@
 
 enum clientStatus
 {
-	parseCgi,
 	launchCgi,
-	writeCgiResults,
 	LISTENING,
 	RESPONDING,
 	CLOSING,
@@ -43,8 +42,6 @@ class Client
 	int		getFileFd() const;
 	void	setFileFd(int newFd);
 	void	initializeSocket(int newFd);
-	int		getCgiFd() const;
-	void	setCgiFd(int newFd);
 
 	const Server&	getServer() const;
 	HttpRequest&	getRequest();
@@ -60,10 +57,16 @@ class Client
 
 	void			readFromFile();
 	void			writeToClient();
-	void			handleIncomingRequest();
 	void			readIncomingRequest();
+	void			handleOutgoingState();
+
+	static std::vector<struct pollfd>	fileAndCgiDescriptors;
 
 	private:
+
+	void	launchCGI();
+
+	void	parseDirectory();
 
 	bool	requestIsFinished();
 
@@ -83,11 +86,10 @@ class Client
 	clientStatus		status;
 	int					fd;
 	int					fileFd;
-	int					cgiFd;
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server&		server;
-	struct pollfd*		pollDescriptor;
+	
 };
 
 std::ostream&	operator<<(std::ostream& out, const Client& p);

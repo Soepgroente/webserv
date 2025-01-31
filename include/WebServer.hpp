@@ -45,7 +45,6 @@ class	WebServer
 	void	startTheThing();
 	
 	static int64_t	getTime();
-	int		openFile(const char* path);
 
 	private:
 
@@ -63,13 +62,10 @@ class	WebServer
 	void	loopadydoopady();
 	bool	isServerSocket(size_t position)	const;
 	void	acceptConnection(int serverSocket);
-	void	closeConnection(int fd);
+	void	closeConnection(int pollIndex, int clientIndex);
 	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
-	void	interpretRequest(Client& client, HttpRequest& request, int clientFd);
-	bool	handleRequest(Client& client, int clientFd);
-	void	handleResponse(Client& client, int clientFd);
-	void	parseCgiOutput(Client& client);
+	void	handleResponse(Client& client);
 
 	std::string					showErrorPage(std::string error);
 	std::vector<struct pollfd>	createPollArray();
@@ -79,13 +75,11 @@ class	WebServer
 	size_t						getClientIndex(int clientFd) const;
 	const Server&				getServer(int serverSocket);
 
-	void	launchCGI(Client& client);
 	void	addClient(int serverSocket);
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
-	void	checkConnectionStatuses();
-	void	handleIncoming(Client* client, size_t& position, int fd);
-	void	handleOutgoing(Client& client, size_t& position, int fd);
+	// void	handleIncoming(Client* client, size_t& position, int fd);
+	// void	handleOutgoing(Client& client, size_t& position, int fd);
 
 	bool	handleGet(Client& client, std::string& buffer);
 	bool	handlePost(Client& client, std::string& buffer);

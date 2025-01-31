@@ -32,7 +32,6 @@ struct	HttpRequest
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
-	std::string					body;
 	std::string					fileType;
 	int							status;
 };

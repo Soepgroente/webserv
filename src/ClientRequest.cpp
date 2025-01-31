@@ -38,7 +38,7 @@ bool	Client::getMethods(size_t i)
 	}
 	if (std::filesystem::is_regular_file(path))
 	{
-		fileFd = openFile(path.c_str());
+		fileFd = openFile(path.c_str(), Client::fileAndCgiDescriptors);
 		status = readingFromFile;
 	}
     else if (std::filesystem::is_directory(path))
@@ -136,14 +136,13 @@ static void	parseBody(HttpRequest& request)
 		request.status = requestIsInvalid;
 	else if (request.contentLength == request.buffer.size())
 	{
-		request.body = request.buffer; // delete the body variable later to not make huge copies unnecessarily
 		request.status = bodyIsParsed;
 	}
 }
 
 bool	Client::requestIsFinished()
 {
-	if (request.body.size() == request.contentLength) // alex is a scaredy cat and wants to confirm this is ok
+	if (request.buffer.size() == request.contentLength) // alex is a scaredy cat and wants to confirm this is ok
 	{
 		status = RESPONDING;
 	}
@@ -163,7 +162,6 @@ void	Client::interpretRequest()
 	else
 	{
 		remainingRequests--;
-		pollDescriptor->events = POLLOUT;
 		if (request.method != "GET")
 		{
 			status = RESPONDING;
@@ -176,6 +174,10 @@ void	Client::interpretRequest()
 		if (index != std::string::npos)
 		{
 			request.fileType = request.path.substr(index);
+		}
+		if (request.fileType == ".cgi")
+		{
+			status = launchCgi;
 		}
 	}
 }

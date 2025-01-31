@@ -4,7 +4,7 @@ size_t	WebServer::getClientIndex(int clientFd)	const
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getFd() == clientFd || clients[i].getCgiFd() == clientFd)
+		if (clients[i].getFd() == clientFd)
 			return (i);
 	}
 	throw std::runtime_error("Client not indexed");
@@ -16,7 +16,7 @@ Client*	WebServer::getClient(int fileDes)
 		return (nullptr);
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getFd() == fileDes || clients[i].getCgiFd() == fileDes || clients[i].getFileFd() == fileDes)
+		if (clients[i].getFd() == fileDes || clients[i].getFileFd() == fileDes)
 		{
 			return (&clients[i]);
 		}
@@ -26,31 +26,12 @@ Client*	WebServer::getClient(int fileDes)
 	throw std::runtime_error("Client not found");
 }
 
-void	WebServer::closeConnection(int fd)
+void	WebServer::closeConnection(int pollIndex, int clientIndex)
 {
-	int clientIndex = getClientIndex(fd);
-	int pollIndex = getPollfdIndex(fd);
-	int cgiPollIndex = getPollfdIndex(clients[clientIndex].getCgiFd());
-
 	// send response if unfinished business
 	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
-	if (cgiPollIndex != -1)
-		pollDescriptors.erase(pollDescriptors.begin() + cgiPollIndex);
+	// if (clients[clientIndex].getFileFd() != -1)
+	// 	Client::fileAndCgiDescriptors.erase(Client::fileAndCgiDescriptors.begin()); // need to get correct index
 	std::cout << "Closed connection" << std::endl;
-}
-
-void	WebServer::parseCgiOutput(Client& client)
-{
-	ssize_t			readBytes;
-	std::string		buffer;
-	// HttpRequest&	request = client.getRequest();
-
-	buffer.resize(BUFFERSIZE);
-	readBytes = read(client.getCgiFd(), buffer.data(), BUFFERSIZE);
-	if (readBytes == -1)
-	{
-		throw std::runtime_error("Error reading from client_fd parsing CGI output");
-	}
-	client.getResponse().buffer += buffer;
 }

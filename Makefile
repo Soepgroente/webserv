@@ -6,15 +6,16 @@ OS			:= $(shell uname)
 HEADERS		:= -I include
 
 CPPFILES	:=	Client.cpp \
+				ClientCGI.cpp \
 				ClientIn.cpp \
 				ClientOut.cpp \
+				ClientRequest.cpp \
 				ClientUtils.cpp \
 				HttpRequest.cpp \
 				HttpResponse.cpp \
 				signals.cpp \
 				Server.cpp \
 				WebServer.cpp \
-				WebServerCGI.cpp \
 				WebServerErrors.cpp \
 				WebServerParseConfig.cpp \
 				WebServerRequests.cpp \

@@ -87,8 +87,8 @@ void	WebServer::addClient(int serverSocket)
 
 void	WebServer::removeClient(int clientIndex)
 {
-	if (clients[clientIndex].getCgiFd() != -1)
-		close(clients[clientIndex].getCgiFd());
+	if (clients[clientIndex].getFileFd() != -1)
+		close(clients[clientIndex].getFileFd());
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
 }

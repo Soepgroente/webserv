@@ -14,10 +14,27 @@ void	Client::writeToClient()
 	}
 	if (writtenBytes < BUFFERSIZE)
 	{
-		if (status != CLOSING)
-			status = LISTENING;
+		status = LISTENING;
 		writePos = 0;
 	}
 	else
 		writePos += BUFFERSIZE;
+}
+
+void	Client::parseDirectory()
+{
+
+	status = RESPONDING;
+}
+
+void	Client::handleOutgoingState()
+{
+	std::map<clientStatus, std::function<void (Client*)>> outgoingMethods =
+	{
+		{RESPONDING, &Client::writeToClient},
+		{launchCgi, &Client::launchCGI},
+		{showDirectory, &Client::parseDirectory},
+		{readingFromFile, &Client::readFromFile},
+	};
+	outgoingMethods[status](this);
 }

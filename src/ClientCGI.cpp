@@ -48,7 +48,7 @@ static int forkProcess()
 	return (pid);
 }
 
-void	WebServer::launchCGI(Client& client)
+void	Client::launchCGI()
 {
 	int pipeFd[2];
 	int pid;
@@ -73,7 +73,7 @@ void	WebServer::launchCGI(Client& client)
 			std::exit(EXIT_FAILURE);
 		}
 	}
-	pollDescriptors.push_back({pipeFd[0], POLLIN, 0});
-	client.setCgiFd(pipeFd[0]);
-	client.setClientStatus(parseCgi);
+	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
+	fileFd = pipeFd[0];
+	status = readingFromFile;
 }

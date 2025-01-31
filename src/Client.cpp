@@ -2,7 +2,7 @@
 
 Client::Client(const Server& in) : 
 	latestPing(WebServer::getTime()), timeout(DEFAULT_TIMEOUT), writePos(0), remainingRequests(INT_MAX), \
-	status(LISTENING), fd(-1), fileFd(-1),	cgiFd(-1), \
+	status(LISTENING), fd(-1), fileFd(-1), \
 	request(HttpRequest()), response(HttpResponse()), server(in)
 {
 }
@@ -10,7 +10,7 @@ Client::Client(const Server& in) :
 Client::Client(const Client& other) : 
 	latestPing(other.latestPing), timeout(other.timeout), writePos(other.writePos), \
 	remainingRequests(other.remainingRequests), status(other.status), \
-	fd(other.fd), fileFd(other.fileFd), cgiFd(other.cgiFd), \
+	fd(other.fd), fileFd(other.fileFd), \
 	request(other.request), response(other.response), server(other.server)
 {
 }
