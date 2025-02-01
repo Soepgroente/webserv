@@ -30,7 +30,7 @@ bool	Client::getMethods(size_t i)
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
 
-	const std::filesystem::path path = request.path;
+	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{
 		request.status = requestNotFound;
@@ -88,8 +88,11 @@ bool	Client::getKeepAlive(size_t i)
 
 static void	setDefaultResponse(Client& client, HttpResponse& response)
 {
-	response.buffer = HttpResponse::defaultResponses.at(client.getClientStatus());
-	client.setClientStatus(RESPONDING);
+	if (HttpResponse::defaultResponses.find(client.getClientStatus()) != HttpResponse::defaultResponses.end())
+	{
+		response.buffer = HttpResponse::defaultResponses.at(client.getClientStatus());
+		client.setClientStatus(RESPONDING);
+	}
 }
 
 bool	Client::parseHeaders()

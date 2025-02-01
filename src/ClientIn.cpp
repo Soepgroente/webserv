@@ -32,11 +32,12 @@ void	Client::readFromFile()
 		status = RESPONDING;
 		return ;
 	}
-	response.buffer += buffer;
 	if (readBytes == 0)
 	{
 		close(fileFd);
 		fileFd = -1;
 		status = RESPONDING;
 	}
+	buffer.resize(readBytes);
+	response.buffer += buffer;
 }

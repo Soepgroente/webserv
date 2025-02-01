@@ -1,5 +1,8 @@
 #include "Client.hpp"
 
+std::vector<struct pollfd>	Client::fileAndCgiDescriptors;
+
+
 Client::Client(const Server& in) : 
 	latestPing(WebServer::getTime()), timeout(DEFAULT_TIMEOUT), writePos(0), remainingRequests(INT_MAX), \
 	status(LISTENING), fd(-1), fileFd(-1), \

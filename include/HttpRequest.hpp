@@ -5,7 +5,7 @@
 
 enum RequestStatus
 {
-	headerIsParsed,
+	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsInvalid = 400,
 	requestNotFound = 404,

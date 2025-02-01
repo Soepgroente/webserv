@@ -4,7 +4,7 @@ const std::string defaultCgiLocation = "./CGI/mandelbrotPython.cgi";
 
 static char** getArgs(std::string cgiLocation)
 {
-	char** args = new char*[2];
+	char** args = new char*[3];
 
 	args[0] = strdup(cgiLocation.c_str());
 	// args[1] = (char*)cgiLocation.substr(0).c_str();
