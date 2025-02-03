@@ -1,10 +1,8 @@
-#include "WebServer.hpp"
+#include "utils.hpp"
 
 std::vector<std::string>	stringSplit(std::string toSplit)
 {
 	std::vector<std::string>	split;
-	// toSplit = "POST /Server_1_uploads/new_upload HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate, br, zstd\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 11\r\nOrigin: http://127.0.0.1:8080\r\nDNT: 1\r\nConnection: keep-alive\r\nReferer: http://127.0.0.1:8080/postMethod.html\r\nUpgrade-Insecure-Requests: 1\r\nSec-Fetch-Dest: document\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-Site: same-origin\r\nSec-Fetch-User: ?1\r\nPriority: u=0, i\r\n\r\n12345678901";
-	// toSplit = "POST /Server_1_uploads/new_upload HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\nAccept-Language: en-US,en;q=0.5\r\nAccept-Encoding: gzip, deflate, br, zstd\r\nOrigin: http://127.0.0.1:8080\r\nDNT: 1\r\nConnection: keep-alive\r\nReferer: http://127.0.0.1:8080/postMethod.html\r\nUpgrade-Insecure-Requests: 1\r\nSec-Fetch-Dest: document\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-Site: same-origin\r\nSec-Fetch-User: ?1\r\nPriority: u=0, i\r\n\r\n";
 	size_t	end;
 
 	while (toSplit.empty() == false)
@@ -20,4 +18,40 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	}
 	printVector(split);
 	return (split);
+}
+
+int	openFile(const char* path, std::vector<pollfd>& pdArray)
+{
+	int fd = open(path, O_RDONLY);
+	if (fd == -1)
+	{
+		throw std::runtime_error("Failed to open file even though it exists");
+	}
+	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
+	{
+		close(fd);
+		throw std::runtime_error("Failed to set file fd to non-blocking");
+	}
+	pdArray.push_back({fd, POLLIN, 0});
+	return (fd);
+}
+
+int	getPollfdIndex(std::vector<pollfd>& polls, int fdToFind)
+{
+	assert(fdToFind != -1);
+	for (size_t i = 0; i < polls.size(); i++)
+	{
+		if (polls[i].fd == fdToFind)
+			return (static_cast<int>(i));
+	}
+	throw std::runtime_error("Pollfd not found");
+}
+
+void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
+{
+	int pollFdIndex = getPollfdIndex(polls, fd);
+
+	close(fd);
+	fd = -1;
+	polls.erase(polls.begin() + pollFdIndex);
 }

@@ -3,6 +3,14 @@
 #include <iostream>
 #include <vector>
 
+enum RequestStatus
+{
+	headerIsParsed = 1,
+	bodyIsParsed,
+	requestIsInvalid = 400,
+	requestNotFound = 404,
+};
+
 struct	HttpRequest
 {
 	HttpRequest() = default;
@@ -11,22 +19,21 @@ struct	HttpRequest
 
 	HttpRequest&	operator=(const HttpRequest& other);
 
-	std::string					rawRequest;
-	time_t						lastRead;
+	void			clear();
+
+	std::string					buffer;
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
+	std::string					connectionType;
+	std::string					keepAlive;
 	std::string					host;
 	std::string					port;
 	std::string					method;
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
-	std::string					body;
 	std::string					fileType;
-	bool						isValidRequest = false;
-	// bool						headerIsParsed = false;
-
-	std::string					response;
+	int							status;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);

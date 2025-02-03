@@ -6,7 +6,7 @@ std::ostream&	operator<<(std::ostream& out, const Server& p)
 	out << "Port: " << p.port << std::endl;
 	out << "Socket: " << p.socket << std::endl;
 	out << "Name: " << p.serverName << std::endl;
-	out << "Body size: " << p.bodySize << std::endl;
+	out << "Body size: " << p.maxBodySize << std::endl;
 	out << "Error location: " << p.errorLocation << "\n" << std::endl;
 	for (const std::pair<std::string, Location> pair : p.locations)
 	{
