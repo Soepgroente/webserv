@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <cstdint>
 #include "HttpRequest.hpp"
 
 #define MAXBODYSIZE 50000000

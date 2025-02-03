@@ -1,18 +1,19 @@
 #include "WebServer.hpp"
 
-// static std::string	getMimeType(const std::string& fileType)
-// {
-//     if (dotPos == std::string::npos)
-//         return "text/plain";
-//     std::string extension = path.substr(dotPos + 1);
-//     if (extension == "html") return "text/html";
-//     if (extension == "css") return "text/css";
-//     if (extension == "js") return "application/javascript";
-//     if (extension == "png") return "image/png";
-//     if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
-//     if (extension == "gif") return "image/gif";
-//     return "application/octet-stream";
-// }
+std::string WebServer::getMimeType(const std::string& path) const
+{
+    size_t dotPos = path.find_last_of('.');
+    if (dotPos == std::string::npos)
+        return "text/plain";
+    std::string extension = path.substr(dotPos + 1);
+    if (extension == "html") return "text/html";
+    if (extension == "css") return "text/css";
+    if (extension == "js") return "application/javascript";
+    if (extension == "png") return "image/png";
+    if (extension == "jpg" || extension == "jpeg") return "image/jpeg";
+    if (extension == "gif") return "image/gif";
+    return "application/octet-stream";
+}
 
 bool	WebServer::handleGet(Client& client, std::string& buffer)
 {
