@@ -22,6 +22,8 @@ void	Client::readFromFile()
 	ssize_t		readBytes;
 	std::string	buffer;
 
+	status = readingFromFile;
+	return ;
 	buffer.resize(BUFFERSIZE);
 	readBytes = read(fileFd, &buffer[0], BUFFERSIZE);
 	if (readBytes == -1)

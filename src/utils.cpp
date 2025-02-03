@@ -1,4 +1,4 @@
-#include "WebServer.hpp"
+#include "utils.hpp"
 
 std::vector<std::string>	stringSplit(std::string toSplit)
 {
@@ -20,7 +20,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	return (split);
 }
 
-int	openFile(const char* path, std::vector<struct pollfd>& pdArray)
+int	openFile(const char* path, std::vector<pollfd>& pdArray)
 {
 	int fd = open(path, O_RDONLY);
 	if (fd == -1)
@@ -34,4 +34,24 @@ int	openFile(const char* path, std::vector<struct pollfd>& pdArray)
 	}
 	pdArray.push_back({fd, POLLIN, 0});
 	return (fd);
+}
+
+int	getPollfdIndex(std::vector<pollfd>& polls, int fdToFind)
+{
+	assert(fdToFind != -1);
+	for (size_t i = 0; i < polls.size(); i++)
+	{
+		if (polls[i].fd == fdToFind)
+			return (static_cast<int>(i));
+	}
+	throw std::runtime_error("Pollfd not found");
+}
+
+void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
+{
+	int pollFdIndex = getPollfdIndex(polls, fd);
+
+	close(fd);
+	fd = -1;
+	polls.erase(polls.begin() + pollFdIndex);
 }

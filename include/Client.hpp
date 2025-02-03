@@ -60,15 +60,13 @@ class Client
 	void			readIncomingRequest();
 	void			handleOutgoingState();
 
-	static std::vector<struct pollfd>	fileAndCgiDescriptors;
+	static std::vector<pollfd>	fileAndCgiDescriptors;
 
 	private:
 
 	void	launchCGI();
 
 	void	parseDirectory();
-
-	bool	requestIsFinished();
 
 	void	interpretRequest();
 	bool	parseHeaders();
@@ -82,6 +80,7 @@ class Client
 	int64_t				latestPing;
 	int64_t				timeout;
 	size_t				writePos;
+	size_t				readPos;
 	int					remainingRequests;
 	clientStatus		status;
 	int					fd;

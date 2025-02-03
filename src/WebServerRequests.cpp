@@ -1,5 +1,15 @@
 #include "WebServer.hpp"
 
+size_t	WebServer::getFileCgiIndex(int fileFd)	const
+{
+	for (size_t i = 0; i < Client::fileAndCgiDescriptors.size(); i++)
+	{
+		if (Client::fileAndCgiDescriptors[i].fd == fileFd)
+			return (i);
+	}
+	throw std::runtime_error("File descriptor not found");
+}
+
 size_t	WebServer::getClientIndex(int clientFd)	const
 {
 	for (size_t i = 0; i < clients.size(); i++)
@@ -31,7 +41,12 @@ void	WebServer::closeConnection(int pollIndex, int clientIndex)
 	// send response if unfinished business
 	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
-	// if (clients[clientIndex].getFileFd() != -1)
-	// 	Client::fileAndCgiDescriptors.erase(Client::fileAndCgiDescriptors.begin()); // need to get correct index
+
+	int tmpFd = clients[clientIndex].getFileFd();
+	if (tmpFd != -1)
+	{
+		Client::fileAndCgiDescriptors.erase(Client::fileAndCgiDescriptors.begin() + getFileCgiIndex(tmpFd));
+		close(tmpFd);
+	}
 	std::cout << "Closed connection" << std::endl;
 }

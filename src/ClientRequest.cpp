@@ -135,34 +135,25 @@ bool	Client::parseHeaders()
 
 static void	parseBody(HttpRequest& request)
 {
-	if (request.contentLength == 0 && request.buffer.size() > 0)
-		request.status = requestIsInvalid;
+	if (request.contentLength == 0)
+	{
+		if (request.buffer.size() == 0)
+			request.status = bodyIsParsed;
+		else
+			request.status = requestIsInvalid;
+	}
 	else if (request.contentLength == request.buffer.size())
 	{
 		request.status = bodyIsParsed;
 	}
 }
 
-bool	Client::requestIsFinished()
-{
-	if (request.buffer.size() == request.contentLength) // alex is a scaredy cat and wants to confirm this is ok
-	{
-		status = RESPONDING;
-	}
-	if (status == RESPONDING)
-	{
-		return (true);
-	}
-	return (false);
-}
-
 void	Client::interpretRequest()
 {
 	if (parseHeaders() == false)
 		return ;
-	if (requestIsFinished() == false)
-		parseBody(request);
-	else
+	parseBody(request);
+	if (request.status == bodyIsParsed)
 	{
 		remainingRequests--;
 		if (request.method != "GET")
@@ -182,5 +173,7 @@ void	Client::interpretRequest()
 		{
 			status = launchCgi;
 		}
+		status = readingFromFile;
+		puts("Status is readingfromfile");
 	}
 }

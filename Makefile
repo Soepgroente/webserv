@@ -16,7 +16,6 @@ CPPFILES	:=	Client.cpp \
 				signals.cpp \
 				Server.cpp \
 				WebServer.cpp \
-				WebServerErrors.cpp \
 				WebServerParseConfig.cpp \
 				WebServerRequests.cpp \
 				WebServerResponse.cpp \

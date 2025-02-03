@@ -15,7 +15,7 @@
 //     return "application/octet-stream";
 // }
 
-bool	WebServer::handleGet(Client& client, std::string& buffer)
+/* bool	WebServer::handleGet(Client& client, std::string& buffer)
 {
 	if (client.getClientStatus() == RESPONDING)
 	{
@@ -94,3 +94,4 @@ void	WebServer::handleResponse(Client& client)
 		pollDescriptors[getPollfdIndex(client.getFd())].events = POLLIN;
 	}
 }
+ */

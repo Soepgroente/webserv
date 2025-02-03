@@ -22,7 +22,6 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 	std::cout << "Accepted connection" << std::endl;
 }
 
@@ -105,6 +104,10 @@ void	WebServer::loopadydoopady()
 			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
 			{
 				client.handleOutgoingState();
+				if (client.getClientStatus() == LISTENING)
+				{
+					pollDescriptors[i].events = POLLIN;
+				}
 			}
 		}
 	}

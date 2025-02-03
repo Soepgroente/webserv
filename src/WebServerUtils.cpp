@@ -40,17 +40,6 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 	return (false);
 }
 
-int	WebServer::getPollfdIndex(int fdToFind)
-{
-	if (fdToFind == -1)
-		return (-1);
-	for (size_t i = 0; i < pollDescriptors.size(); i++)
-	{
-		if (pollDescriptors[i].fd == fdToFind)
-			return (static_cast<int>(i));
-	}
-	throw std::runtime_error("Pollfd not found");
-}
 
 static void	exitGracefullyOnSignal(int signal)
 {
@@ -83,6 +72,7 @@ void	WebServer::addClient(int serverSocket)
 	newClient.initializeSocket(serverSocket);
 	assert(duplicateClient(clients, newClient) == false);
 	clients.push_back(newClient);
+	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 }
 
 void	WebServer::removeClient(int clientIndex)
@@ -91,13 +81,4 @@ void	WebServer::removeClient(int clientIndex)
 		close(clients[clientIndex].getFileFd());
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
-}
-
-void	WebServer::closeAndResetFd(int& fd)
-{
-	int pollFdIndex = getPollfdIndex(fd);
-
-	close(fd);
-	fd = -1;
-	pollDescriptors.erase(pollDescriptors.begin() + pollFdIndex);
 }
