@@ -23,22 +23,39 @@ bool	Client::getHost(size_t i)
 	return (true);
 }
 
+const Location&	Client::resolveRequestLocation(std::string path)
+{
+	auto it = getServer().locations.begin();
+	for (size_t i = 0; it != getServer().locations.end(); i++)
+	{
+		if (path.find(it->first))
+			it++;
+	}
+	if (it != getServer().locations.begin())
+		it--;
+	return getServer().locations.at(it->first);
+}
+
 bool	Client::getMethods(size_t i)
 {
     std::stringstream	stream;
+	
 
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
 
-	// std::cout << "Request path 1: " << request.path << std::endl;
-	// std::cout << "Request path 2: " << request.path << std::endl;
+	// const Location& location = resolveRequestLocation(request.path); // broken
+
+	/* Try to show index page or directory listing if the request.path == location.first */
 	
 	if (request.path == "/")
 	{
-		std::string tmp = getServer().locations.at("/").dirs.at("root") + request.path;
-		request.path = tmp + "home.html";
+		Location location = getServer().locations.at("/");
+		std::map<std::string, std::string>	dir = location.dirs;
+		std::string tmp = dir.at("root") + request.path;
+		request.path = tmp + dir.at("index");
 	}
-	
+
 	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{

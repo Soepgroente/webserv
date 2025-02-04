@@ -76,6 +76,7 @@ class Client
 	bool	getKeepAlive(size_t i);
 	bool	getConnectionType(size_t i);
 	bool	getMethods(size_t i);
+	const Location&	resolveRequestLocation(std::string path);
 
 	int64_t				latestPing;
 	int64_t				timeout;
