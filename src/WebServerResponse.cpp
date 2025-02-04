@@ -15,9 +15,9 @@ std::string WebServer::getMimeType(const std::string& path) const
     return "application/octet-stream";
 }
 
-bool	WebServer::handleGet(Client& client, std::string& buffer)
+/* bool	WebServer::handleGet(Client& client, std::string& buffer)
 {
-	if (client.getClientStatus() == writeCgiResults)
+	if (client.getClientStatus() == RESPONDING)
 	{
 		buffer = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(client.getResponse().buffer.size()) + "\r\nContent-Type: image/svg+xml\r\n\r\n" + client.getResponse().buffer;
 		return (true);
@@ -53,7 +53,7 @@ bool	WebServer::handlePost(Client& client, std::string& buffer)
 	std::ofstream outFile(client.getRequest().path, std::ios::binary);
 	if (outFile.is_open())
 	{
-		outFile << client.getRequest().body;
+		outFile << client.getRequest().buffer;
 		outFile.close();
 		buffer = HttpResponse::defaultResponses[200];
 	}
@@ -77,40 +77,7 @@ bool	WebServer::handleDelete(Client& client, std::string& buffer)
 	return (true);
 }
 
-bool	WebServer::replyToClient(std::string& buffer, int clientFd)
-{
-	int pollIndex = getPollfdIndex(clientFd);
-
-	if (buffer.empty() == true)
-	{
-		assert(pollIndex != -1);
-        pollDescriptors[pollIndex].events = POLLIN;
-		return (true);
-	}
-	assert(buffer.size() != 0);
-	assert(buffer.c_str() != nullptr);
-    ssize_t writtenBytes = write(clientFd, buffer.c_str(), buffer.size());
-
-    if (writtenBytes == -1)
-    {
-        std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
-        closeConnection(clientFd);
-        return (false);
-    }
-    if (static_cast<size_t>(writtenBytes) < buffer.size())
-    {
-        buffer.erase(0, writtenBytes);
-		std::cout << "size of buffer: " << buffer.size() << std::endl;
-    }
-	if (buffer.size() == 0)
-	{
-		puts("I'm triggered");
-        pollDescriptors[getPollfdIndex(clientFd)].events = POLLIN;
-	}
-	return (true);
-}
-
-bool	WebServer::handleResponse(Client& client, int clientFd)
+void	WebServer::handleResponse(Client& client)
 {
 	std::string& buffer = client.getResponse().buffer;
 
@@ -121,6 +88,10 @@ bool	WebServer::handleResponse(Client& client, int clientFd)
 		{"DELETE", &WebServer::handleDelete}
 	};
     if (methods[client.getRequest().method](this, client, buffer) == true)
-		return (replyToClient(buffer, clientFd));
-	return (false);
+		client.writeToClient();
+	if (client.getClientStatus() == LISTENING)
+	{
+		pollDescriptors[getPollfdIndex(client.getFd())].events = POLLIN;
+	}
 }
+ */

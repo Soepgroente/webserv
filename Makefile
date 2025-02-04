@@ -1,18 +1,21 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-DNDEBUG #-fsanitize=address  -flto 
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-DNDEBUG #-fsanitize=address  -flto -std=c++2a 
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
 CPPFILES	:=	Client.cpp \
+				ClientCGI.cpp \
+				ClientIn.cpp \
+				ClientOut.cpp \
+				ClientRequest.cpp \
+				ClientUtils.cpp \
 				HttpRequest.cpp \
 				HttpResponse.cpp \
 				signals.cpp \
 				Server.cpp \
 				WebServer.cpp \
-				WebServerCGI.cpp \
-				WebServerErrors.cpp \
 				WebServerParseConfig.cpp \
 				WebServerRequests.cpp \
 				WebServerResponse.cpp \

@@ -40,17 +40,6 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 	return (false);
 }
 
-int	WebServer::getPollfdIndex(int fdToFind)
-{
-	if (fdToFind == -1)
-		return (-1);
-	for (size_t i = 0; i < pollDescriptors.size(); i++)
-	{
-		if (pollDescriptors[i].fd == fdToFind)
-			return (static_cast<int>(i));
-	}
-	throw std::runtime_error("Pollfd not found");
-}
 
 static void	exitGracefullyOnSignal(int signal)
 {
@@ -83,37 +72,13 @@ void	WebServer::addClient(int serverSocket)
 	newClient.initializeSocket(serverSocket);
 	assert(duplicateClient(clients, newClient) == false);
 	clients.push_back(newClient);
+	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 }
 
 void	WebServer::removeClient(int clientIndex)
 {
-	if (clients[clientIndex].getCgiFd() != -1)
-		close(clients[clientIndex].getCgiFd());
+	if (clients[clientIndex].getFileFd() != -1)
+		close(clients[clientIndex].getFileFd());
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
-}
-
-void	WebServer::closeAndResetFd(int& fd)
-{
-	int pollFdIndex = getPollfdIndex(fd);
-
-	close(fd);
-	fd = -1;
-	pollDescriptors.erase(pollDescriptors.begin() + pollFdIndex);
-}
-
-int	WebServer::openFile(const char* path)
-{
-	int fd = open(path, O_RDONLY);
-	if (fd == -1)
-	{
-		throw std::runtime_error("Failed to open file even though it exists");
-	}
-	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
-	{
-		close(fd);
-		throw std::runtime_error("Failed to set file fd to non-blocking");
-	}
-	pollDescriptors.push_back({fd, POLLIN, 0});
-	return (fd);
 }

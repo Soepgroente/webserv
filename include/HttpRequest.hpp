@@ -5,7 +5,7 @@
 
 enum RequestStatus
 {
-	headerIsParsed,
+	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsInvalid = 400,
 	requestNotFound = 404,
@@ -21,7 +21,7 @@ struct HttpRequest
 
 	void			clear();
 
-	std::string					rawRequest;
+	std::string					buffer;
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
 	std::string					connectionType;
@@ -32,7 +32,6 @@ struct HttpRequest
 	std::string					path;
 	std::string					protocol;
 	std::string					contentType;
-	std::string					body;
 	std::string					fileType;
 	int							status;
 };

@@ -13,6 +13,5 @@ struct HttpResponse
 	HttpResponse&	operator=(const HttpResponse& other);
 
 	std::string		buffer;
-	std::ofstream	out;
 	static std::map<int, std::string> defaultResponses;
 };

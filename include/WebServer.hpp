@@ -24,12 +24,13 @@
 
 #include "Client.hpp"
 #include "Server.hpp"
-#include "Utils.hpp"
+#include "utils.hpp"
 
 #define FOREVER 1
 #define BUFFERSIZE 8 * 1024
 
 struct	Server;
+struct	pollfd;
 class	Client;
 
 class	WebServer
@@ -50,10 +51,10 @@ class	WebServer
 
 	/* Private variables	*/
 
-	std::vector<Server>					servers;
-	std::vector<Client>					clients;
-	std::vector<struct pollfd>			pollDescriptors;
-	bool								serverShouldRun;
+	std::vector<Server>		servers;
+	std::vector<Client>		clients;
+	std::vector<pollfd>		pollDescriptors;
+	bool					serverShouldRun;
 	
 	/*	Private functions	*/
 	
@@ -62,64 +63,25 @@ class	WebServer
 	void	loopadydoopady();
 	bool	isServerSocket(size_t position)	const;
 	void	acceptConnection(int serverSocket);
-	void	closeConnection(int fd);
+	void	closeConnection(int pollIndex, int clientIndex);
 	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
-	void	interpretRequest(Client& client, HttpRequest& request, int clientFd);
-	bool	handleRequest(Client& client, int clientFd);
-	bool	handleResponse(Client& client, int clientFd);
-	void	parseCgiOutput(Client& client);
+	//void	handleResponse(Client& client);
 
-	std::string getCurrentTime() const;
-	std::string getMimeType(const std::string& path) const;
-	std::string showErrorPage(const std::string& error) const;
+	//std::string				showErrorPage(std::string error);
+	std::vector<pollfd>		createPollArray();
+	void					set_signals();
+	Client*					getClient(int clientFd);
+	size_t					getClientIndex(int clientFd) const;
+	const Server&			getServer(int serverSocket);
 
-	std::string					showErrorPage(std::string error);
-	std::vector<struct pollfd>	createPollArray();
-	int							getPollfdIndex(int fdToFind);
-	void						set_signals();
-	Client*						getClient(int clientFd);
-	size_t						getClientIndex(int clientFd) const;
-	const Server&				getServer(int serverSocket);
-
-	void	launchCGI(Client& client);
-	bool	replyToClient(std::string& buffer, int clientFd);
 	void	addClient(int serverSocket);
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
-	void	checkConnectionStatuses();
-	void	handleIncoming(Client* client, size_t& position, int fd);
-	void	handleOutgoing(Client& client, size_t& position, int fd);
 
-	bool	handleGet(Client& client, std::string& buffer);
+/* 	bool	handleGet(Client& client, std::string& buffer);
 	bool	handlePost(Client& client, std::string& buffer);
-	bool	handleDelete(Client& client, std::string& buffer);
+	bool	handleDelete(Client& client, std::string& buffer); */
 
-	int		openFile(const char* path);
-	void	closeAndResetFd(int& fd);
-
-	bool	parseHeaders(Client& client, HttpRequest& request);
-	bool	getContentType(Client& client, HttpRequest& request, size_t i);
-	bool	getContentLength(Client& client, HttpRequest& request, size_t i);
-	bool	getHost(Client& client, HttpRequest& request, size_t i);
-	bool	getKeepAlive(Client& client, HttpRequest& request, size_t i);
-	bool	getConnectionType(Client& client, HttpRequest& request, size_t i);
-	bool	getMethods(Client& client, HttpRequest& request, size_t i);
+	size_t	getFileCgiIndex(int fileFd)	const;
 };
-
-/*	Template functions	*/
-
-template <typename T>
-void	printVector(std::vector<T>& toPrint)
-{
-	for (T& it : toPrint)
-	{
-		std::cout << it << std::endl;
-	}
-}
-
-/*	Utility functions	*/
-
-void						errorExit(std::string errorMessage, int errorLocation);
-std::vector<std::string>	stringSplit(std::string toSplit);
-std::ostream&				operator<<(std::ostream& out, const std::vector<struct pollfd>& p);
