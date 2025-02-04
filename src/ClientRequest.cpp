@@ -30,6 +30,15 @@ bool	Client::getMethods(size_t i)
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
 
+	// std::cout << "Request path 1: " << request.path << std::endl;
+	// std::cout << "Request path 2: " << request.path << std::endl;
+	
+	if (request.path == "/")
+	{
+		std::string tmp = getServer().locations.at("/").dirs.at("root") + request.path;
+		request.path = tmp + "home.html";
+	}
+	
 	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{
