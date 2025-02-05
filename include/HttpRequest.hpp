@@ -8,7 +8,9 @@ enum RequestStatus
 	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsInvalid = 400,
-	requestNotFound = 404,
+	requestForbidden = 403,
+	requestNotFound,
+	requestMethodNotAllowed,
 };
 
 struct	HttpRequest

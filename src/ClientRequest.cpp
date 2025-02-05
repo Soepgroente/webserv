@@ -1,5 +1,14 @@
 #include "Client.hpp"
 
+static void	setDefaultResponse(Client& client, HttpResponse& response)
+{
+	if (HttpResponse::defaultResponses.find(client.getRequest().status) != HttpResponse::defaultResponses.end())
+	{
+		response.buffer = HttpResponse::defaultResponses.at(client.getRequest().status);
+		client.setClientStatus(RESPONDING);
+	}
+}
+
 bool	Client::getContentType(size_t i)
 {
 	request.contentType = request.splitRequest[i].substr(14);
@@ -25,12 +34,14 @@ bool	Client::getHost(size_t i)
 
 const Location&	Client::resolveRequestLocation(std::string path)
 {
-	auto it = getServer().locations.begin();
-	for (size_t i = 0; it != getServer().locations.end(); i++)
+	auto	it = getServer().locations.begin();
+	for (size_t i = 0; it != getServer().locations.end() && i < getServer().locations.size(); i++)
 	{
-		if (path.find(it->first))
+		if (path.find(it->first) == 0)
 			it++;
 	}
+	if (it == getServer().locations.end())
+		request.status = requestNotFound;
 	if (it != getServer().locations.begin())
 		it--;
 	return getServer().locations.at(it->first);
@@ -44,13 +55,16 @@ bool	Client::getMethods(size_t i)
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
 
-	// const Location& location = resolveRequestLocation(request.path); // broken
-
+	const Location& location = resolveRequestLocation(request.path); // probably works
+	if (std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+		request.status = requestMethodNotAllowed;
+	if (request.status != 0)
+		return (false);
 	/* Try to show index page or directory listing if the request.path == location.first */
 	
 	if (request.path == "/")
 	{
-		Location location = getServer().locations.at("/");
+		// Location location = getServer().locations.at("/");
 		std::map<std::string, std::string>	dir = location.dirs;
 		std::string tmp = dir.at("root") + request.path;
 		request.path = tmp + dir.at("index");
@@ -78,7 +92,7 @@ bool	Client::getMethods(size_t i)
 		}
 		else
 		{
-			request.status = requestIsInvalid;
+			request.status = requestForbidden;
 			return (false);
 		}
 	}
@@ -110,15 +124,6 @@ bool	Client::getKeepAlive(size_t i)
 		return (false);
 	}
 	return (true);
-}
-
-static void	setDefaultResponse(Client& client, HttpResponse& response)
-{
-	if (HttpResponse::defaultResponses.find(client.getClientStatus()) != HttpResponse::defaultResponses.end())
-	{
-		response.buffer = HttpResponse::defaultResponses.at(client.getClientStatus());
-		client.setClientStatus(RESPONDING);
-	}
 }
 
 bool	Client::parseHeaders()
