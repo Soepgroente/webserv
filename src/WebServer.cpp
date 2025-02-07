@@ -2,14 +2,10 @@
 
 WebServer::~WebServer()
 {
-	for (pollfd it : pollDescriptors)
+	puts("Destructor called");
+	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (it.fd != -1)
-		{
-			// send message to unfinished requests
-			shutdown(it.fd, SHUT_RDWR);	// wanna check if we can use this function and whether it is helpful at all?
-			close(it.fd);
-		}
+		closeConnection(i + servers.size(), i);
 	}
 }
 
@@ -25,57 +21,93 @@ const Server&	WebServer::getServer(int serverSocket)
 
 void	WebServer::acceptConnection(int serverSocket)
 {
-	Client	client(serverSocket, getServer(serverSocket));
-
-	for (Client& tmp : this->clients)
-	{
-		if (tmp.getFd() == client.getFd())
-			throw std::runtime_error("Client already exists");
-	}
-	clients.push_back(client);
-	// clients.push_back({serverSocket, getServer(serverSocket)});
-	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+	addClient(serverSocket);
 	std::cout << "Accepted connection" << std::endl;
 }
 
+void	WebServer::removeInactiveConnections()
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getClientStatus() == CLOSING || \
+			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		{
+			puts("inactive connecti0n");
+			closeConnection(i + servers.size(), i);
+			i--;
+		}
+	}
+}
+
+/* void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
+{
+	if (client->getClientStatus() == parseCgi)
+	{
+		parseCgiOutput(*client);
+	}
+	else if (client->getClientStatus() == readingFromFile)
+	{
+		client->readFromFile();
+	}
+	else if (handleRequest(*client, fd) == false)
+	{
+		position--;
+	}
+}
+
+void	WebServer::handleOutgoing(Client& client, size_t& position, int fd)
+{
+	if (client.getClientStatus() == launchCgi)
+	{
+		launchCGI(client);
+	}
+	else
+		handleResponse(client, fd);
+} */
+
 void	WebServer::loopadydoopady()
 {
+	size_t amountOfServers = servers.size();
+
 	while (serverShouldRun == true)
 	{
-		int amountOfEvents;
-		
-		amountOfEvents = poll(pollDescriptors.data(), pollDescriptors.size(), 0);
-		if (amountOfEvents == -1)
-			throw std::runtime_error("Failed to poll");
-		if (amountOfEvents == 0)
-			continue ;
+		removeInactiveConnections();
+		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
+			throw std::runtime_error("Failed to poll clients");
+		if (poll(Client::fileAndCgiDescriptors.data(), Client::fileAndCgiDescriptors.size(), 0) == -1)
+			throw std::runtime_error("Failed to poll cgi/file descriptors");
 		for (size_t i = 0; i < pollDescriptors.size(); i++)
 		{
 			if (pollDescriptors[i].revents == 0)
 				continue ;
-			Client* client = getClient(pollDescriptors[i].fd);
-
-			if (isServerSocket(pollDescriptors[i].fd) == true)
+			if (isServerSocket(i) == true)
 			{
 				acceptConnection(pollDescriptors[i].fd);
+				continue ;
+			}
+			Client& client = clients[i - amountOfServers];
+
+			client.setPingTime();
+			if ((pollDescriptors[i].revents & POLLHUP) != 0)
+			{
+				// closeAndResetFd(pollDescriptors[i].fd);
+				client.setClientStatus(CLOSING);
 			}
 			else if ((pollDescriptors[i].revents & POLLIN) != 0)
 			{
-				if (client != nullptr && client->getCgiStatus() == parseCgi)
+				client.readIncomingRequest();
+				if (client.getClientStatus() != LISTENING)
 				{
-					parseCgiOutput(*client);
-				}
-				if (handleClientRead(client, pollDescriptors[i].fd) == false)
-				{
-					i--;
+					pollDescriptors[i].events = POLLOUT;
 				}
 			}
-			else if (client != nullptr && (pollDescriptors[i].revents & POLLOUT) != 0)
+			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
 			{
-				if (client->getCgiStatus() == launchCgi)
-					launchCGI(*client);
-				else if (handleClientWrite(pollDescriptors[i].fd) == false)
-					i--;
+				client.handleOutgoingState();
+				if (client.getClientStatus() == LISTENING)
+				{
+					pollDescriptors[i].events = POLLIN;
+				}
 			}
 		}
 	}

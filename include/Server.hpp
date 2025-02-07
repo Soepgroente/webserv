@@ -1,9 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <map>
 #include "HttpRequest.hpp"
+
+#define MAXBODYSIZE 50000000
 
 struct Location
 {
@@ -26,14 +29,14 @@ struct	Server
 {
 	uint16_t	port;
 	int			socket = -1;
-	int32_t		bodySize;
+	int32_t		maxBodySize;
 
 	std::string	serverName;
 	std::string	errorLocation;
 	std::string	host;
 	std::string	cgiPath;
 
-	std::map<std::string, struct Location>	locations;
+	std::map<std::string, Location>	locations;
 };
 
 std::ostream&	operator<<(std::ostream& out, const struct Server& p);

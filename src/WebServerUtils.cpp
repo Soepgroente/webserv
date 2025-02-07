@@ -11,14 +11,9 @@ void	errorExit(std::string errorMessage, int errorLocation)
 	std::exit(EXIT_FAILURE);
 }
 
-bool	WebServer::isServerSocket(int socket)	const
+bool	WebServer::isServerSocket(size_t position)	const
 {
-	for (const Server& it : servers)
-	{
-		if (it.socket == socket)
-			return (true);
-	}
-	return (false);
+	return (position < servers.size());
 }
 
 std::vector<struct pollfd>	WebServer::createPollArray()
@@ -32,29 +27,19 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	return (fileDescriptors);
 }
 
-time_t	WebServer::getTime()	const
+int64_t	WebServer::getTime()
 {
-	return (std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+	return (std::chrono::duration_cast<std::chrono::milliseconds>\
+		(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
-bool	WebServer::timeout(time_t lastPinged)	const
+bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 {
-	if (lastPinged == 0)
-		return (false);
-	if (this->getTime() - lastPinged > 5)
+	if (WebServer::getTime() - lastPinged > timeout)
 		return (true);
 	return (false);
 }
 
-size_t	WebServer::getPollfdIndex(int fdToFind)
-{
-	for (size_t i = 0; i < pollDescriptors.size(); i++)
-	{
-		if (pollDescriptors[i].fd == fdToFind)
-			return (i);
-	}
-	throw std::runtime_error("Pollfd not found");
-}
 
 static void	exitGracefullyOnSignal(int signal)
 {
@@ -68,4 +53,32 @@ void	WebServer::set_signals()
 	signal(SIGINT, &exitGracefullyOnSignal);
 	signal(SIGTERM, &exitGracefullyOnSignal);
 	signal(SIGQUIT, SIG_IGN);
+}
+
+static bool	duplicateClient(const std::vector<Client>& clients, const Client& client)
+{
+	for (const Client& tmp : clients)
+	{
+		if (tmp.getFd() == client.getFd())
+			return (true);
+	}
+	return (false);
+}
+
+void	WebServer::addClient(int serverSocket)
+{
+	Client	newClient(getServer(serverSocket));
+
+	newClient.initializeSocket(serverSocket);
+	assert(duplicateClient(clients, newClient) == false);
+	clients.push_back(newClient);
+	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+}
+
+void	WebServer::removeClient(int clientIndex)
+{
+	if (clients[clientIndex].getFileFd() != -1)
+		close(clients[clientIndex].getFileFd());
+	close(clients[clientIndex].getFd());
+	clients.erase(clients.begin() + clientIndex);
 }

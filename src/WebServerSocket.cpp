@@ -1,5 +1,17 @@
 #include "WebServer.hpp"
 
+static uint32_t ipStringToInt(std::string ip)
+{
+	uint32_t	result = 0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		result |= std::stoi(ip.substr(0, ip.find('.'))) << (3 - i) * 8;
+		ip.erase(0, ip.find('.') + 1);
+	}
+	return (result);
+}
+
 static void	setupSocket(int& sock)
 {
 	int	options = 1;
@@ -13,11 +25,12 @@ static void	setupSocket(int& sock)
 		errorExit(strerror(errno), -1);
 }
 
-static void	bindSocket(sockaddr_in& serverAddress, Server& server)
+static void	bindSocket(sockaddr_in& serverAddress, Server& server, uint32_t ip)
 {
 	serverAddress.sin_family = AF_INET;
 	serverAddress.sin_port = htons(server.port);
-	serverAddress.sin_addr.s_addr = INADDR_ANY;
+	serverAddress.sin_addr.s_addr = htonl(ip);
+
 	if (bind(server.socket, reinterpret_cast<const sockaddr*> \
 		(&serverAddress), sizeof(serverAddress)) == -1)
 	{
@@ -39,7 +52,7 @@ void	WebServer::initialize()
 	for (Server& it : servers)
 	{
 		setupSocket(it.socket);
-		bindSocket(serverAddress, it);
+		bindSocket(serverAddress, it, ipStringToInt(it.host));
 		listenSocket(it.socket);
 	}
 	set_signals();
