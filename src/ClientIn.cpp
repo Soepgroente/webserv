@@ -5,6 +5,7 @@ void	Client::readIncomingRequest()
 	ssize_t		readBytes;
 	std::string	tmp;
 
+	request.status = defaultStatus;
 	tmp.resize(BUFFERSIZE);
 	readBytes = read(fd, &tmp[0], BUFFERSIZE);
 	if (readBytes == -1)

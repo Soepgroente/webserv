@@ -32,19 +32,24 @@ bool	Client::getHost(size_t i)
 	return (true);
 }
 
-const Location&	Client::resolveRequestLocation(std::string path)
+const Location&	Client::resolveRequestLocation(std::string& path)
 {
-	auto	it = getServer().locations.begin();
-	for (size_t i = 0; it != getServer().locations.end() && i < getServer().locations.size(); i++)
+	auto	start = getServer().locations.begin();
+	auto	end = getServer().locations.end();
+	auto	tmp = start;
+	for (auto it = start; it != end; it++)
 	{
 		if (path.find(it->first) == 0)
-			it++;
+			tmp = it;
 	}
-	if (it == getServer().locations.end())
+	if (tmp == getServer().locations.end())
 		request.status = requestNotFound;
-	if (it != getServer().locations.begin())
-		it--;
-	return getServer().locations.at(it->first);
+	if (tmp != start && tmp != end)
+		tmp--;
+	size_t pos = path.find_first_not_of(tmp->first);
+	if (pos != std::string::npos)
+		path = path.substr(pos - 1);
+	return getServer().locations.at(tmp->first);
 }
 
 bool	Client::getMethods(size_t i)
@@ -55,21 +60,18 @@ bool	Client::getMethods(size_t i)
 	stream.str(request.splitRequest[i]);
 	stream >> request.method >> request.path >> request.protocol;
 
-	const Location& location = resolveRequestLocation(request.path); // probably works
+	const Location& location = resolveRequestLocation(request.path); // Perhasps needs more work
 	if (std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != 0)
 		return (false);
 	/* Try to show index page or directory listing if the request.path == location.first */
-	
+	std::map<std::string, std::string>	dir = location.dirs;
 	if (request.path == "/")
 	{
-		// Location location = getServer().locations.at("/");
-		std::map<std::string, std::string>	dir = location.dirs;
-		std::string tmp = dir.at("root") + request.path;
-		request.path = tmp + dir.at("index");
+		request.path = request.path + dir.at("index");
 	}
-
+	request.path = dir.at("root") + request.path;
 	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{
