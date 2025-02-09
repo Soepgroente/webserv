@@ -147,7 +147,7 @@ bool	Client::parseHeaders()
 	if (request.buffer.find("\r\n\r\n") == std::string::npos)
 		return (false);
 
-	const std::map<std::string, std::function<bool(Client*, const std::string)>> parseFunctions = 
+	const std::map<std::string, std::function<bool(Client*, const std::string&)>> parseFunctions = 
 	{
 		{"GET", &Client::getMethods},
 		{"POST", &Client::getMethods},
