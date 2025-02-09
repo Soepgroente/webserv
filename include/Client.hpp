@@ -70,12 +70,13 @@ class Client
 
 	void	interpretRequest();
 	bool	parseHeaders();
-	bool	getContentType(size_t i);
-	bool	getContentLength(size_t i);
-	bool	getHost(size_t i);
-	bool	getKeepAlive(size_t i);
-	bool	getConnectionType(size_t i);
-	bool	getMethods(size_t i);
+	bool	getContentType(const std::string& requestLine);
+	bool	getContentLength(const std::string& requestLine);
+	bool	getChunked(const std::string& requestLine);
+	bool	getHost(const std::string& requestLine);
+	bool	getKeepAlive(const std::string& requestLine);
+	bool	getConnectionType(const std::string& requestLine);
+	bool	getMethods(const std::string& requestLine);
 	const Location&	resolveRequestLocation(std::string& path);
 
 	int64_t				latestPing;
