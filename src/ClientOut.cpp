@@ -17,6 +17,9 @@ void	Client::writeToClient()
 	{
 		status = LISTENING;
 		writePos = 0;
+		readPos = 0;
+		response.buffer.clear();
+		request.clear();
 	}
 	else
 		writePos += BUFFERSIZE;

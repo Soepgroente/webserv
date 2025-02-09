@@ -55,11 +55,14 @@ const Location&	Client::resolveRequestLocation(std::string& path)
 	}
 	if (tmp == getServer().locations.end())
 		request.status = requestNotFound;
-	if (tmp != start && tmp != end)
-		tmp--;
-	size_t pos = path.find_first_not_of(tmp->first);
-	if (pos != std::string::npos)
-		path = path.substr(pos - 1);
+	// size_t pos = path.find_first_not_of(tmp->first);
+	// std::cout << "Pos: " << pos << std::endl;
+	// if (pos != std::string::npos)
+		// path = path.substr(pos - 1);
+	if (tmp->first == "/") // Do this if-else in a smarter way
+		path = path.substr(0);
+	else
+		path = path.substr(tmp->first.size());
 	return getServer().locations.at(tmp->first);
 }
 
@@ -235,10 +238,11 @@ void	Client::interpretRequest()
 		{
 			status = RESPONDING;
 		}
-		else
-		{
-			status = readingFromFile;
-		}
+		// else
+		// {
+		// 	status = readingFromFile;
+		// 	puts("Status is readingfromfile");
+		// }
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
@@ -248,7 +252,6 @@ void	Client::interpretRequest()
 		{
 			status = launchCgi;
 		}
-		status = readingFromFile;
-		puts("Status is readingfromfile");
+		// status = readingFromFile;
 	}
 }
