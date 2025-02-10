@@ -19,6 +19,7 @@
 enum clientStatus
 {
 	launchCgi,
+	parseCgi,
 	LISTENING,
 	RESPONDING,
 	CLOSING,
@@ -59,6 +60,7 @@ class Client
 	void			writeToClient();
 	void			readIncomingRequest();
 	void			handleOutgoingState();
+	void			setupErrorPage(int error);
 
 	static std::vector<pollfd>	fileAndCgiDescriptors;
 

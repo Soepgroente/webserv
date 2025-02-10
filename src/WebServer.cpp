@@ -2,7 +2,6 @@
 
 WebServer::~WebServer()
 {
-	puts("Destructor called");
 	for (size_t i = 0; i < clients.size(); i++)
 	{
 		closeConnection(i + servers.size(), i);
@@ -22,7 +21,7 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	std::cout << "Accepted connection" << std::endl;
+	printToLog("New connection accepted");
 }
 
 void	WebServer::removeInactiveConnections()
@@ -32,38 +31,11 @@ void	WebServer::removeInactiveConnections()
 		if (clients[i].getClientStatus() == CLOSING || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
-			puts("inactive connecti0n");
 			closeConnection(i + servers.size(), i);
 			i--;
 		}
 	}
 }
-
-/* void	WebServer::handleIncoming(Client* client, size_t& position, int fd)
-{
-	if (client->getClientStatus() == parseCgi)
-	{
-		parseCgiOutput(*client);
-	}
-	else if (client->getClientStatus() == readingFromFile)
-	{
-		client->readFromFile();
-	}
-	else if (handleRequest(*client, fd) == false)
-	{
-		position--;
-	}
-}
-
-void	WebServer::handleOutgoing(Client& client, size_t& position, int fd)
-{
-	if (client.getClientStatus() == launchCgi)
-	{
-		launchCGI(client);
-	}
-	else
-		handleResponse(client, fd);
-} */
 
 void	WebServer::loopadydoopady()
 {
@@ -76,39 +48,46 @@ void	WebServer::loopadydoopady()
 			throw std::runtime_error("Failed to poll clients");
 		if (poll(Client::fileAndCgiDescriptors.data(), Client::fileAndCgiDescriptors.size(), 0) == -1)
 			throw std::runtime_error("Failed to poll cgi/file descriptors");
-		for (size_t i = 0; i < pollDescriptors.size(); i++)
+
+		/*	Loop through Servers to see if a new connection is attempted	*/
+
+		for (size_t i = 0; i < amountOfServers && pollDescriptors[i].revents != 0; i++)
 		{
-			if (pollDescriptors[i].revents == 0)
-				continue ;
 			if (isServerSocket(i) == true)
 			{
 				acceptConnection(pollDescriptors[i].fd);
-				continue ;
 			}
-			Client& client = clients[i - amountOfServers];
+		}
+		/*	Loop through Clients to see if anything happened	*/
 
-			client.setPingTime();
-			if ((pollDescriptors[i].revents & POLLHUP) != 0)
+		for (size_t i = 0; i < clients.size(); i++)
+		{
+			if (pollDescriptors[i + amountOfServers].revents == 0)
+				continue ;
+
+			Client& client = clients[i];
+
+			if ((pollDescriptors[i + amountOfServers].revents & POLLHUP) != 0)
 			{
-				// closeAndResetFd(pollDescriptors[i].fd);
 				client.setClientStatus(CLOSING);
 			}
-			else if ((pollDescriptors[i].revents & POLLIN) != 0)
+			else if ((pollDescriptors[i + amountOfServers].revents & POLLIN) != 0)
 			{
 				client.readIncomingRequest();
 				if (client.getClientStatus() != LISTENING)
 				{
-					pollDescriptors[i].events = POLLOUT;
+					pollDescriptors[i + amountOfServers].events = POLLOUT;
 				}
 			}
-			else if ((pollDescriptors[i].revents & POLLOUT) != 0)
+			else if ((pollDescriptors[i + amountOfServers].revents & POLLOUT) != 0)
 			{
 				client.handleOutgoingState();
 				if (client.getClientStatus() == LISTENING)
 				{
-					pollDescriptors[i].events = POLLIN;
+					pollDescriptors[i + amountOfServers].events = POLLIN;
 				}
 			}
+			client.setPingTime();
 		}
 	}
 }

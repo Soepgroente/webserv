@@ -1,14 +1,5 @@
 #include "Client.hpp"
 
-static void	setDefaultResponse(Client& client, HttpResponse& response)
-{
-	if (HttpResponse::defaultResponses.find(client.getRequest().status) != HttpResponse::defaultResponses.end())
-	{
-		response.buffer = HttpResponse::defaultResponses.at(client.getRequest().status);
-		client.setClientStatus(RESPONDING);
-	}
-}
-
 bool	Client::getContentType(const std::string& requestLine)
 {
 	request.contentType = requestLine.substr(14);
@@ -119,7 +110,7 @@ bool	Client::getConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
 	if (request.connectionType == "Close")
-		this->remainingRequests = 1;
+		remainingRequests = 1;
 	return (true);
 }
 
@@ -172,7 +163,7 @@ bool	Client::parseHeaders()
 		{
 			if (parseFunctions.at(firstWord)(this, request.splitRequest[i]) == false)
 			{
-				setDefaultResponse(*this, response);
+				setupErrorPage(request.status);
 				return (true);
 			}
 		}
@@ -238,11 +229,6 @@ void	Client::interpretRequest()
 		{
 			status = RESPONDING;
 		}
-		// else
-		// {
-		// 	status = readingFromFile;
-		// 	puts("Status is readingfromfile");
-		// }
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
@@ -252,6 +238,5 @@ void	Client::interpretRequest()
 		{
 			status = launchCgi;
 		}
-		// status = readingFromFile;
 	}
 }

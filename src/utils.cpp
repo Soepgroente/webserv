@@ -55,3 +55,24 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
 	fd = -1;
 	polls.erase(polls.begin() + pollFdIndex);
 }
+
+std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
+{
+	out << std::asctime(currentTime.localTime);
+	return (out);
+}
+
+void	printToLog(const std::string& message)
+{
+	std::ofstream	file;
+	DateTime		time;
+
+	file.open("log.txt", std::ofstream::out | std::ofstream::app);
+	if (file.is_open() == false)
+	{
+		std::cerr << "Failed to open log file" << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+	file << time << "---" << message << "---\n" << std::endl;
+	file.close();
+}
