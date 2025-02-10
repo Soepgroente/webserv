@@ -18,7 +18,6 @@ CPPFILES	:=	Client.cpp \
 				WebServer.cpp \
 				WebServerParseConfig.cpp \
 				WebServerRequests.cpp \
-				WebServerResponse.cpp \
 				WebServerSocket.cpp \
 				WebServerUtils.cpp \
 				utils.cpp \

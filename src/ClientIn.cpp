@@ -23,7 +23,7 @@ void	Client::setupErrorPage(int error)
 	std::string	path = "." + server.errorLocation + std::to_string(error) + ".jpg";
 
 	std::cout << path << std::endl;
-	openFile(path.c_str(), Client::fileAndCgiDescriptors);
+	fileFd = openFile(path.c_str(), Client::fileAndCgiDescriptors);
 	response.reply = HttpResponse::defaultResponses[error];
 	status = readingFromFile;
 }

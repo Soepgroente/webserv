@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+/*	Writes whichever amount is smaller between BUFFERSIZE and remaining response size to client	*/
+
 void	Client::writeToClient()
 {
 	ssize_t	writtenBytes;

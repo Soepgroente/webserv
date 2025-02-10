@@ -61,7 +61,6 @@ bool	Client::getMethods(const std::string &requestLine)
 {
     std::stringstream	stream;
 	
-
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
