@@ -1,5 +1,14 @@
 #include "Client.hpp"
 
+static void	setDefaultResponse(Client& client, HttpResponse& response)
+{
+	if (HttpResponse::defaultResponses.find(client.getRequest().status) != HttpResponse::defaultResponses.end())
+	{
+		response.buffer = HttpResponse::defaultResponses.at(client.getRequest().status);
+		client.setClientStatus(RESPONDING);
+	}
+}
+
 bool	Client::getContentType(const std::string& requestLine)
 {
 	request.contentType = requestLine.substr(14);
@@ -34,13 +43,49 @@ bool	Client::getChunked(const std::string& requestLine)
 	return (true);
 }
 
-bool	Client::getMethods(const std::string& requestLine)
+const Location&	Client::resolveRequestLocation(std::string& path)
+{
+	auto	start = getServer().locations.begin();
+	auto	end = getServer().locations.end();
+	auto	tmp = start;
+	for (auto it = start; it != end; it++)
+	{
+		if (path.find(it->first) == 0)
+			tmp = it;
+	}
+	if (tmp == getServer().locations.end())
+		request.status = requestNotFound;
+	// size_t pos = path.find_first_not_of(tmp->first);
+	// std::cout << "Pos: " << pos << std::endl;
+	// if (pos != std::string::npos)
+		// path = path.substr(pos - 1);
+	if (tmp->first == "/") // Do this if-else in a smarter way
+		path = path.substr(0);
+	else
+		path = path.substr(tmp->first.size());
+	return getServer().locations.at(tmp->first);
+}
+
+bool	Client::getMethods(const std::string &requestLine)
 {
     std::stringstream	stream;
+	
 
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
+	const Location& location = resolveRequestLocation(request.path); // Perhasps needs more work
+	if (std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+		request.status = requestMethodNotAllowed;
+	if (request.status != 0)
+		return (false);
+	/* Try to show index page or directory listing if the request.path == location.first */
+	std::map<std::string, std::string>	dir = location.dirs;
+	if (request.path == "/")
+	{
+		request.path = request.path + dir.at("index");
+	}
+	request.path = dir.at("root") + request.path;
 	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{
@@ -63,7 +108,7 @@ bool	Client::getMethods(const std::string& requestLine)
 		}
 		else
 		{
-			request.status = requestIsInvalid;
+			request.status = requestForbidden;
 			return (false);
 		}
 	}
@@ -96,15 +141,6 @@ bool	Client::getKeepAlive(const std::string& requestLine)
 		return (false);
 	}
 	return (true);
-}
-
-static void	setDefaultResponse(Client& client, HttpResponse& response)
-{
-	if (HttpResponse::defaultResponses.find(client.getClientStatus()) != HttpResponse::defaultResponses.end())
-	{
-		response.buffer = HttpResponse::defaultResponses.at(client.getClientStatus());
-		client.setClientStatus(RESPONDING);
-	}
 }
 
 bool	Client::parseHeaders()
@@ -152,7 +188,6 @@ static int	decodeChunks(std::string& buffer, std::string& body)
 	{
 		size_t		chunkSize;
 		std::string	newChunk;
-
 		try
 		{
 			chunkSize = std::stoi(buffer.substr(0, buffer.find_first_of("\r\n")), nullptr, 16);
@@ -203,10 +238,11 @@ void	Client::interpretRequest()
 		{
 			status = RESPONDING;
 		}
-		else
-		{
-			status = readingFromFile;
-		}
+		// else
+		// {
+		// 	status = readingFromFile;
+		// 	puts("Status is readingfromfile");
+		// }
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
@@ -216,7 +252,6 @@ void	Client::interpretRequest()
 		{
 			status = launchCgi;
 		}
-		status = readingFromFile;
-		puts("Status is readingfromfile");
+		// status = readingFromFile;
 	}
 }

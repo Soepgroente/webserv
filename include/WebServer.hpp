@@ -30,6 +30,7 @@
 #define BUFFERSIZE 8 * 1024
 #define CHUNKED_EOF "0\r\n\r\n"
 
+
 struct	Server;
 struct	pollfd;
 class	Client;

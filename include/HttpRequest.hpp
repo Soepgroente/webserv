@@ -5,10 +5,13 @@
 
 enum RequestStatus
 {
+	defaultStatus,
 	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsInvalid = 400,
-	requestNotFound = 404,
+	requestForbidden = 403,
+	requestNotFound,
+	requestMethodNotAllowed,
 };
 
 struct	HttpRequest
@@ -35,7 +38,7 @@ struct	HttpRequest
 	std::string					contentType;
 	std::string					fileType;
 	int							status;
-	bool						chunked;
+	bool 						chunked;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);
