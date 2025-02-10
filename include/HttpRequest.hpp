@@ -5,6 +5,7 @@
 
 enum RequestStatus
 {
+	defaultStatus,
 	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsInvalid = 400,
@@ -24,6 +25,7 @@ struct	HttpRequest
 	void			clear();
 
 	std::string					buffer;
+	std::string					body;
 	size_t						contentLength;
 	std::vector<std::string> 	splitRequest;
 	std::string					connectionType;
@@ -36,6 +38,7 @@ struct	HttpRequest
 	std::string					contentType;
 	std::string					fileType;
 	int							status;
+	bool 						chunked;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);
