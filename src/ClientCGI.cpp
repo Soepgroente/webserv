@@ -68,8 +68,8 @@ void	Client::launchCGI()
 		char** envp = getEnvp();
 		if (execve(cgiLocation.c_str(), args, envp) == -1)
 		{
-			// internal server error
-			std::cerr << "Failed to execve " << cgiLocation << std::endl;
+			write(STDOUT_FILENO, "Error: 500", 10);
+			printToLog("Failed to execve");
 			std::exit(EXIT_FAILURE);
 		}
 	}

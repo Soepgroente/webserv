@@ -2,19 +2,23 @@
 
 void	startWebserver(const std::string& config)
 {
+	printToLog("Initial Server Bootup");
 	while (FOREVER)
 	{
 		try
 		{
 			WebServer	webserver;
+
+			printToLog("WebServer starting up");
 			webserver.parseConfigurations(config);
 			webserver.startTheThing();
 		}
 		catch (std::exception& e)
 		{
-			std::cerr << "A tragic error has occured 😭 " << e.what() << std::endl;
-			std::exit(1);
+			printToLog("WebServer shutting down due to exception: " + std::string(e.what()));
+			std::exit(EXIT_FAILURE);
 		}
+		std::exit(EXIT_SUCCESS);
 	}
 }
 

@@ -20,6 +20,7 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		contentType = other.contentType;
 		fileType = other.fileType;
 		status = other.status;
+		chunked = other.chunked;
 	}
 	return (*this);
 }
@@ -37,6 +38,7 @@ void	HttpRequest::clear()
 	contentType.clear();
 	fileType.clear();
 	status = requestIsInvalid;
+	chunked = false;
 }
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
@@ -52,5 +54,6 @@ std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 	out << "content type: " << p.contentType << std::endl;
 	out << "file type: " << p.fileType << std::endl;
 	out << "status: " << p.status << std::endl;
+	out << "chunked: " << p.chunked << std::endl;
 	return (out);
 }
