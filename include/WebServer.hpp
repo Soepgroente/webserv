@@ -58,6 +58,12 @@ class	WebServer
 	
 	/*	Private functions	*/
 	
+	std::string getMimeType(const std::string& path) const;
+	bool	handleDelete(Client& client, std::string& buffer);
+	bool	handlePost(Client& client, std::string& buffer);
+	bool	handleGet(Client& client, std::string& buffer);
+	void	handleResponse(Client& client);
+
 
 	void	initialize();
 	void	loopadydoopady();
