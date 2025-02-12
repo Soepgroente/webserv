@@ -20,7 +20,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	return (split);
 }
 
-int	openFile(const char* path, int openFlags, std::vector<pollfd>& pdArray)
+int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>& pdArray)
 {
 	int fd = open(path, openFlags);
 	if (fd == -1)
@@ -32,7 +32,7 @@ int	openFile(const char* path, int openFlags, std::vector<pollfd>& pdArray)
 		close(fd);
 		throw std::runtime_error("Failed to set file fd to non-blocking");
 	}
-	pdArray.push_back({fd, POLLIN, 0});
+	pdArray.push_back({fd, state, 0});
 	return (fd);
 }
 

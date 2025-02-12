@@ -12,7 +12,7 @@
 #include <vector>
 
 void	signals_for_kids(void);
-int		openFile(const char* path, int openFlags, std::vector<pollfd>& pdArray);
+int		openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>& pdArray);
 int		getPollfdIndex(std::vector<pollfd>& polls, int fdToFind);
 void	closeAndResetFd(std::vector<pollfd>& polls, int& fd);
 void	errorExit(std::string errorMessage, int errorLocation);

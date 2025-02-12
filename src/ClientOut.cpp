@@ -35,7 +35,8 @@ void	Client::writeToFile()
 	if (writtenBytes == -1)
 	{
 		printToLog("Error writing to file fd: " + std::string(strerror(errno)));
-		close(fileFd);
+		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
+		writePos = 0;
 		status = CLOSING;
 		return ;
 	}
@@ -44,7 +45,7 @@ void	Client::writeToFile()
 		status = RESPONDING;
 		writePos = 0;
 		response.reply = HttpResponse::defaultResponses[200];
-		close(fileFd);
+		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 	}
 	else
 		writePos += BUFFERSIZE;

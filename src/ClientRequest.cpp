@@ -101,7 +101,7 @@ bool	Client::parseGet(const std::string &requestLine)
 	}
 	if (std::filesystem::is_regular_file(path))
 	{
-		fileFd = openFile(path.c_str(), O_RDONLY, Client::fileAndCgiDescriptors);
+		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 		status = readingFromFile;
 	}
     else if (std::filesystem::is_directory(path))
@@ -132,8 +132,7 @@ bool	Client::parsePost(const std::string& requestLine)
 		request.status = fileAlreadyExists;
 		return (false);
 	}
-	fileFd = openFile(path.c_str(), O_WRONLY, Client::fileAndCgiDescriptors);
-	status = writingToFile;
+	fileFd = openFile(path.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
 	return (true);
 }
 
@@ -223,6 +222,7 @@ bool	Client::parseHeaders()
 		}
 	}
 	request.body += request.buffer.substr(request.buffer.find("\r\n\r\n") + 4);
+	request.buffer.clear();
 	request.status = headerIsParsed;
 	return (true);
 }
@@ -269,9 +269,14 @@ static void	parseBody(HttpRequest& request)
 		else
 			request.status = requestIsInvalid;
 	}
-	else if (request.contentLength == request.buffer.size())
+	else if (request.contentLength == request.body.size())
 	{
 		request.status = bodyIsParsed;
+	}
+	else
+	{
+		request.body += request.buffer;
+		request.buffer.clear();
 	}
 }
 
@@ -283,10 +288,10 @@ void	Client::interpretRequest()
 	if (request.status == bodyIsParsed)
 	{
 		remainingRequests--;
-		if (request.method != "GET")
-		{
-			status = RESPONDING;
-		}
+		if (request.method == "GET")
+			status = readingFromFile;
+		if (request.method == "POST")
+			status = writingToFile;
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{

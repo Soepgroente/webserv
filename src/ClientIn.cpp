@@ -18,15 +18,6 @@ void	Client::readIncomingRequest()
 	interpretRequest();
 }
 
-void	Client::setupErrorPage(int error)
-{
-	std::string	path = "." + server.errorLocation + std::to_string(error) + ".jpg";
-
-	fileFd = openFile(path.c_str(), O_RDONLY, Client::fileAndCgiDescriptors);
-	response.reply = HttpResponse::defaultResponses[error];
-	status = readingFromFile;
-}
-
 void	Client::readFromFile()
 {
 	int pollIndex = getPollfdIndex(Client::fileAndCgiDescriptors, fileFd);

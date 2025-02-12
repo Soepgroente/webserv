@@ -96,7 +96,7 @@
     </style>
 </head>
 <body>
-    <h1>Planets of the solar system</h1>
+    <h1>Journey through the solar system</h1>
 
     <div class="upload-section">
         <label class="custom-file-upload">
@@ -123,26 +123,9 @@
     </div>
 
     <script>
-        document.getElementById('fileUpload').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const response = await fetch(`${file.name}`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                alert(`File uploaded successfully: ${file.name}`);
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                alert('Failed to upload file');
-            }
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const fileName = e.target.files[0].name;
+            alert(`File selected: ${fileName}`);
         });
 
         document.querySelectorAll('.planet-button').forEach(button => {

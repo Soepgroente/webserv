@@ -81,3 +81,12 @@ std::ostream&	operator<<(std::ostream& out, const Client& p)
 	out << "Client status: " << p.getClientStatus() << std::endl;
 	return (out);
 }
+
+void	Client::setupErrorPage(int error)
+{
+	std::string	path = "." + server.errorLocation + std::to_string(error) + ".jpg";
+
+	fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
+	response.reply = HttpResponse::defaultResponses[error];
+	status = readingFromFile;
+}
