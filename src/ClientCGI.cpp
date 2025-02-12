@@ -68,7 +68,8 @@ void	Client::launchCGI()
 		char** envp = getEnvp();
 		if (execve(cgiLocation.c_str(), args, envp) == -1)
 		{
-			write(STDOUT_FILENO, "Error: 500", 10);
+			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
+				printToLog("Failed to write to cgi pipe");
 			printToLog("Failed to execve");
 			std::exit(EXIT_FAILURE);
 		}

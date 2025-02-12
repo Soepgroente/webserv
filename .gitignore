@@ -8,3 +8,4 @@ tester
 *.dSYM
 obj
 ubuntu_tester
+log.txt

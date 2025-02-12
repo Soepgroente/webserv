@@ -11,7 +11,7 @@ void	Client::writeToClient()
 		std::min(response.reply.size() - writePos, (size_t)BUFFERSIZE));
 	if (writtenBytes == -1)
 	{
-        std::cerr << "Error writing to client_fd: " << strerror(errno) << std::endl;
+		printToLog("Error writing to client fd: " + std::string(strerror(errno)));
 		status = CLOSING;
 		return ;
 	}
@@ -21,6 +21,30 @@ void	Client::writeToClient()
 		writePos = 0;
 		response.clear();
 		request.clear();
+	}
+	else
+		writePos += BUFFERSIZE;
+}
+
+void	Client::writeToFile()
+{
+	ssize_t	writtenBytes;
+
+	writtenBytes = write(fileFd, &request.body[writePos], \
+		std::min(request.body.size() - writePos, (size_t)BUFFERSIZE));
+	if (writtenBytes == -1)
+	{
+		printToLog("Error writing to file fd: " + std::string(strerror(errno)));
+		close(fileFd);
+		status = CLOSING;
+		return ;
+	}
+	if (writtenBytes < BUFFERSIZE)
+	{
+		status = RESPONDING;
+		writePos = 0;
+		response.reply = HttpResponse::defaultResponses[200];
+		close(fileFd);
 	}
 	else
 		writePos += BUFFERSIZE;
@@ -39,6 +63,7 @@ void	Client::handleOutgoingState()
 	std::map<clientStatus, std::function<void (Client*)>> outgoingMethods =
 	{
 		{RESPONDING, &Client::writeToClient},
+		{writingToFile, &Client::writeToFile},
 		{launchCgi, &Client::launchCGI},
 		{parseCgi, &Client::readFromFile},
 		{showDirectory, &Client::parseDirectory},

@@ -15,7 +15,9 @@ std::map<int, std::string> HttpResponse::defaultResponses =
 	{403, "HTTP/1.1 403 Forbidden\r\nContent-Type: image/jpeg\r\nContent-Length: "},
 	{404, "HTTP/1.1 404 Not Found\r\nContent-Type: image/jpeg\r\nContent-Length: "},
 	{405, "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: image/jpeg\r\nContent-Length: "},
-	{413, "HTTP/1.1 413 Content Too Large\r\nContent-Type: image/jpeg\r\nContent-Length: "},
+	{409, "HTTP/1.1 409 Conflict\r\nContent-Type: image/jpeg\r\nContent-Length: "},
+	{411, "HTTP/1.1 411 Length Required\r\nContent-Type: image/jpeg\r\nContent-Length: "},
+	{413, "HTTP/1.1 413 Payload Too Large\r\nContent-Type: image/jpeg\r\nContent-Length: "},
 	{414, "HTTP/1.1 414 URI Too Long\r\nContent-Type: image/jpeg\r\nContent-Length: "},
 
 	{500, "HTTP/1.1 500 Internal Server Error\r\nContent-Type: image/jpeg\r\nContent-Length: "},

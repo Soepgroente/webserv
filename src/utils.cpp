@@ -20,9 +20,9 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	return (split);
 }
 
-int	openFile(const char* path, std::vector<pollfd>& pdArray)
+int	openFile(const char* path, int openFlags, std::vector<pollfd>& pdArray)
 {
-	int fd = open(path, O_RDONLY);
+	int fd = open(path, openFlags);
 	if (fd == -1)
 	{
 		throw std::runtime_error("Failed to open file even though it exists");

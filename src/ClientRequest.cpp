@@ -1,20 +1,23 @@
 #include "Client.hpp"
 
-bool	Client::getContentType(const std::string& requestLine)
+bool	Client::parseContentType(const std::string& requestLine)
 {
 	request.contentType = requestLine.substr(14);
 	return (true);
 }
 
-bool	Client::getContentLength(const std::string& requestLine)
+bool	Client::parseContentLength(const std::string& requestLine)
 {
 	request.contentLength = std::stoi(requestLine.substr(16));
 	if (static_cast<int32_t>(request.contentLength) > server.maxBodySize)
-		request.status = requestIsInvalid;
+	{
+		request.status = payloadTooLarge;
+		return (false);
+	}
 	return (true);
 }
 
-bool	Client::getHost(const std::string& requestLine)
+bool	Client::parseHost(const std::string& requestLine)
 {
 	size_t	splitter = requestLine.find_last_of(':');
 
@@ -23,7 +26,7 @@ bool	Client::getHost(const std::string& requestLine)
 	return (true);
 }
 
-bool	Client::getChunked(const std::string& requestLine)
+bool	Client::parseChunked(const std::string& requestLine)
 {
 	if (requestLine != "Transfer-Encoding: chunked")
 	{
@@ -63,27 +66,9 @@ const Location&	Client::resolveRequestLocation(std::string& path)
 	}
 	return (server.locations.at(tmp->first));
 }
+/*	Sets up the correct path for the next step, shows index if no particular path	*/
 
-// location /12 {
-// 	methods GET;
-// 	directoryListing on;
-// 	root /34
-// 	index home.html;
-// }
-
-// /34/mars.jpg
-// /345/mars.jpg
-
-// / + planets/mars.jpg
-// /upload/index
-
-// /var/www/html/home.html
-// /methodNotAllowed2/mars.jpg
-// /var/testDirectories/methodNotAllowed/mars.jpg
-// /home.html
-// /var/testDirectories/directoryListingOn/home.html
-
-bool	Client::getMethods(const std::string &requestLine)
+bool	Client::parsePath(const std::string& requestLine)
 {
     std::stringstream	stream;
 	
@@ -95,17 +80,20 @@ bool	Client::getMethods(const std::string &requestLine)
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
 		return (false);
-	/* Try to show index page or directory listing if the request.path == location.first */
 	const std::map<std::string, std::string>&	dir = location.dirs;
 	if (request.path == "/")
 	{
 		request.path = request.path + dir.at("index");
 	}
 	request.path = dir.at("root") + request.path;
+	return (true);
+}
 
-	// for GET
-
+bool	Client::parseGet(const std::string &requestLine)
+{
+	parsePath(requestLine);
 	const std::filesystem::path path = '.' + request.path;
+
 	if (std::filesystem::exists(path) == false)
 	{
 		request.status = requestNotFound;
@@ -113,7 +101,7 @@ bool	Client::getMethods(const std::string &requestLine)
 	}
 	if (std::filesystem::is_regular_file(path))
 	{
-		fileFd = openFile(path.c_str(), Client::fileAndCgiDescriptors);
+		fileFd = openFile(path.c_str(), O_RDONLY, Client::fileAndCgiDescriptors);
 		status = readingFromFile;
 	}
     else if (std::filesystem::is_directory(path))
@@ -134,7 +122,45 @@ bool	Client::getMethods(const std::string &requestLine)
 	return (true);
 }
 
-bool	Client::getConnectionType(const std::string& requestLine)
+bool	Client::parsePost(const std::string& requestLine)
+{
+	parsePath(requestLine);
+	const std::filesystem::path path = '.' + request.path;
+
+	if (std::filesystem::exists(path) == true)
+	{
+		request.status = fileAlreadyExists;
+		return (false);
+	}
+	fileFd = openFile(path.c_str(), O_WRONLY, Client::fileAndCgiDescriptors);
+	status = writingToFile;
+	return (true);
+}
+
+bool	Client::parseDelete(const std::string& requestLine)
+{
+	parsePath(requestLine);
+	const std::filesystem::path path = '.' + request.path;
+
+	if (std::filesystem::exists(path) == true)
+	{
+		if (std::filesystem::remove(path) == false)
+		{
+			request.status = requestForbidden;
+			return (false);
+		}
+		status = RESPONDING;
+		response.reply = HttpResponse::defaultResponses[200];
+		return (true);
+	}
+	else
+	{
+		request.status = requestNotFound;
+		return (false);
+	}
+}
+
+bool	Client::parseConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
 	if (request.connectionType == "Close")
@@ -142,7 +168,7 @@ bool	Client::getConnectionType(const std::string& requestLine)
 	return (true);
 }
 
-bool	Client::getKeepAlive(const std::string& requestLine)
+bool	Client::parseKeepAlive(const std::string& requestLine)
 {
 	if (request.connectionType != "Keep-Alive")
 	{
@@ -171,15 +197,15 @@ bool	Client::parseHeaders()
 
 	const std::map<std::string, std::function<bool(Client*, const std::string&)>> parseFunctions = 
 	{
-		{"GET", &Client::getMethods},
-		{"POST", &Client::getMethods},
-		{"DELETE", &Client::getMethods},
-		{"Connection:", &Client::getConnectionType},
-		{"Transfer-Encoding:", &Client::getChunked},
-		{"Keep-Alive:", &Client::getKeepAlive},
-		{"Host:", &Client::getHost},
-		{"Content-Type:", &Client::getContentType},
-		{"Content-Length:", &Client::getContentLength}
+		{"GET", &Client::parseGet},
+		{"POST", &Client::parsePost},
+		{"DELETE", &Client::parseDelete},
+		{"Connection:", &Client::parseConnectionType},
+		{"Transfer-Encoding:", &Client::parseChunked},
+		{"Keep-Alive:", &Client::parseKeepAlive},
+		{"Host:", &Client::parseHost},
+		{"Content-Type:", &Client::parseContentType},
+		{"Content-Length:", &Client::parseContentLength}
 	};
 
 	request.splitRequest = stringSplit(request.buffer);

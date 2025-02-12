@@ -10,8 +10,10 @@ enum RequestStatus
 	bodyIsParsed,
 	requestIsInvalid = 400,
 	requestForbidden = 403,
-	requestNotFound,
-	requestMethodNotAllowed,
+	requestNotFound = 404,
+	requestMethodNotAllowed = 405,
+	fileAlreadyExists = 409,
+	payloadTooLarge = 413,
 };
 
 struct	HttpRequest
