@@ -1,6 +1,7 @@
 #include "Client.hpp"
 
-/*	Writes whichever amount is smaller between BUFFERSIZE and remaining response size to client	*/
+/*	Writes whichever amount is smaller between BUFFERSIZE and remaining response size to client.
+	Clears the request & response structs once everything has been sent	*/
 
 void	Client::writeToClient()
 {
@@ -19,6 +20,7 @@ void	Client::writeToClient()
 		status = LISTENING;
 		writePos = 0;
 		response.clear();
+		request.clear();
 	}
 	else
 		writePos += BUFFERSIZE;
@@ -29,6 +31,8 @@ void	Client::parseDirectory()
 
 	status = RESPONDING;
 }
+
+/*	Executes a different method based on the status of the Client	*/
 
 void	Client::handleOutgoingState()
 {

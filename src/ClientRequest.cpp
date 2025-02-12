@@ -36,26 +36,52 @@ bool	Client::getChunked(const std::string& requestLine)
 
 const Location&	Client::resolveRequestLocation(std::string& path)
 {
-	auto	start = getServer().locations.begin();
-	auto	end = getServer().locations.end();
-	auto	tmp = start;
-	for (auto it = start; it != end; it++)
+	using MapIterator = std::map<std::string, Location>::const_iterator;
+
+	MapIterator	start = server.locations.begin();
+	MapIterator	end = server.locations.end();
+	MapIterator	tmp = end;
+
+	for (MapIterator it = start; it != end; it++)
 	{
 		if (path.find(it->first) == 0)
 			tmp = it;
 	}
-	if (tmp == getServer().locations.end())
+	if (tmp == end)
+	{
 		request.status = requestNotFound;
-	// size_t pos = path.find_first_not_of(tmp->first);
-	// std::cout << "Pos: " << pos << std::endl;
-	// if (pos != std::string::npos)
-		// path = path.substr(pos - 1);
-	if (tmp->first == "/") // Do this if-else in a smarter way
-		path = path.substr(0);
-	else
+		return (server.locations.at(start->first));
+	}
+	if (tmp->first != "/")
+	{
 		path = path.substr(tmp->first.size());
-	return getServer().locations.at(tmp->first);
+		if (path[0] != '/')
+		{
+			request.status = requestNotFound;
+			return (server.locations.at(start->first));
+		}
+	}
+	return (server.locations.at(tmp->first));
 }
+
+// location /12 {
+// 	methods GET;
+// 	directoryListing on;
+// 	root /34
+// 	index home.html;
+// }
+
+// /34/mars.jpg
+// /345/mars.jpg
+
+// / + planets/mars.jpg
+// /upload/index
+
+// /var/www/html/home.html
+// /methodNotAllowed2/mars.jpg
+// /var/testDirectories/methodNotAllowed/mars.jpg
+// /home.html
+// /var/testDirectories/directoryListingOn/home.html
 
 bool	Client::getMethods(const std::string &requestLine)
 {
@@ -64,18 +90,21 @@ bool	Client::getMethods(const std::string &requestLine)
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
-	const Location& location = resolveRequestLocation(request.path); // Perhasps needs more work
-	if (std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+	const Location& location = resolveRequestLocation(request.path);
+	if (request.status != defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
-	if (request.status != 0)
+	if (request.status != defaultStatus)
 		return (false);
 	/* Try to show index page or directory listing if the request.path == location.first */
-	std::map<std::string, std::string>	dir = location.dirs;
+	const std::map<std::string, std::string>&	dir = location.dirs;
 	if (request.path == "/")
 	{
 		request.path = request.path + dir.at("index");
 	}
 	request.path = dir.at("root") + request.path;
+
+	// for GET
+
 	const std::filesystem::path path = '.' + request.path;
 	if (std::filesystem::exists(path) == false)
 	{
@@ -172,6 +201,8 @@ bool	Client::parseHeaders()
 	return (true);
 }
 
+/*	Validates the chunks and unchunks, or returns invalid request	*/
+
 static int	decodeChunks(std::string& buffer, std::string& body)
 {
 	while (buffer.empty() == false)
@@ -196,6 +227,8 @@ static int	decodeChunks(std::string& buffer, std::string& body)
 	}
 	return (bodyIsParsed);
 }
+
+/*	Checks whether the full request has been received	*/
 
 static void	parseBody(HttpRequest& request)
 {
