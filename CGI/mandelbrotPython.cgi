@@ -1,4 +1,9 @@
+#!/usr/bin/env python3
+
 import numpy as np
+from PIL import Image
+import sys
+import io
 
 def mandelbrot(h, w, max_iter):
     y, x = np.ogrid[-1.4:1.4:h*1j, -2:0.8:w*1j]
@@ -8,30 +13,45 @@ def mandelbrot(h, w, max_iter):
 
     for i in range(max_iter):
         z = z**2 + c
-        diverge = z*np.conj(z) > 2**2
+        diverge = z * np.conj(z) > 2**2
         div_now = diverge & (divtime == max_iter)
         divtime[div_now] = i
         z[diverge] = 2
 
     return divtime
 
-# Generate Mandelbrot data
+def create_image(data, max_iter):
+    height, width = data.shape
+    img = Image.new('RGB', (width, height))
+    pixels = img.load()
+
+    for y in range(height):
+        for x in range(width):
+            value = data[y, x]
+            if value < max_iter:
+                color = (int(255 * value / max_iter), 0, 255)
+            else:
+                color = (0, 0, 0)
+            pixels[x, y] = color
+
+    return img
+
 width, height = 1920, 1080
 max_iter = 100
 data = mandelbrot(height, width, max_iter)
+image = create_image(data, max_iter)
 
-# Create SVG content
-print('<?xml version="1.0" encoding="UTF-8" standalone="no"?>')
-print(f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg" version="1.1">')
+# Save the image to a BytesIO buffer
+buffer = io.BytesIO()
+image.save(buffer, format='PNG')
+buffer.seek(0)
 
-# Add each point as a colored rectangle
-for y in range(height):
-    for x in range(width):
-        value = data[y, x]
-        if value < max_iter:
-            color = f"#{int(255 * value/max_iter):02x}00ff"
-        else:
-            color = "#000000"
-        print(f'<rect x="{x}" y="{y}" width="1" height="1" fill="black"/>')
+# Write the HTTP response headers
+sys.stdout.write("HTTP/1.1 200 OK\r\n")
+sys.stdout.write("Content-Type: image/png\r\n")
+sys.stdout.write("Content-Length: {}\r\n".format(len(buffer.getvalue())))
+sys.stdout.write("\r\n")
+sys.stdout.flush()
 
-print('</svg>')
+# Write the image content to stdout
+sys.stdout.buffer.write(buffer.getvalue())

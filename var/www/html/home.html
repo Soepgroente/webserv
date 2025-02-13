@@ -20,7 +20,7 @@
             margin-bottom: 40px;
         }
 
-        .upload-section {
+        .upload-section, .cgi-section {
             text-align: center;
             margin-bottom: 40px;
             padding: 20px;
@@ -35,7 +35,7 @@
             margin-top: 30px;
         }
 
-        .planet-button {
+        .planet-button, .cgi-button {
             padding: 15px 30px;
             border: none;
             border-radius: 5px;
@@ -44,7 +44,7 @@
             transition: transform 0.2s, background-color 0.2s;
         }
 
-        .planet-button:hover {
+        .planet-button:hover, .cgi-button:hover {
             transform: scale(1.05);
         }
 
@@ -84,7 +84,6 @@
         #imageDisplay img {
             max-width: 100%;
             border-radius: 10px;
-            display: none;
         }
 
         .error-message {
@@ -105,6 +104,11 @@
         </label>
     </div>
 
+    <div class="cgi-section">
+        <button class="cgi-button" id="executeButton">Mandelbrot</button>
+        <button class="cgi-button" id="deleteButton">Delete Uploaded File</button>
+    </div>
+
     <div class="planets-grid">
         <button class="planet-button" id="mercury">Mercury</button>
         <button class="planet-button" id="venus">Venus</button>
@@ -119,6 +123,7 @@
 
     <div id="imageDisplay">
         <img id="planetImage" alt="Planet Image">
+        <img id="mandelbrotImage" alt="Mandelbrot Image" style="display:none;">
         <div id="errorMessage" class="error-message">Failed to load image</div>
     </div>
 
@@ -178,6 +183,53 @@
                     errorElement.style.display = 'block';
                 }
             });
+        });
+
+        document.getElementById('executeButton').addEventListener('click', async function() {
+            const mandelbrotImage = document.getElementById('mandelbrotImage');
+            const errorElement = document.getElementById('errorMessage');
+
+            try {
+                const response = await fetch('mandelbrotPython.cgi');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+                mandelbrotImage.src = imageUrl;
+                mandelbrotImage.style.display = 'inline';
+                errorElement.style.display = 'none';
+
+                mandelbrotImage.onload = () => {
+                    URL.revokeObjectURL(imageUrl);
+                };
+            } catch (error) {
+                console.error('Error executing CGI script:', error);
+                errorElement.textContent = `Error executing CGI script: ${error.message}`;
+                errorElement.style.display = 'block';
+            }
+        });
+
+        document.getElementById('deleteButton').addEventListener('click', function() {
+            const filename = prompt("Enter the name of the file to delete:");
+            if (filename) {
+                fetch(`deleteFile.cgi?filename=${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log('File Deleted:', data);
+                    alert('File Deleted Successfully');
+                })
+                .catch(error => {
+                    console.error('Error deleting file:', error);
+                    alert('Error deleting file');
+                });
+            } else {
+                alert('No filename provided.');
+            }
         });
     </script>
 </body>

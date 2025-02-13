@@ -35,10 +35,18 @@ void	Client::readFromFile()
 	{
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 		readPos = 0;
-		if (status == parseCgi && response.buffer.substr(0, 6) == "Error:")
+		if (status == parseCgi)
 		{
-			assert(response.buffer.size() == 10);
-			setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
+			if (response.buffer.substr(0, 6) == "Error:")
+				setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
+			else
+			{
+				int fd = open("out.txt", O_RDWR | O_CREAT, 0644);
+				write(fd, response.buffer.c_str(), response.buffer.size());
+				close(fd);
+				response.reply = response.buffer;
+				status = RESPONDING;
+			}
 		}
 		else
 		{

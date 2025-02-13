@@ -2,14 +2,14 @@
 
 const std::string defaultCgiLocation = "./CGI/mandelbrotPython.cgi";
 
-static char** getArgs(std::string cgiLocation)
+static char** getArgs()
 {
-	char** args = new char*[3];
+	char** args = new char*[2];
 
-	args[0] = strdup(cgiLocation.c_str());
-	// args[1] = (char*)cgiLocation.substr(0).c_str();
-	args[1] = strdup(defaultCgiLocation.c_str());
-	args[2] = nullptr;
+	args[0] = strdup(defaultCgiLocation.c_str());
+	args[1] = nullptr;
+
+	std::cerr << args[0] << " " << args[1] << std::endl;
 	return (args);
 }
 
@@ -40,7 +40,6 @@ static int forkProcess()
 
 	if (pid == -1)
 	{
-		// send internal server error to client
 		throw std::runtime_error("Failed to fork process");
 	}
 	if (pid == 0)
@@ -57,16 +56,12 @@ void	Client::launchCGI()
 	pid = forkProcess();
 	if (pid == 0)
 	{
-		std::string	cgiLocation = "/usr/bin/python3";
-
-		if (cgiLocation.empty() == true)
-			cgiLocation = defaultCgiLocation;
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		char** args = getArgs(cgiLocation);
+		char** args = getArgs();
 		std::cout << args[0] << " " << args[1] << std::endl;
 		char** envp = getEnvp();
-		if (execve(cgiLocation.c_str(), args, envp) == -1)
+		if (execve(defaultCgiLocation.c_str(), args, envp) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
 				printToLog("Failed to write to cgi pipe");
@@ -76,5 +71,5 @@ void	Client::launchCGI()
 	}
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	fileFd = pipeFd[0];
-	status = readingFromFile;
+	status = parseCgi;
 }
