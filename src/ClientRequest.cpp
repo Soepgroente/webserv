@@ -76,7 +76,7 @@ bool	Client::parsePath(const std::string& requestLine)
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
-	request.location = resolveRequestLocation(request.path);
+	request.location = resolveRequestLocation(request.path); // fix this with a pointer
 	const Location& location = request.location;
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
@@ -109,6 +109,8 @@ bool	Client::parseGet(const std::string &requestLine)
 		{
 			status = showDirectory;
 			request.path = path;
+			if (request.path.back() != '/')
+				request.path += "/"; // check this as well
 		}
 		else
 		{
