@@ -91,7 +91,8 @@ bool	Client::parsePath(const std::string& requestLine)
 
 bool	Client::parseGet(const std::string &requestLine)
 {
-	parsePath(requestLine);
+	if (parsePath(requestLine) == false)
+		return (false);
 	const std::filesystem::path path = '.' + request.path;
 
 	if (std::filesystem::exists(path) == false)
@@ -124,7 +125,8 @@ bool	Client::parseGet(const std::string &requestLine)
 
 bool	Client::parsePost(const std::string& requestLine)
 {
-	parsePath(requestLine);
+	if (parsePath(requestLine) == false)
+		return (false);
 	const std::filesystem::path path = '.' + request.path;
 
 	if (std::filesystem::exists(path) == true)
@@ -138,7 +140,8 @@ bool	Client::parsePost(const std::string& requestLine)
 
 bool	Client::parseDelete(const std::string& requestLine)
 {
-	parsePath(requestLine);
+	if (parsePath(requestLine) == false)
+		return (false);
 	const std::filesystem::path path = '.' + request.path;
 
 	if (std::filesystem::exists(path) == true)
