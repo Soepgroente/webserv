@@ -6,6 +6,11 @@ WebServer::~WebServer()
 	{
 		closeConnection(i + servers.size(), i);
 	}
+	for (size_t i = 0; i < servers.size(); i++)
+	{
+		if (servers[i].socket != -1)
+			close(servers[i].socket);
+	}
 }
 
 const Server&	WebServer::getServer(int serverSocket)
@@ -21,6 +26,7 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
+	// std::cout << newConnectionTotal << " connections" << std::endl;
 	printToLog("New connection accepted");
 }
 
@@ -28,7 +34,7 @@ void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientStatus() == CLOSING || \
+		if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() == 0 || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(i + servers.size(), i);

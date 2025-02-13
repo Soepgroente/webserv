@@ -30,7 +30,6 @@
 #define BUFFERSIZE 8 * 1024
 #define CHUNKED_EOF "0\r\n\r\n"
 
-
 struct	Server;
 struct	pollfd;
 class	Client;
@@ -49,6 +48,7 @@ class	WebServer
 	
 	static int64_t	getTime();
 
+	int newConnectionTotal = 0;
 	private:
 
 	/* Private variables	*/

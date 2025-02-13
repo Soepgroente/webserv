@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <fcntl.h>
 #include <iostream>
+#include <unistd.h>
 #include <vector>
 #include <map>
 #include "HttpRequest.hpp"

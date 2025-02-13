@@ -1,65 +1,12 @@
-
-Create default error pages
-
-	*find out which error pages are required
-	*create them/generate them
-	-413 entity too large
-
 CGI
-
-	∗ Because you won’t call the CGI directly, use the full path as PATH_INFO.
+	*Make it work
 
 Have a website to demo webserv
 
-	*be able to upload files
-	*GET POST DELETE (Selim)
-	*if you click upload button, it must send the correct upload folder to upload in
+	*be able to upload files -> works but not really
+	*delete files -> may work but untested
 
 Stress test the fuck out of the server
 
-	*Try to overload with requests
-	*Check for memory management / proper error handling
-
-From subject:
-
-	*The first server for a host:port will be the default for this host:port (that means
-		it will answer to all the requests that don’t belong to an other server).
-
-Fix this error: (refreshed page)
-
-Accepted connection
-GET /mars.jpg HTTP/1.1
-Host: 127.0.0.1:8080
-Connection: keep-alive
-sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Sec-Fetch-Site: none
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: en-US,en;q=0.9
-
-Accepted connection
-GET /mars.jpg HTTP/1.1
-Host: 127.0.0.1:8080
-Connection: keep-alive
-Cache-Control: max-age=0
-sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Linux"
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Sec-Fetch-Site: none
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: en-US,en;q=0.9
-
-A tragic error has occured 😭 Pollfd not found
+	*Try to overload with requests -> did some basic stuff but not a siege program or something
+	*Check for memory management / proper error handling -> did basic valgrind checks
