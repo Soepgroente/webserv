@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include "Server.hpp"
 
 enum RequestStatus
 {
@@ -41,6 +42,7 @@ struct	HttpRequest
 	std::string					fileType;
 	int							status;
 	bool 						chunked;
+	Location					location;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);

@@ -53,7 +53,11 @@ void	Client::writeToFile()
 
 void	Client::parseDirectory()
 {
-
+	std::filesystem::directory_entry	dir(request.path);
+	for (std::filesystem::directory_entry dir_entry : std::filesystem::recursive_directory_iterator(dir))
+	{
+		std::cout << dir_entry << std::endl;
+	}
 	status = RESPONDING;
 }
 
