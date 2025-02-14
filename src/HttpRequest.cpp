@@ -39,6 +39,7 @@ void	HttpRequest::clear()
 	fileType.clear();
 	status = requestIsInvalid;
 	chunked = false;
+	location = nullptr;
 }
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
