@@ -72,19 +72,21 @@ class Client
 
 	void	parseDirectory();
 
-	void	interpretRequest();
-	bool	parseHeaders();
-	bool	parseContentType(const std::string& requestLine);
-	bool	parseContentLength(const std::string& requestLine);
-	bool	parseChunked(const std::string& requestLine);
-	bool	parseHost(const std::string& requestLine);
-	bool	parseKeepAlive(const std::string& requestLine);
-	bool	parseConnectionType(const std::string& requestLine);
-	bool	parseGet(const std::string& requestLine);
-	bool	parsePost(const std::string& requestLine);
-	bool	parseDelete(const std::string& requestLine);
-	bool	parsePath(const std::string& requestLine);
+	void		interpretRequest();
+	bool		parseHeaders();
+	bool		parseContentType(const std::string& requestLine);
+	bool		parseContentLength(const std::string& requestLine);
+	bool		parseChunked(const std::string& requestLine);
+	bool		parseHost(const std::string& requestLine);
+	bool		parseKeepAlive(const std::string& requestLine);
+	bool		parseConnectionType(const std::string& requestLine);
+	bool		parseGet(const std::string& requestLine);
+	bool		parsePost(const std::string& requestLine);
+	bool		parseDelete(const std::string& requestLine);
+	bool		parsePath(const std::string& requestLine);
 	Location*	resolveRequestLocation(std::string& path);
+	std::string	generateDirectoryListing(const std::filesystem::path& dir);
+
 
 	int64_t				latestPing;
 	int64_t				timeout;

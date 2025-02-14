@@ -53,6 +53,7 @@ Location*	Client::resolveRequestLocation(std::string& path)
 	if (tmp == end)
 	{
 		request.status = requestNotFound;
+		request.locationPath = start->first;
 		return (const_cast<Location*>(&(server.locations.at(start->first))));
 	}
 	if (tmp->first != "/")
@@ -62,9 +63,11 @@ Location*	Client::resolveRequestLocation(std::string& path)
 		if (path.size() != 0 && path[0] != '/')
 		{
 			request.status = requestNotFound;
+			request.locationPath = start->first;
 			return (const_cast<Location*>(&(server.locations.at(start->first))));
 		}
 	}
+	request.locationPath = tmp->first;
 	return (const_cast<Location*>(&(tmp->second)));
 }
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
@@ -105,7 +108,7 @@ bool	Client::parseGet(const std::string &requestLine)
 	// std::cout << path << std::endl;
     if (std::filesystem::is_directory(path))
 	{
-		if ((*request.location).directoryListing == true)
+		if (request.location->directoryListing == true)
 		{
 			status = showDirectory;
 			request.path = path;

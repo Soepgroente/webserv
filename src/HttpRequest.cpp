@@ -21,6 +21,8 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		fileType = other.fileType;
 		status = other.status;
 		chunked = other.chunked;
+		location = other.location;
+		locationPath = other.locationPath;
 	}
 	return (*this);
 }
@@ -40,6 +42,7 @@ void	HttpRequest::clear()
 	status = requestIsInvalid;
 	chunked = false;
 	location = nullptr;
+	locationPath.clear();
 }
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
