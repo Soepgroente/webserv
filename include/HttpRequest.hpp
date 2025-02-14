@@ -42,7 +42,7 @@ struct	HttpRequest
 	std::string					fileType;
 	int							status;
 	bool 						chunked;
-	Location					location;
+	Location*					location;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);

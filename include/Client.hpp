@@ -84,7 +84,7 @@ class Client
 	bool	parsePost(const std::string& requestLine);
 	bool	parseDelete(const std::string& requestLine);
 	bool	parsePath(const std::string& requestLine);
-	const Location&	resolveRequestLocation(std::string& path);
+	Location*	resolveRequestLocation(std::string& path);
 
 	int64_t				latestPing;
 	int64_t				timeout;

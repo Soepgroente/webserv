@@ -37,7 +37,7 @@ bool	Client::parseChunked(const std::string& requestLine)
 	return (true);
 }
 
-const Location&	Client::resolveRequestLocation(std::string& path)
+Location*	Client::resolveRequestLocation(std::string& path)
 {
 	using MapIterator = std::map<std::string, Location>::const_iterator;
 
@@ -53,7 +53,7 @@ const Location&	Client::resolveRequestLocation(std::string& path)
 	if (tmp == end)
 	{
 		request.status = requestNotFound;
-		return (server.locations.at(start->first));
+		return (const_cast<Location*>(&(server.locations.at(start->first))));
 	}
 	if (tmp->first != "/")
 	{
@@ -62,10 +62,10 @@ const Location&	Client::resolveRequestLocation(std::string& path)
 		if (path.size() != 0 && path[0] != '/')
 		{
 			request.status = requestNotFound;
-			return (server.locations.at(start->first));
+			return (const_cast<Location*>(&(server.locations.at(start->first))));
 		}
 	}
-	return (server.locations.at(tmp->first));
+	return (const_cast<Location*>(&(tmp->second)));
 }
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
 
@@ -76,8 +76,7 @@ bool	Client::parsePath(const std::string& requestLine)
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
-	request.location = resolveRequestLocation(request.path); // fix this with a pointer
-	const Location& location = request.location;
+	request.location = resolveRequestLocation(request.path);
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
@@ -105,7 +104,7 @@ bool	Client::parseGet(const std::string &requestLine)
 	// std::cout << path << std::endl;
     if (std::filesystem::is_directory(path))
 	{
-		if (request.location.directoryListing == true)
+		if ((*request.location).directoryListing == true)
 		{
 			status = showDirectory;
 			request.path = path;
@@ -117,18 +116,6 @@ bool	Client::parseGet(const std::string &requestLine)
 			request.status = requestForbidden;
 			return (false);
 		}
-		// const std::map<std::string, Location>& locations = server.locations;
-		// std::cout << request.path << std::endl;
-		// if (locations.find(request.path) != locations.end())
-		// {
-		// 	if (locations.at(request.path).directoryListing == true)
-        // 		status = showDirectory;
-		// }
-		// else
-		// {
-		// 	request.status = requestForbidden;
-		// 	return (false);
-		// }
 	}
 	else if (std::filesystem::is_regular_file(path))
 	{
