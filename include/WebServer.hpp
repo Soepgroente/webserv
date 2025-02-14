@@ -60,12 +60,6 @@ class	WebServer
 	
 	/*	Private functions	*/
 	
-	std::string getMimeType(const std::string& path) const;
-	bool	handleDelete(Client& client, std::string& buffer);
-	bool	handlePost(Client& client, std::string& buffer);
-	bool	handleGet(Client& client, std::string& buffer);
-	void	handleResponse(Client& client);
-
 
 	void	initialize();
 	void	loopadydoopady();
@@ -74,7 +68,6 @@ class	WebServer
 	void	closeConnection(int pollIndex, int clientIndex);
 	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
-	//void	handleResponse(Client& client);
 
 	//std::string				showErrorPage(std::string error);
 	std::vector<pollfd>		createPollArray();
@@ -87,9 +80,11 @@ class	WebServer
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
 
-/* 	bool	handleGet(Client& client, std::string& buffer);
+	void	handleResponse(Client& client);
+	bool	handleGet(Client& client, std::string& buffer);
 	bool	handlePost(Client& client, std::string& buffer);
-	bool	handleDelete(Client& client, std::string& buffer); */
+	bool	handleDelete(Client& client, std::string& buffer);
+	std::string getMimeType(const std::string& path) const;
 
 	size_t	getFileCgiIndex(int fileFd)	const;
 };

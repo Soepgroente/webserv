@@ -91,6 +91,6 @@ void	WebServer::handleResponse(Client& client)
 		client.writeToClient();
 	if (client.getClientStatus() == LISTENING)
 	{
-		pollDescriptors[getPollfdIndex(client.getFd())].events = POLLIN;
+		pollDescriptors[getPollfdIndex(client.getFileFd, client.getFd())].events = POLLIN;
 	}
 }
