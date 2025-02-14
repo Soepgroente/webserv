@@ -86,6 +86,8 @@ class Client
 	bool	parsePath(const std::string& requestLine);
 	const Location&	resolveRequestLocation(std::string& path);
 
+	void	clear();
+
 	int64_t				latestPing;
 	int64_t				timeout;
 	size_t				writePos;

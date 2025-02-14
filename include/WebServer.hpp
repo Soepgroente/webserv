@@ -29,6 +29,7 @@
 #define FOREVER 1
 #define BUFFERSIZE 8 * 1024
 #define CHUNKED_EOF "0\r\n\r\n"
+#define EMPTY_LINE "\r\n\r\n"
 
 struct	Server;
 struct	pollfd;
@@ -68,9 +69,6 @@ class	WebServer
 	void	closeConnection(int pollIndex, int clientIndex);
 	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
-	//void	handleResponse(Client& client);
-
-	//std::string				showErrorPage(std::string error);
 	std::vector<pollfd>		createPollArray();
 	void					set_signals();
 	Client*					getClient(int clientFd);
@@ -80,10 +78,5 @@ class	WebServer
 	void	addClient(int serverSocket);
 	void	removeClient(int fd);
 	void	removeInactiveConnections();
-
-/* 	bool	handleGet(Client& client, std::string& buffer);
-	bool	handlePost(Client& client, std::string& buffer);
-	bool	handleDelete(Client& client, std::string& buffer); */
-
 	size_t	getFileCgiIndex(int fileFd)	const;
 };

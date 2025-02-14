@@ -134,6 +134,17 @@ bool	Client::parsePost(const std::string& requestLine)
 		request.status = fileAlreadyExists;
 		return (false);
 	}
+	if (request.contentType.find("multipart/form-data", 0) == 0)
+	{
+		size_t	index = request.contentType.find("boundary=", 0);
+
+		if (index == std::string::npos)
+		{
+			request.status = requestIsInvalid;
+			return (false);
+		}
+		request.boundary = "\r\n--" + request.contentType.substr(index + 9);
+	}
 	fileFd = openFile(path.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
 	return (true);
 }
@@ -194,7 +205,7 @@ bool	Client::parseHeaders()
 {
 	if (request.status == headerIsParsed)
 		return (true);
-	if (request.buffer.find("\r\n\r\n") == std::string::npos)
+	if (request.buffer.find(EMPTY_LINE) == std::string::npos)
 		return (false);
 
 	const std::map<std::string, std::function<bool(Client*, const std::string&)>> parseFunctions = 
@@ -224,7 +235,7 @@ bool	Client::parseHeaders()
 			}
 		}
 	}
-	request.body += request.buffer.substr(request.buffer.find("\r\n\r\n") + 4);
+	request.body += request.buffer.substr(request.buffer.find(EMPTY_LINE) + 4);
 	request.buffer.clear();
 	request.status = headerIsParsed;
 	return (true);
@@ -259,6 +270,27 @@ static int	decodeChunks(std::string& buffer, std::string& body)
 
 /*	Checks whether the full request has been received	*/
 
+static void	trimMultipart(HttpRequest& request)
+{
+	size_t	closingBoundary = request.body.find("\r\n" + request.boundary + "--");
+
+	if (closingBoundary == std::string::npos)
+	{
+		request.body += request.buffer;
+		request.buffer.clear();
+		return ;
+	}
+	if (request.body.find(request.boundary, 0) != 0)
+	{
+		request.status = requestIsInvalid;
+		return ;
+	}
+	size_t index = request.body.find_first_of(std::string(EMPTY_LINE)) + 4;
+	request.body.erase(0, index);
+	request.body.erase(closingBoundary - index);
+	request.status = bodyIsParsed;
+}
+
 static void	parseBody(HttpRequest& request)
 {
 	if (request.chunked == true && request.buffer.find(CHUNKED_EOF) != std::string::npos)
@@ -267,14 +299,25 @@ static void	parseBody(HttpRequest& request)
 	}
 	else if (request.contentLength == 0)
 	{
-		if (request.body.size() == 0)
+		if (request.body.empty() == true)
+		{
 			request.status = bodyIsParsed;
+		}
 		else
+		{
 			request.status = requestIsInvalid;
+		}
 	}
-	else if (request.contentLength == request.body.size())
+	else if (request.body.size() == request.contentLength && request.boundary.empty() == true)
 	{
 		request.status = bodyIsParsed;
+	}		
+	else if (request.body.size() > request.contentLength)
+	{
+		if (request.boundary.empty() == true)
+			request.status = requestIsInvalid;
+		else
+			trimMultipart(request);
 	}
 	else
 	{
@@ -288,13 +331,22 @@ void	Client::interpretRequest()
 	if (parseHeaders() == false)
 		return ;
 	parseBody(request);
+	if (request.status == requestIsInvalid)
+	{
+		std::cout << "INVALID\n" << request << std::endl;
+		setupErrorPage(request.status);
+		return ;
+	}
 	if (request.status == bodyIsParsed)
 	{
+		std::cout << "VALID\n" << request << std::endl;
 		remainingRequests--;
 		if (request.method == "GET")
 			status = readingFromFile;
 		if (request.method == "POST")
+		{
 			status = writingToFile;
+		}
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{

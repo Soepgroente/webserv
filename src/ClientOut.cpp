@@ -19,8 +19,7 @@ void	Client::writeToClient()
 	{
 		status = LISTENING;
 		writePos = 0;
-		response.clear();
-		request.clear();
+		this->clear();
 	}
 	else
 		writePos += BUFFERSIZE;
@@ -44,7 +43,7 @@ void	Client::writeToFile()
 	{
 		status = RESPONDING;
 		writePos = 0;
-		response.reply = HttpResponse::defaultResponses[200];
+		response.reply = HttpResponse::defaultResponses[201];
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 	}
 	else

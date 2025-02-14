@@ -10,11 +10,11 @@ void	Client::readIncomingRequest()
 	readBytes = read(fd, &tmp[0], BUFFERSIZE);
 	if (readBytes == -1)
 	{
-		std::cerr << "Error reading from client_fd: " << strerror(errno) << std::endl;
+		printToLog("Error reading from client_fd: " + std::string(strerror(errno)));
 		status = CLOSING;
 		return ;
 	}
-	request.buffer += tmp;
+	request.buffer += tmp.substr(0, readBytes);
 	interpretRequest();
 }
 
@@ -53,7 +53,7 @@ void	Client::readFromFile()
 			response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
 			if (response.reply.empty() == true)
 				response.reply = HttpResponse::defaultResponses[200];
-			response.reply += std::to_string(response.buffer.size()) + "\r\n\r\n" + response.buffer;
+			response.reply += std::to_string(response.buffer.size()) + EMPTY_LINE + response.buffer;
 			status = RESPONDING;
 		}
 	}

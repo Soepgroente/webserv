@@ -40,3 +40,9 @@ void	Client::initializeSocket(int serverSocket)
 	if (fcntl(this->fd, F_SETFL, fcntl(this->fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 		throw std::runtime_error("Failed to set client socket to non-blocking");
 }
+
+void	Client::clear()
+{
+	request.clear();
+	response.clear();
+}
