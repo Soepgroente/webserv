@@ -41,9 +41,9 @@ void	Client::readFromFile()
 				setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
 			else
 			{
-				int fd = open("out.txt", O_RDWR | O_CREAT, 0644);
-				write(fd, response.buffer.c_str(), response.buffer.size());
-				close(fd);
+				// int fd = open("out.txt", O_RDWR | O_CREAT, 0644);
+				// write(fd, response.buffer.c_str(), response.buffer.size());
+				// close(fd);
 				response.reply = response.buffer;
 				status = RESPONDING;
 			}

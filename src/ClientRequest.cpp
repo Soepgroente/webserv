@@ -314,22 +314,24 @@ static void	parseBody(HttpRequest& request)
 			request.status = requestIsInvalid;
 		}
 	}
-	else if (request.body.size() == request.contentLength && request.boundary.empty() == true)
+	else if (request.body.size() == request.contentLength)
 	{
-		request.status = bodyIsParsed;
-	}		
-	else if (request.body.size() > request.contentLength)
-	{
+		puts("TRUE STORYYYYY");
 		if (request.boundary.empty() == true)
-			request.status = requestIsInvalid;
+			request.status = bodyIsParsed;
 		else
 			trimMultipart(request);
+	}
+	else if (request.body.size() > request.contentLength)
+	{
+		request.status = requestIsInvalid;
 	}
 	else
 	{
 		request.body += request.buffer;
 		request.buffer.clear();
 	}
+	std::cout << "body size: " << request.body.size() << std::endl;
 }
 
 void	Client::interpretRequest()

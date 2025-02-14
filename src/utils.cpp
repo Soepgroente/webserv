@@ -22,7 +22,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 
 int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>& pdArray)
 {
-	int fd = open(path, openFlags);
+	int fd = open(path, openFlags, 0644);
 	if (fd == -1)
 	{
 		throw std::runtime_error("Failed to open file even though it exists");

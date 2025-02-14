@@ -30,11 +30,20 @@ void	WebServer::acceptConnection(int serverSocket)
 	printToLog("New connection accepted");
 }
 
+/*	Sets up a 408 (request timeout) for clients that have unfinished requests, 
+	closes connections which haven't communicated anything in DEFAULT_TIMEOUT amount of time	*/
+
 void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() == 0 || \
+		if (clients[i].getClientStatus() == LISTENING && (clients[i].getRequest().buffer.empty() == false || \
+			clients[i].getRequest().splitRequest.empty() == false) && \
+			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		{
+			clients[i].setupErrorPage(408);
+		}
+		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() == 0 || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(i + servers.size(), i);
