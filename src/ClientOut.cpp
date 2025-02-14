@@ -50,9 +50,45 @@ void	Client::writeToFile()
 		writePos += BUFFERSIZE;
 }
 
+std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)
+{
+	std::stringstream	ss;
+	std::string			normalizedPath = '/' + dir.parent_path().filename().string();
+
+	if (request.locationPath != normalizedPath)
+	{
+		normalizedPath = request.locationPath + normalizedPath;
+	}
+	ss << "<!DOCTYPE html>\n"
+    	<< "<html>\n"
+        << "<head><meta charset=\"UTF-8\"><title>Directory Listing</title></head>\n"
+        << "<body>\n"
+        << "<h1>Index of " << normalizedPath << "</h1>\n"
+        << "<ul>\n";
+	for (std::filesystem::directory_entry dirEntry : std::filesystem::directory_iterator(dir))
+	{
+		std::string entry = dirEntry.path().filename().string();
+		std::cout << "entry: " << entry << std::endl;
+		ss << " <li><a href=\"" << normalizedPath + '/' << entry << "\">" << entry << "</a></li>\n";
+	}
+	ss << "</ul>\n"
+		<< "</body>\n"
+		<< "</html>\n";
+	return (ss.str());
+}
+
 void	Client::parseDirectory()
 {
+	std::filesystem::path	dir(request.path);	
 
+	response.buffer = generateDirectoryListing(dir);
+	// for (std::filesystem::directory_entry dir_entry : std::filesystem::recursive_directory_iterator(dir))
+	// for (std::filesystem::directory_entry dir_entry : std::filesystem::directory_iterator(dir))
+	// {
+	// 	std::cout << dir_entry.path().filename() << std::endl;
+	// 	response.buffer += (dir_entry.path().filename().string() + "\r\n");
+	// }
+	response.reply = HttpResponse::defaultResponses[200] + std::to_string(response.buffer.size()) + "\r\n\r\n" + response.buffer;
 	status = RESPONDING;
 }
 

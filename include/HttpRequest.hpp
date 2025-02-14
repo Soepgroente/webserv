@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include "Server.hpp"
 
 enum RequestStatus
 {
@@ -42,6 +43,8 @@ struct	HttpRequest
 	std::string					boundary;
 	int							status;
 	bool 						chunked;
+	Location*					location;
+	std::string					locationPath;
 };
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p);

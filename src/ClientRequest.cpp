@@ -37,7 +37,7 @@ bool	Client::parseChunked(const std::string& requestLine)
 	return (true);
 }
 
-const Location&	Client::resolveRequestLocation(std::string& path)
+Location*	Client::resolveRequestLocation(std::string& path)
 {
 	using MapIterator = std::map<std::string, Location>::const_iterator;
 
@@ -53,18 +53,22 @@ const Location&	Client::resolveRequestLocation(std::string& path)
 	if (tmp == end)
 	{
 		request.status = requestNotFound;
-		return (server.locations.at(start->first));
+		request.locationPath = start->first;
+		return (const_cast<Location*>(&(server.locations.at(start->first))));
 	}
 	if (tmp->first != "/")
 	{
+		
 		path = path.substr(tmp->first.size());
-		if (path[0] != '/')
+		if (path.size() != 0 && path[0] != '/')
 		{
 			request.status = requestNotFound;
-			return (server.locations.at(start->first));
+			request.locationPath = start->first;
+			return (const_cast<Location*>(&(server.locations.at(start->first))));
 		}
 	}
-	return (server.locations.at(tmp->first));
+	request.locationPath = tmp->first;
+	return (const_cast<Location*>(&(tmp->second)));
 }
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
 
@@ -75,8 +79,9 @@ bool	Client::parsePath(const std::string& requestLine)
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
 
-	const Location& location = resolveRequestLocation(request.path);
-	if (request.status != defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+	request.location = resolveRequestLocation(request.path);
+	const Location& location = *request.location;
+	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
 		return (false);
@@ -100,25 +105,26 @@ bool	Client::parseGet(const std::string &requestLine)
 		request.status = requestNotFound;
 		return (false);
 	}
-	if (std::filesystem::is_regular_file(path))
+	// std::cout << path << std::endl;
+    if (std::filesystem::is_directory(path))
 	{
-		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
-		status = readingFromFile;
-	}
-    else if (std::filesystem::is_directory(path))
-	{
-		const std::map<std::string, Location>& locations = server.locations;
-
-		if (locations.find(request.path) != locations.end())
+		if (request.location->directoryListing == true)
 		{
-			if (locations.at(request.path).directoryListing == true)
-        		status = showDirectory;
+			status = showDirectory;
+			request.path = path;
+			if (request.path.back() != '/')
+				request.path += "/"; // check this as well
 		}
 		else
 		{
 			request.status = requestForbidden;
 			return (false);
 		}
+	}
+	else if (std::filesystem::is_regular_file(path))
+	{
+		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
+		status = readingFromFile;
 	}
 	return (true);
 }
@@ -341,7 +347,7 @@ void	Client::interpretRequest()
 	{
 		std::cout << "VALID\n" << request << std::endl;
 		remainingRequests--;
-		if (request.method == "GET")
+		if (request.method == "GET" && status != showDirectory)
 			status = readingFromFile;
 		if (request.method == "POST")
 		{

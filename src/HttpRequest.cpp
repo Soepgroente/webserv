@@ -22,6 +22,8 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		status = other.status;
 		chunked = other.chunked;
 		boundary = other.boundary;
+		location = other.location;
+		locationPath = other.locationPath;
 	}
 	return (*this);
 }
@@ -41,6 +43,8 @@ void	HttpRequest::clear()
 	status = defaultStatus;
 	chunked = false;
 	boundary.clear();
+	location = nullptr;
+	locationPath.clear();
 }
 
 std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
