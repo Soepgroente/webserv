@@ -77,6 +77,7 @@ bool	Client::parsePath(const std::string& requestLine)
 	stream >> request.method >> request.path >> request.protocol;
 
 	request.location = resolveRequestLocation(request.path);
+	const Location& location = *request.location;
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
