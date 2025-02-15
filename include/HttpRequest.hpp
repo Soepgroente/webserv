@@ -14,6 +14,7 @@ enum RequestStatus
 	requestNotFound = 404,
 	requestMethodNotAllowed = 405,
 	fileAlreadyExists = 409,
+	lengthRequired = 411,
 	payloadTooLarge = 413,
 };
 

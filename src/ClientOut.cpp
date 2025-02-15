@@ -29,6 +29,8 @@ void	Client::writeToFile()
 {
 	ssize_t	writtenBytes;
 
+	std::cout << "Writing from position: " << writePos << std::endl;
+	std::cout << "Body size: " << request.body.size() << std::endl;
 	writtenBytes = write(fileFd, &request.body[writePos], \
 		std::min(request.body.size() - writePos, (size_t)BUFFERSIZE));
 	if (writtenBytes == -1)

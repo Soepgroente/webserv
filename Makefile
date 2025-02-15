@@ -7,6 +7,7 @@ HEADERS		:= -I include
 
 CPPFILES	:=	Client.cpp \
 				ClientCGI.cpp \
+				ClientGetPostDelete.cpp \
 				ClientIn.cpp \
 				ClientOut.cpp \
 				ClientRequest.cpp \

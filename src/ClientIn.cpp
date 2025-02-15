@@ -3,18 +3,16 @@
 void	Client::readIncomingRequest()
 {
 	ssize_t		readBytes;
-	std::string	tmp;
+	static std::string	readBuffer(BUFFERSIZE, 0);
 
-	request.status = defaultStatus;
-	tmp.resize(BUFFERSIZE);
-	readBytes = read(fd, &tmp[0], BUFFERSIZE);
+	readBytes = read(fd, &readBuffer[0], BUFFERSIZE);
 	if (readBytes == -1)
 	{
 		printToLog("Error reading from client_fd: " + std::string(strerror(errno)));
 		status = CLOSING;
 		return ;
 	}
-	request.buffer += tmp.substr(0, readBytes);
+	request.buffer += readBuffer.substr(0, readBytes);
 	interpretRequest();
 }
 
@@ -41,9 +39,6 @@ void	Client::readFromFile()
 				setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
 			else
 			{
-				// int fd = open("out.txt", O_RDWR | O_CREAT, 0644);
-				// write(fd, response.buffer.c_str(), response.buffer.size());
-				// close(fd);
 				response.reply = response.buffer;
 				status = RESPONDING;
 			}

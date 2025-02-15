@@ -2,7 +2,19 @@
 
 bool	Client::parseContentType(const std::string& requestLine)
 {
-	request.contentType = requestLine.substr(14);
+	request.contentType = requestLine.substr(sizeof("Content-Type: ") - 1);
+	if (request.contentType.find("multipart/form-data", 0) == 0)
+	{
+		size_t	index = request.contentType.find("boundary=", 0);
+
+		if (index == std::string::npos)
+		{
+			request.status = requestIsInvalid;
+			return (false);
+		}
+		request.boundary = request.contentType.substr(index + 9);
+	}
+	std::cout << request << std::endl;
 	return (true);
 }
 
@@ -37,148 +49,6 @@ bool	Client::parseChunked(const std::string& requestLine)
 	return (true);
 }
 
-Location*	Client::resolveRequestLocation(std::string& path)
-{
-	using MapIterator = std::map<std::string, Location>::const_iterator;
-
-	MapIterator	start = server.locations.begin();
-	MapIterator	end = server.locations.end();
-	MapIterator	tmp = end;
-
-	for (MapIterator it = start; it != end; it++)
-	{
-		if (path.find(it->first) == 0)
-			tmp = it;
-	}
-	if (tmp == end)
-	{
-		request.status = requestNotFound;
-		request.locationPath = start->first;
-		return (const_cast<Location*>(&(server.locations.at(start->first))));
-	}
-	if (tmp->first != "/")
-	{
-		
-		path = path.substr(tmp->first.size());
-		if (path.size() != 0 && path[0] != '/')
-		{
-			request.status = requestNotFound;
-			request.locationPath = start->first;
-			return (const_cast<Location*>(&(server.locations.at(start->first))));
-		}
-	}
-	request.locationPath = tmp->first;
-	return (const_cast<Location*>(&(tmp->second)));
-}
-/*	Sets up the correct path for the next step, shows index if no particular path	*/
-
-bool	Client::parsePath(const std::string& requestLine)
-{
-    std::stringstream	stream;
-	
-	stream.str(requestLine);
-	stream >> request.method >> request.path >> request.protocol;
-
-	request.location = resolveRequestLocation(request.path);
-	const Location& location = *request.location;
-	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
-		request.status = requestMethodNotAllowed;
-	if (request.status != defaultStatus)
-		return (false);
-	const std::map<std::string, std::string>&	dir = location.dirs;
-	if (request.path == "/")
-	{
-		request.path = request.path + dir.at("index");
-	}
-	request.path = dir.at("root") + request.path;
-	return (true);
-}
-
-bool	Client::parseGet(const std::string &requestLine)
-{
-	if (parsePath(requestLine) == false)
-		return (false);
-	const std::filesystem::path path = '.' + request.path;
-
-	if (std::filesystem::exists(path) == false)
-	{
-		request.status = requestNotFound;
-		return (false);
-	}
-	// std::cout << path << std::endl;
-    if (std::filesystem::is_directory(path))
-	{
-		if (request.location->directoryListing == true)
-		{
-			status = showDirectory;
-			request.path = path;
-			if (request.path.back() != '/')
-				request.path += "/"; // check this as well
-		}
-		else
-		{
-			request.status = requestForbidden;
-			return (false);
-		}
-	}
-	else if (std::filesystem::is_regular_file(path))
-	{
-		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
-		status = readingFromFile;
-	}
-	return (true);
-}
-
-bool	Client::parsePost(const std::string& requestLine)
-{
-	if (parsePath(requestLine) == false)
-		return (false);
-	const std::filesystem::path path = '.' + request.path;
-
-	if (std::filesystem::exists(path) == true)
-	{
-		request.status = fileAlreadyExists;
-		return (false);
-	}
-	if (request.contentType.find("multipart/form-data", 0) == 0)
-	{
-		size_t	index = request.contentType.find("boundary=", 0);
-
-		if (index == std::string::npos)
-		{
-			request.status = requestIsInvalid;
-			return (false);
-		}
-		request.boundary = "\r\n--" + request.contentType.substr(index + 9);
-	}
-	fileFd = openFile(path.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
-	return (true);
-}
-
-bool	Client::parseDelete(const std::string& requestLine)
-{
-	if (parsePath(requestLine) == false)
-		return (false);
-	const std::filesystem::path path = '.' + request.path;
-
-	if (std::filesystem::exists(path) == true)
-	{
-		if (std::filesystem::remove(path) == false)
-		{
-			request.status = requestForbidden;
-			return (false);
-		}
-		status = RESPONDING;
-		response.reply = HttpResponse::defaultResponses[200];
-		return (true);
-	}
-	else
-	{
-		request.status = requestNotFound;
-		return (false);
-	}
-}
-
 bool	Client::parseConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
@@ -209,7 +79,7 @@ bool	Client::parseKeepAlive(const std::string& requestLine)
 
 bool	Client::parseHeaders()
 {
-	if (request.status == headerIsParsed)
+	if (request.status == headerIsParsed || request.status == bodyIsParsed)
 		return (true);
 	if (request.buffer.find(EMPTY_LINE) == std::string::npos)
 		return (false);
@@ -237,11 +107,19 @@ bool	Client::parseHeaders()
 			if (parseFunctions.at(firstWord)(this, request.splitRequest[i]) == false)
 			{
 				setupErrorPage(request.status);
-				return (true);
+				return (false);
 			}
 		}
 	}
 	request.body += request.buffer.substr(request.buffer.find(EMPTY_LINE) + 4);
+	if (request.boundary.empty() == false)
+	{
+		if (request.body.find(request.boundary, 0) != 0)
+		{
+			setupErrorPage(requestIsInvalid);
+			return (false);
+		}
+	}
 	request.buffer.clear();
 	request.status = headerIsParsed;
 	return (true);
@@ -278,22 +156,21 @@ static int	decodeChunks(std::string& buffer, std::string& body)
 
 static void	trimMultipart(HttpRequest& request)
 {
-	size_t	closingBoundary = request.body.find("\r\n" + request.boundary + "--");
+	size_t	closingBoundary = request.body.find(std::string("--") + request.boundary + "--" + EMPTY_LINE, request.body.size() - request.boundary.size() - 8);
 
-	if (closingBoundary == std::string::npos)
-	{
-		request.body += request.buffer;
-		request.buffer.clear();
-		return ;
-	}
-	if (request.body.find(request.boundary, 0) != 0)
+	if (closingBoundary == std::string::npos || request.body.find(std::string("--") + request.boundary, 0) != 0)
 	{
 		request.status = requestIsInvalid;
 		return ;
 	}
-	size_t index = request.body.find_first_of(std::string(EMPTY_LINE)) + 4;
-	request.body.erase(0, index);
-	request.body.erase(closingBoundary - index);
+	puts("before");
+	std::cout << request.body << std::endl;
+	request.body.erase(0, request.body.find_first_of(EMPTY_LINE) + 4);
+	puts("first chomp");
+	std::cout << request.body << std::endl;
+	request.body.erase(closingBoundary);
+	puts("second chomp");
+	std::cout << request.body << std::endl;
 	request.status = bodyIsParsed;
 }
 
@@ -311,43 +188,44 @@ static void	parseBody(HttpRequest& request)
 		}
 		else
 		{
-			request.status = requestIsInvalid;
+			request.status = lengthRequired;
 		}
 	}
 	else if (request.body.size() == request.contentLength)
 	{
-		puts("TRUE STORYYYYY");
+		std::cout << "boundary size: " << request.boundary.size();
 		if (request.boundary.empty() == true)
+		{
+			std::cout << "boundary size: " << request.boundary.size();
 			request.status = bodyIsParsed;
+		}
 		else
 			trimMultipart(request);
-	}
-	else if (request.body.size() > request.contentLength)
-	{
-		request.status = requestIsInvalid;
 	}
 	else
 	{
 		request.body += request.buffer;
 		request.buffer.clear();
 	}
-	std::cout << "body size: " << request.body.size() << std::endl;
+	if (request.body.size() > request.contentLength)
+	{
+		request.status = requestIsInvalid;
+	}
 }
 
 void	Client::interpretRequest()
 {
 	if (parseHeaders() == false)
 		return ;
+	std::cout << request << std::endl;
 	parseBody(request);
 	if (request.status == requestIsInvalid)
 	{
-		std::cout << "INVALID\n" << request << std::endl;
 		setupErrorPage(request.status);
 		return ;
 	}
 	if (request.status == bodyIsParsed)
 	{
-		std::cout << "VALID\n" << request << std::endl;
 		remainingRequests--;
 		if (request.method == "GET" && status != showDirectory)
 			status = readingFromFile;
