@@ -7,7 +7,7 @@ import math
 import io
 
 def mandelbrot(h, w, max_iter):
-    y, x = np.ogrid[-1.4:1.4:h*1j, -2:0.8:w*1j]
+    y, x = np.ogrid[-1.15:1.15:h*1j, -2.03:0.5:w*1j]
     c = x + y*1j
     z = c
     divtime = max_iter + np.zeros(z.shape, dtype=int)
@@ -53,8 +53,8 @@ def create_image(data, max_iter):
 
     return img
 
-width, height = 1920, 1920
-max_iter = 500
+width, height = 1920, 1920 * 247 / 224
+max_iter = 100
 data = mandelbrot(height, width, max_iter)
 image = create_image(data, max_iter)
 

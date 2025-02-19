@@ -2,8 +2,8 @@
 
 void	Client::readIncomingRequest()
 {
-	ssize_t		readBytes;
-	static std::string	readBuffer(BUFFERSIZE, 0);
+	ssize_t				readBytes;
+	std::string	readBuffer(BUFFERSIZE, 0);
 
 	readBytes = read(fd, &readBuffer[0], BUFFERSIZE);
 	if (readBytes == -1)
@@ -23,16 +23,15 @@ void	Client::readFromFile()
 		return ;
 	response.buffer.resize(response.buffer.size() + BUFFERSIZE);
 	ssize_t readBytes = read(fileFd, &response.buffer[readPos], BUFFERSIZE);
-	if (readBytes == -1)
+	if (readBytes < BUFFERSIZE)
 	{
-		printToLog("Error reading from file: " + std::string(strerror(errno)));
-		setupErrorPage(500);
 		readPos = 0;
-	}
-	else if (readBytes < BUFFERSIZE)
-	{
+		if (readBytes == -1)
+		{
+			printToLog("Error reading from file: " + std::string(strerror(errno)));
+			setupErrorPage(500);
+		}
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
-		readPos = 0;
 		if (status == parseCgi)
 		{
 			if (response.buffer.substr(0, 6) == "Error:")

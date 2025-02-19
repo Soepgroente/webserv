@@ -23,10 +23,13 @@ const Server&	WebServer::getServer(int serverSocket)
 	throw std::runtime_error("Server not found");
 }
 
+/*	Adds a client and reserves space in the request buffer to avoid a lot of reallocation.
+	Reserves less space as more clients are added to balance speed vs memory	*/
+
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	// std::cout << newConnectionTotal << " connections" << std::endl;
+	clients.back().getRequest().buffer.reserve(std::max((size_t)BUFFERSIZE, 100 - clients.size() * BUFFERSIZE));
 	printToLog("New connection accepted");
 }
 
@@ -75,11 +78,8 @@ void	WebServer::loopadydoopady()
 		}
 		/*	Loop through Clients to see if anything happened	*/
 
-		for (size_t i = 0; i < clients.size(); i++)
+		for (size_t i = 0; i < clients.size() && pollDescriptors[i + amountOfServers].revents != 0; i++)
 		{
-			if (pollDescriptors[i + amountOfServers].revents == 0)
-				continue ;
-
 			Client& client = clients[i];
 
 			if ((pollDescriptors[i + amountOfServers].revents & POLLHUP) != 0)
