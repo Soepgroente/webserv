@@ -47,7 +47,7 @@ void	Client::readFromFile()
 			response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
 			if (response.reply.empty() == true)
 				response.reply = HttpResponse::defaultResponses[200];
-			response.reply += std::to_string(response.buffer.size()) + EMPTY_LINE + response.buffer;
+			response.reply += std::to_string(response.buffer.size()) + "\r\n\r\n" + response.buffer;
 			status = RESPONDING;
 		}
 	}

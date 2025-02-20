@@ -36,7 +36,10 @@ int64_t	WebServer::getTime()
 bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 {
 	if (WebServer::getTime() - lastPinged > timeout)
+	{
+		printToLog("Connection timed out");
 		return (true);
+	}
 	return (false);
 }
 

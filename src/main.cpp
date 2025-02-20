@@ -3,8 +3,8 @@
 void	startWebserver(const std::string& config)
 {
 	printToLog("Initial Server Bootup");
-	while (FOREVER)
-	{
+	// while (FOREVER)
+	// {
 		// try
 		// {
 			WebServer	webserver;
@@ -19,7 +19,7 @@ void	startWebserver(const std::string& config)
 		// 	std::exit(EXIT_FAILURE);
 		// }
 		// std::exit(EXIT_SUCCESS);
-	}
+	// }
 }
 
 int	main(int argc, char** argv)

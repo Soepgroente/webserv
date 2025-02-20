@@ -3,7 +3,6 @@ CGI
 
 Have a website to demo webserv
 
-	*be able to upload files -> works but not really
 	*delete files -> may work but untested
 
 Stress test the fuck out of the server

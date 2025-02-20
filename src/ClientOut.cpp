@@ -29,8 +29,6 @@ void	Client::writeToFile()
 {
 	ssize_t	writtenBytes;
 
-	std::cout << "Writing from position: " << writePos << std::endl;
-	std::cout << "Body size: " << request.body.size() << std::endl;
 	writtenBytes = write(fileFd, &request.body[writePos], \
 		std::min(request.body.size() - writePos, (size_t)BUFFERSIZE));
 	if (writtenBytes == -1)
@@ -70,7 +68,6 @@ std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)
 	for (std::filesystem::directory_entry dirEntry : std::filesystem::directory_iterator(dir))
 	{
 		std::string entry = dirEntry.path().filename().string();
-		std::cout << "entry: " << entry << std::endl;
 		ss << " <li><a href=\"" << normalizedPath + '/' << entry << "\">" << entry << "</a></li>\n";
 	}
 	ss << "</ul>\n"
