@@ -124,7 +124,8 @@
     <div id="imageDisplay">
         <img id="planetImage" alt="Planet Image">
         <img id="mandelbrotImage" alt="Mandelbrot Image" style="display:none;">
-        <div id="errorMessage" class="error-message">Failed to load image</div>
+		<img id="errorImg" alt="Error Image" style="display:none;">
+        <div id="errorMessage" class="error-message" style="display:none;">Failed to load image</div>
     </div>
 
     <script>
@@ -134,7 +135,7 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch(`${file.name}`, {
+                const response = await fetch(`/uploads/${file.name}`, {
                     method: 'POST',
                     body: formData
                 });
@@ -154,14 +155,32 @@
             button.addEventListener('click', async function() {
                 const planetName = this.textContent.toLowerCase();
                 const imageElement = document.getElementById('planetImage');
+				const mandelbrotImage = document.getElementById('mandelbrotImage');
                 const errorElement = document.getElementById('errorMessage');
+				const errorImg = document.getElementById('errorImg');
                 
+
+				errorElement.style.display = 'none';
+				errorImg.style.display = 'none';
+
                 try {
                     // Make request to your server for the planet image
                     const response = await fetch(`/planets/${planetName}.jpg`);
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+						const errorBlob = await response.blob();
+						const errorImgUrl = URL.createObjectURL(errorBlob);
+						// const errorBody = await response.text();
+						// const err = new Error(errorBody);
+						// err.status = response.status;
+                        // throw err;
+						// Hide the normal image and display the error image
+						imageElement.style.display = 'none';
+						errorImg.src = errorImgUrl;
+						errorImg.style.display = 'inline';
+						
+						// Exit further processing
+						return;
                     }
                     
                     // Create object URL from the response blob
@@ -171,7 +190,7 @@
                     // Display the image
                     imageElement.src = imageUrl;
                     imageElement.style.display = 'inline';
-                    errorElement.style.display = 'none';
+					mandelbrotImage.style.display = 'none';
                     
                     // Clean up the object URL after the image loads
                     imageElement.onload = () => {
@@ -180,6 +199,7 @@
                 } catch (error) {
                     console.error('Error fetching image:', error);
                     imageElement.style.display = 'none';
+					errorElement.textContent = `Error: ${error.message}`;
                     errorElement.style.display = 'block';
                 }
             });
@@ -213,9 +233,18 @@
         });
 
         document.getElementById('deleteButton').addEventListener('click', function() {
+			const imageElement = document.getElementById('planetImage');
+			const mandelbrotImage = document.getElementById('mandelbrotImage');
+			const errorElement = document.getElementById('errorMessage');
+			const errorImg = document.getElementById('errorImg');
             const filename = prompt("Enter the name of the file to delete:");
+			
+			imageElement.style.display = 'none';
+			mandelbrotImage.style.display = 'none';
+			errorElement.style.display = 'none';
+			errorImg.style.direction = 'none';
             if (filename) {
-                fetch(`deleteFile.cgi?filename=${encodeURIComponent(filename)}`, {
+                fetch(`/uploads/${encodeURIComponent(filename)}`, {
                     method: 'DELETE'
                 })
                 .then(response => response.text())
@@ -225,7 +254,12 @@
                 })
                 .catch(error => {
                     console.error('Error deleting file:', error);
-                    alert('Error deleting file');
+                    // alert('Error deleting file');
+					errorElement.textContent = `Error: ${error.message}`;
+                    errorElement.style.display = 'block';
+
+					errorImg.src = `/var/errorPages/${statusCode}.jpg`;
+					errorImg.style.display = 'inline';
                 });
             } else {
                 alert('No filename provided.');
