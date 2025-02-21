@@ -12,14 +12,14 @@ void	Client::writeToClient()
 	if (writtenBytes == -1)
 	{
 		printToLog("Error writing to client fd: " + std::string(strerror(errno)));
-		status = CLOSING;
+		setupErrorPage(internalServerError);
 		return ;
 	}
 	if (writtenBytes < BUFFERSIZE)
 	{
 		status = LISTENING;
 		writePos = 0;
-		this->clear();
+		clear();
 	}
 	else
 		writePos += BUFFERSIZE;
@@ -31,20 +31,18 @@ void	Client::writeToFile()
 
 	writtenBytes = write(fileFd, &request.body[writePos], \
 		std::min(request.body.size() - writePos, (size_t)BUFFERSIZE));
-	if (writtenBytes == -1)
-	{
-		printToLog("Error writing to file fd: " + std::string(strerror(errno)));
-		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
-		writePos = 0;
-		status = CLOSING;
-		return ;
-	}
 	if (writtenBytes < BUFFERSIZE)
 	{
-		status = RESPONDING;
 		writePos = 0;
-		response.reply = HttpResponse::defaultResponses[201];
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
+		if (writtenBytes == -1)
+		{
+			printToLog("Error writing to file fd: " + std::string(strerror(errno)));
+			setupErrorPage(internalServerError);
+			return ;
+		}
+		status = RESPONDING;
+		response.constructResponse(requestCreated, "text/html", 0);
 	}
 	else
 		writePos += BUFFERSIZE;
@@ -87,7 +85,7 @@ void	Client::parseDirectory()
 	// 	std::cout << dir_entry.path().filename() << std::endl;
 	// 	response.buffer += (dir_entry.path().filename().string() + "\r\n");
 	// }
-	response.reply = HttpResponse::defaultResponses[200] + std::to_string(response.buffer.size()) + "\r\n\r\n" + response.buffer;
+	response.constructResponse(requestIsOk, "text/html", response.buffer.size());
 	status = RESPONDING;
 }
 

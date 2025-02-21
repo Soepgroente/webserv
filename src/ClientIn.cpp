@@ -2,7 +2,7 @@
 
 void	Client::readIncomingRequest()
 {
-	ssize_t				readBytes;
+	ssize_t		readBytes;
 	std::string	readBuffer(BUFFERSIZE, 0);
 
 	readBytes = read(fd, &readBuffer[0], BUFFERSIZE);
@@ -26,12 +26,13 @@ void	Client::readFromFile()
 	if (readBytes < BUFFERSIZE)
 	{
 		readPos = 0;
+		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 		if (readBytes == -1)
 		{
 			printToLog("Error reading from file: " + std::string(strerror(errno)));
-			setupErrorPage(500);
+			setupErrorPage(internalServerError);
+			return ;
 		}
-		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 		if (status == parseCgi)
 		{
 			if (response.buffer.substr(0, 6) == "Error:")
@@ -45,9 +46,7 @@ void	Client::readFromFile()
 		else
 		{
 			response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
-			if (response.reply.empty() == true)
-				response.reply = HttpResponse::defaultResponses[200];
-			response.reply += std::to_string(response.buffer.size()) + "\r\n\r\n" + response.buffer;
+			response.constructResponse(request.status, request.fileType, response.buffer.size());
 			status = RESPONDING;
 		}
 	}

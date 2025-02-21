@@ -215,21 +215,32 @@ void	Client::interpretRequest()
 	}
 	if (request.status == bodyIsParsed)
 	{
+		request.status = requestIsOk;
 		remainingRequests--;
-		if (request.method == "GET" && status != showDirectory)
-			status = readingFromFile;
-		if (request.method == "POST")
-		{
-			status = writingToFile;
-		}
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
-			request.fileType = request.path.substr(index);
+			request.fileType = getMimeType(request.path.substr(index));
 		}
-		if (request.fileType == ".cgi")
+		if (request.method == "GET" && status != showDirectory)
 		{
-			status = launchCgi;
+			status = readingFromFile;
+			if (request.fileType == "cgi")
+			{
+				status = launchCgi;
+			}
+			if (request.fileType == "unsupported")
+			{
+				setupErrorPage(unsupportedMediaType);
+			}
+		}
+		if (request.method == "POST")
+		{
+			if (request.fileType == "unsupported")
+			{
+				request.fileType = "text/plain";
+			}
+			status = writingToFile;
 		}
 	}
 }

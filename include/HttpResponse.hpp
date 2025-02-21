@@ -12,7 +12,9 @@ struct HttpResponse
 
 	HttpResponse&	operator=(const HttpResponse& other);
 
-	void			clear();
+	void	constructResponse(int status, const std::string& mimeType, size_t length);
+	void	clear();
+
 	std::string		buffer;
 	std::string		reply;
 	static std::map<int, std::string> defaultResponses;

@@ -16,7 +16,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);
+	printVector(split);
 	return (split);
 }
 
@@ -75,4 +75,34 @@ void	printToLog(const std::string& message)
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();
+}
+
+std::string	getMimeType(const std::string& input)
+{
+	const std::map<std::string, std::string>	types = 
+	{
+		{".jpg", "image/jpeg"},
+		{".jpeg", "image/jpeg"},
+		{".png", "image/png"},
+		{".gif", "image/gif"},
+		{".bmp", "image/bmp"},
+		{".ico", "image/x-icon"},
+		{".css", "text/css"},
+		{".html", "text/html"},
+		{".js", "text/javascript"},
+		{".txt", "text/plain"},
+		{".pdf", "application/pdf"},
+		{".xml", "application/xml"},
+		{".json", "application/json"},
+		{".csv", "text/csv"},
+		{".svg", "image/svg+xml"},
+		{".webp", "image/webp"},
+		{".cgi", "cgi"},
+	};
+
+	if (types.find(input) == types.end())
+	{
+		return ("unsupported");
+	}
+	return (types.at(input));
 }

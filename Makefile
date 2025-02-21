@@ -1,7 +1,7 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-fsanitize=address #-DNDEBUG   -flto -std=c++2a 
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) #-Ofast -g #-fsanitize=address #-DNDEBUG   -flto -std=c++2a 
 OS			:= $(shell uname)
 HEADERS		:= -I include
 
@@ -34,11 +34,6 @@ OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
 
 M_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(MAIN:%.cpp=%.o)))
 T_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(TFILES:%.cpp=%.o)))
-
-#ifeq ($(OS), Darwin)
-#
-#
-#endif
 
 vpath %.cpp $(shell find $(SRC_DIR) -type d)
 
