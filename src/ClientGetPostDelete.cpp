@@ -13,7 +13,7 @@ Location*	Client::resolveRequestLocation(std::string& path)
 		if (path.find(it->first) == 0)
 			tmp = it;
 	}
-	if (tmp == end)
+	if (tmp == end || std::filesystem::exists('.' + server.locations.at(tmp->first).dirs.at("root")) == false)
 	{
 		request.status = requestNotFound;
 		request.locationPath = start->first;
@@ -54,7 +54,6 @@ bool	Client::parsePath(const std::string& requestLine)
 	
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
-	// extensionlessPath = "." + request.path.substr(0, request.path.find_last_of('/'));
 
 	if (request.protocol != "HTTP/1.1")
 	{
@@ -63,10 +62,6 @@ bool	Client::parsePath(const std::string& requestLine)
 	}
 	restoreWhitespace(request.path);
 	const Location& location = *resolveRequestLocation(request.path);
-    // if (std::filesystem::is_directory(extensionlessPath) == false)
-	// {
-	// 	request.status = requestNotFound;
-	// }
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
