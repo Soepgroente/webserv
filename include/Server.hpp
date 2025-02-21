@@ -12,8 +12,6 @@
 
 struct Location
 {
-	bool		directoryListing;
-
 	std::vector<std::string>	methods;
 	std::vector<std::string>	cgiExtensions;
 
@@ -42,3 +40,4 @@ struct	Server
 };
 
 std::ostream&	operator<<(std::ostream& out, const struct Server& p);
+std::ostream&	operator<<(std::ostream& out, const Location& location);

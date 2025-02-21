@@ -79,12 +79,6 @@ void	Client::parseDirectory()
 	std::filesystem::path	dir(request.path);	
 
 	response.buffer = generateDirectoryListing(dir);
-	// for (std::filesystem::directory_entry dir_entry : std::filesystem::recursive_directory_iterator(dir))
-	// for (std::filesystem::directory_entry dir_entry : std::filesystem::directory_iterator(dir))
-	// {
-	// 	std::cout << dir_entry.path().filename() << std::endl;
-	// 	response.buffer += (dir_entry.path().filename().string() + "\r\n");
-	// }
 	response.constructResponse(requestIsOk, "text/html", response.buffer.size());
 	status = RESPONDING;
 }
