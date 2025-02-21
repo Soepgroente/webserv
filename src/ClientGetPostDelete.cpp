@@ -37,10 +37,11 @@ Location*	Client::resolveRequestLocation(std::string& path)
 
 static void	restoreWhitespace(std::string& path)
 {
-	for (size_t pos = path.find("%20"); pos != std::string::npos; pos = path.find("%20"))
+	size_t	position = path.find("%20");
+	while (position != std::string::npos)
 	{
-		std::cout << "Pos: " << std::endl;
-		path.replace(pos, 3, " ");
+		path.replace(position, 3, " ");
+		position = path.find("%20");
 	}
 }
 
