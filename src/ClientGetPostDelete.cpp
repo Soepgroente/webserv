@@ -35,13 +35,22 @@ Location*	Client::resolveRequestLocation(std::string& path)
 }
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
 
+static void	restoreWhitespace(std::string& path)
+{
+	for (size_t pos = path.find("%20"); pos != std::string::npos; pos = path.find("%20"))
+	{
+		std::cout << "Pos: " << std::endl;
+		path.replace(pos, 3, " ");
+	}
+}
+
 bool	Client::parsePath(const std::string& requestLine)
 {
     std::stringstream	stream;
 	
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
-
+	restoreWhitespace(request.path); // this can become a function for all the encodings
 	request.location = resolveRequestLocation(request.path);
 	const Location& location = *request.location;
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
