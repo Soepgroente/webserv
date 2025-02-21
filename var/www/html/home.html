@@ -125,7 +125,7 @@
         <img id="planetImage" alt="Planet Image" style="display:none;">
         <img id="mandelbrotImage" alt="Mandelbrot Image" style="display:none;">
 		<img id="errorImg" alt="Error Image" style="display:none;">
-        <div id="errorMessage" class="error-message" style="display:none;">Failed to load image</div>
+        <div id="errorMessage" class="error-message" style="display:none;"></div>
     </div>
 
     <script>
@@ -155,7 +155,6 @@
             button.addEventListener('click', async function() {
                 const planetName = this.textContent.toLowerCase();
                 const imageElement = document.getElementById('planetImage');
-				const mandelbrotImage = document.getElementById('mandelbrotImage');
                 const errorElement = document.getElementById('errorMessage');
 				const errorImg = document.getElementById('errorImg');
                 
@@ -197,7 +196,8 @@
         });
 
         document.getElementById('executeButton').addEventListener('click', async function() {
-            const mandelbrotImage = document.getElementById('mandelbrotImage');
+			const imageElement = document.getElementById('planetImage');
+			const mandelbrotImage = document.getElementById('mandelbrotImage');
             const errorElement = document.getElementById('errorMessage');
 
             try {
@@ -209,7 +209,8 @@
 
                 const blob = await response.blob();
                 const imageUrl = URL.createObjectURL(blob);
-                mandelbrotImage.src = imageUrl;
+				imageElement.style.display = 'none';
+				mandelbrotImage.src = imageUrl;
                 mandelbrotImage.style.display = 'inline';
                 errorElement.style.display = 'none';
 
