@@ -122,7 +122,7 @@
     </div>
 
     <div id="imageDisplay">
-        <img id="planetImage" alt="Planet Image">
+        <img id="planetImage" alt="Planet Image" style="display:none;">
         <img id="mandelbrotImage" alt="Mandelbrot Image" style="display:none;">
 		<img id="errorImg" alt="Error Image" style="display:none;">
         <div id="errorMessage" class="error-message" style="display:none;">Failed to load image</div>
@@ -159,7 +159,6 @@
                 const errorElement = document.getElementById('errorMessage');
 				const errorImg = document.getElementById('errorImg');
                 
-
 				errorElement.style.display = 'none';
 				errorImg.style.display = 'none';
 
@@ -170,11 +169,6 @@
                     if (!response.ok) {
 						const errorBlob = await response.blob();
 						const errorImgUrl = URL.createObjectURL(errorBlob);
-						// const errorBody = await response.text();
-						// const err = new Error(errorBody);
-						// err.status = response.status;
-                        // throw err;
-						// Hide the normal image and display the error image
 						imageElement.style.display = 'none';
 						errorImg.src = errorImgUrl;
 						errorImg.style.display = 'inline';
@@ -198,9 +192,6 @@
                     };
                 } catch (error) {
                     console.error('Error fetching image:', error);
-                    imageElement.style.display = 'none';
-					errorElement.textContent = `Error: ${error.message}`;
-                    errorElement.style.display = 'block';
                 }
             });
         });
@@ -233,33 +224,39 @@
         });
 
         document.getElementById('deleteButton').addEventListener('click', function() {
-			const imageElement = document.getElementById('planetImage');
-			const mandelbrotImage = document.getElementById('mandelbrotImage');
-			const errorElement = document.getElementById('errorMessage');
-			const errorImg = document.getElementById('errorImg');
+            const imageElement = document.getElementById('planetImage');
+            const mandelbrotImage = document.getElementById('mandelbrotImage');
+            const errorElement = document.getElementById('errorMessage');
+            const errorImg = document.getElementById('errorImg');
             const filename = prompt("Enter the name of the file to delete:");
-			
-			imageElement.style.display = 'none';
-			mandelbrotImage.style.display = 'none';
-			errorElement.style.display = 'none';
-			errorImg.style.direction = 'none';
+
+            imageElement.style.display = 'none';
+            mandelbrotImage.style.display = 'none';
+            errorElement.style.display = 'none';
+            errorImg.style.display = 'none';
+
             if (filename) {
                 fetch(`/uploads/${encodeURIComponent(filename)}`, {
                     method: 'DELETE'
                 })
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw response;
+                    }
+                    return response.text();
+                })
                 .then(data => {
                     console.log('File Deleted:', data);
                     alert('File Deleted Successfully');
                 })
-                .catch(error => {
-                    console.error('Error deleting file:', error);
-                    // alert('Error deleting file');
-					errorElement.textContent = `Error: ${error.message}`;
+                .catch(async errorResponse => {
+                    const errorBlob = await errorResponse.blob();
+                    const errorImgUrl = URL.createObjectURL(errorBlob);
+                    errorImg.src = errorImgUrl;
+                    errorImg.style.display = 'inline';
+                    console.error('Error deleting file:', errorResponse);
                     errorElement.style.display = 'block';
-
-					errorImg.src = `/var/errorPages/${statusCode}.jpg`;
-					errorImg.style.display = 'inline';
+                    alert('Failed to delete file');
                 });
             } else {
                 alert('No filename provided.');

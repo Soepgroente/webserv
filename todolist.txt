@@ -1,9 +1,6 @@
-CGI
-	*Make it work
-
 Have a website to demo webserv
 
-	*delete files -> may work but untested
+	*delete files -> fix message if delete unsuccesful
 
 Stress test the fuck out of the server
 

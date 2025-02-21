@@ -50,9 +50,11 @@ static void restoreWhitespace(std::string& path)
 bool	Client::parsePath(const std::string& requestLine)
 {
     std::stringstream	stream;
+	// std::string			extensionlessPath;
 	
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
+	// extensionlessPath = "." + request.path.substr(0, request.path.find_last_of('/'));
 
 	if (request.protocol != "HTTP/1.1")
 	{
@@ -60,8 +62,11 @@ bool	Client::parsePath(const std::string& requestLine)
 		return (false);
 	}
 	restoreWhitespace(request.path);
-	request.location = resolveRequestLocation(request.path);
-	const Location& location = *request.location;
+	const Location& location = *resolveRequestLocation(request.path);
+    // if (std::filesystem::is_directory(extensionlessPath) == false)
+	// {
+	// 	request.status = requestNotFound;
+	// }
 	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)

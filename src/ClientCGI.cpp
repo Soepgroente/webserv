@@ -6,8 +6,6 @@ static char** getArgs(const std::string& location)
 
 	args[0] = strdup(location.c_str());
 	args[1] = nullptr;
-
-	std::cerr << args[0] << " " << args[1] << std::endl;
 	return (args);
 }
 
@@ -57,7 +55,6 @@ void	Client::launchCGI()
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
 		char** args = getArgs(request.path);
-		std::cout << args[0] << " " << args[1] << std::endl;
 		char** envp = getEnvp();
 		if (execve(request.path.c_str(), args, envp) == -1)
 		{
