@@ -56,7 +56,6 @@ std::ostream&	operator<<(std::ostream& out, const HttpResponse& p)
 
 void	HttpResponse::constructResponse(int status, const std::string& mimeType, size_t length)
 {
-	std::cout << "mimetype: " << mimeType << "status: " << status << std::endl;
 	if (mimeType == "unsupported")
 	{
 		reply = defaultResponses[status] + "text/html\r\nContent-Length: 0\r\n\r\n";
@@ -66,6 +65,4 @@ void	HttpResponse::constructResponse(int status, const std::string& mimeType, si
 		reply = defaultResponses[status] + mimeType + "\r\nContent-Length: " + std::to_string(length) + "\r\n\r\n" + buffer;
 	}
 	buffer.clear();
-	std::cout << "reply size: " << reply.size() << std::endl;
-	// std::cout << reply;
 }

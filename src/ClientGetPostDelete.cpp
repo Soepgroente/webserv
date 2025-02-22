@@ -61,12 +61,12 @@ bool	Client::parsePath(const std::string& requestLine)
 		return (false);
 	}
 	restoreWhitespace(request.path);
-	const Location& location = *resolveRequestLocation(request.path);
-	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+	request.location = resolveRequestLocation(request.path);
+	if (request.status == defaultStatus && std::find(request.location->methods.begin(), request.location->methods.end(), request.method) == request.location->methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
 		return (false);
-	const std::map<std::string, std::string>&	dir = location.dirs;
+	const std::map<std::string, std::string>&	dir = request.location->dirs;
 	if (request.path == "/")
 	{
 		request.path = request.path + dir.at("index");
@@ -88,7 +88,12 @@ bool	Client::parseGet(const std::string &requestLine)
 	}
     if (std::filesystem::is_directory(path) == true)
 	{
-		if (request.location->dirs.at("directory_listing") == "on")
+		if (request.location == nullptr)
+		{
+			request.status = internalServerError;
+			return (false);
+		}
+		else if (request.location->dirs.at("directory_listing") == "on")
 		{
 			status = showDirectory;
 			request.path = path;
