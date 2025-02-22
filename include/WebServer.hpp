@@ -48,7 +48,6 @@ class	WebServer
 	
 	static int64_t	getTime();
 
-	int newConnectionTotal = 0;
 	private:
 
 	/* Private variables	*/

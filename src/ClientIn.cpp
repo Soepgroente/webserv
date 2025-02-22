@@ -51,5 +51,5 @@ void	Client::readFromFile()
 		}
 	}
 	else
-		readPos += BUFFERSIZE;
+		readPos += readBytes;
 }

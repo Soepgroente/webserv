@@ -54,9 +54,7 @@ void	Client::launchCGI()
 		request.path = "." + request.path;
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		char** args = getArgs(request.path);
-		char** envp = getEnvp();
-		if (execve(request.path.c_str(), args, envp) == -1)
+		if (execve(request.path.c_str(), getArgs(request.path), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
 				printToLog("Failed to write to cgi pipe");

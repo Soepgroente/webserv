@@ -50,7 +50,6 @@ static void restoreWhitespace(std::string& path)
 bool	Client::parsePath(const std::string& requestLine)
 {
     std::stringstream	stream;
-	// std::string			extensionlessPath;
 	
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;

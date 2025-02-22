@@ -5,6 +5,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	std::vector<std::string>	split;
 	size_t	end;
 
+	std::cout << "Incoming: " << toSplit.substr(0, 250) << std::endl;
 	while (toSplit.empty() == false)
 	{
 		end = toSplit.find("\r\n");
@@ -16,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	printVector(split);
+	// printVector(split);
 	return (split);
 }
 

@@ -47,6 +47,4 @@ void	WebServer::closeConnection(int pollIndex, int clientIndex)
 	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
 	printToLog("Closed connection");
-	newConnectionTotal--;
-	// std::cout << newConnectionTotal << " connections" << std::endl;
 }

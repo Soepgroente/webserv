@@ -9,20 +9,19 @@ void	Client::writeToClient()
 
 	writtenBytes = write(fd, &response.reply[writePos], \
 		std::min(response.reply.size() - writePos, (size_t)BUFFERSIZE));
-	if (writtenBytes == -1)
-	{
-		printToLog("Error writing to client fd: " + std::string(strerror(errno)));
-		setupErrorPage(internalServerError);
-		return ;
-	}
 	if (writtenBytes < BUFFERSIZE)
 	{
 		status = LISTENING;
+		if (writtenBytes == -1)
+		{
+			printToLog("Error writing to client fd: " + std::string(strerror(errno)));
+			setupErrorPage(internalServerError);
+		}
 		writePos = 0;
 		clear();
 	}
 	else
-		writePos += BUFFERSIZE;
+		writePos += writtenBytes;
 }
 
 void	Client::writeToFile()
@@ -45,7 +44,7 @@ void	Client::writeToFile()
 		response.constructResponse(requestCreated, "text/html", 0);
 	}
 	else
-		writePos += BUFFERSIZE;
+		writePos += writtenBytes;
 }
 
 std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)
