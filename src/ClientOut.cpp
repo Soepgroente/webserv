@@ -9,7 +9,7 @@ void	Client::writeToClient()
 
 	writtenBytes = write(fd, &response.reply[writePos], \
 		std::min(response.reply.size() - writePos, (size_t)BUFFERSIZE));
-	if (writtenBytes < BUFFERSIZE)
+	if (writtenBytes <= 0)
 	{
 		status = LISTENING;
 		if (writtenBytes == -1)
