@@ -53,7 +53,7 @@ def create_image(data, max_iter):
 
     return img
 
-width, height = 1920, 1920 * 247 / 224
+width, height = 1920 * 247 / 224, 1920
 max_iter = 100
 data = mandelbrot(height, width, max_iter)
 image = create_image(data, max_iter)

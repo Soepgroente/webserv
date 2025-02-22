@@ -6,3 +6,8 @@ Stress test the fuck out of the server
 
 	*Try to overload with requests -> did some basic stuff but not a siege program or something
 	*Check for memory management / proper error handling -> did basic valgrind checks
+
+Issues:
+
+Clicking a bunch will sometimes cause something to get stuck half-loaded
+:8081 breaks server (because root folder doesn't exist?)

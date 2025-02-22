@@ -25,7 +25,7 @@ int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>
 	int fd = open(path, openFlags, 0644);
 	if (fd == -1)
 	{
-		throw std::runtime_error("Failed to open file even though it exists");
+		throw std::runtime_error("Failed to open file in openFile function");
 	}
 	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 	{
