@@ -44,6 +44,7 @@ struct	HttpRequest
 	std::string					port;
 	std::string					method;
 	std::string					path;
+	std::string					dotPath;
 	std::string					protocol;
 	std::string					contentType;
 	std::string					fileType;

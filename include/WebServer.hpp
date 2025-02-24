@@ -27,7 +27,7 @@
 #include "utils.hpp"
 
 #define FOREVER 1
-#define BUFFERSIZE 8 * 1024
+#define BUFFERSIZE 32 * 1024
 #define CHUNKED_EOF "0\r\n\r\n"
 
 struct	Server;

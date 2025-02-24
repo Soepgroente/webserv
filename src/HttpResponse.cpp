@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 
 std::map<int, std::string> HttpResponse::defaultResponses =
 {
@@ -38,6 +39,8 @@ HttpResponse&	HttpResponse::operator=(const HttpResponse& other)
 	{
 		buffer = other.buffer;
 		reply = other.reply;
+		status = other.status;
+		cgiContentLength = other.cgiContentLength;
 	}
 	return (*this);
 }
@@ -46,11 +49,16 @@ void	HttpResponse::clear()
 {
 	buffer.clear();
 	reply.clear();
+	status = defaultStatus;
+	cgiContentLength = 0;
 }
 
 std::ostream&	operator<<(std::ostream& out, const HttpResponse& p)
 {
 	out << "Buffer: " << p.buffer << std::endl;
+	out << "Reply: " << p.reply << std::endl;
+	out << "Status: " << p.status << std::endl;
+	out << "CGI Content Length: " << p.cgiContentLength << std::endl;
 	return (out);
 }
 

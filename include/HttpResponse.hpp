@@ -17,5 +17,7 @@ struct HttpResponse
 
 	std::string		buffer;
 	std::string		reply;
+	int 			status;
+	size_t			cgiContentLength;
 	static std::map<int, std::string> defaultResponses;
 };

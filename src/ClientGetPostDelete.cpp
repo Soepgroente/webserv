@@ -71,6 +71,7 @@ bool	Client::parsePath(const std::string& requestLine)
 		request.path = request.path + dir.at("index");
 	}
 	request.path = dir.at("root") + request.path;
+	request.dotPath = "." + request.path;
 	return (true);
 }
 
@@ -78,14 +79,13 @@ bool	Client::parseGet(const std::string &requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-	const std::filesystem::path path = '.' + request.path;
 
-	if (std::filesystem::exists(path) == false)
+	if (std::filesystem::exists(request.dotPath) == false)
 	{
 		request.status = requestNotFound;
 		return (false);
 	}
-    if (std::filesystem::is_directory(path) == true)
+    if (std::filesystem::is_directory(request.dotPath) == true)
 	{
 		if (request.location == nullptr)
 		{
@@ -95,9 +95,8 @@ bool	Client::parseGet(const std::string &requestLine)
 		else if (request.location->dirs.at("directory_listing") == "on")
 		{
 			status = showDirectory;
-			request.path = path;
-			if (request.path.back() != '/')
-				request.path += "/";
+			if (request.dotPath.back() != '/')
+				request.dotPath += "/";
 		}
 		else
 		{
@@ -105,9 +104,8 @@ bool	Client::parseGet(const std::string &requestLine)
 			return (false);
 		}
 	}
-	else if (std::filesystem::is_regular_file(path) == true)
+	else if (std::filesystem::is_regular_file(request.dotPath) == true)
 	{
-		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 		status = readingFromFile;
 	}
 	return (true);
@@ -118,14 +116,13 @@ bool	Client::parsePost(const std::string& requestLine)
 	if (parsePath(requestLine) == false)
 		return (false);
 
-	const std::filesystem::path path = '.' + request.path;
 
-	if (std::filesystem::exists(path) == true)
+	if (std::filesystem::exists(request.dotPath) == true)
 	{
 		request.status = fileAlreadyExists;
 		return (false);
 	}
-	fileFd = openFile(path.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
+	fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
 	return (true);
 }
 
@@ -133,11 +130,10 @@ bool	Client::parseDelete(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-	const std::filesystem::path path = '.' + request.path;
 
-	if (std::filesystem::exists(path) == true)
+	if (std::filesystem::exists(request.dotPath) == true)
 	{
-		if (std::filesystem::remove(path) == false)
+		if (std::filesystem::remove(request.dotPath) == false)
 		{
 			request.status = requestForbidden;
 			return (false);

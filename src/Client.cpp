@@ -41,8 +41,9 @@ void	Client::initializeSocket(int serverSocket)
 		throw std::runtime_error("Failed to set client socket to non-blocking");
 }
 
-void	Client::clear()
+void	Client::reset()
 {
 	request.clear();
 	response.clear();
+	status = LISTENING;
 }

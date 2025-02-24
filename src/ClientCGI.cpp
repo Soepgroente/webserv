@@ -51,10 +51,9 @@ void	Client::launchCGI()
 	pid = forkProcess();
 	if (pid == 0)
 	{
-		request.path = "." + request.path;
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		if (execve(request.path.c_str(), getArgs(request.path), getEnvp()) == -1)
+		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
 				printToLog("Failed to write to cgi pipe");
@@ -63,7 +62,9 @@ void	Client::launchCGI()
 		}
 	}
 	close(pipeFd[1]);
+	assert(fileFd == -1);
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
+	std::cout << "added cgi fd: " << pipeFd[0] << std::endl;
 	fileFd = pipeFd[0];
 	status = parseCgi;
 }

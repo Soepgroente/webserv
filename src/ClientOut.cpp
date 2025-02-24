@@ -11,14 +11,13 @@ void	Client::writeToClient()
 		std::min(response.reply.size() - writePos, (size_t)BUFFERSIZE));
 	if (writtenBytes <= 0)
 	{
-		status = LISTENING;
+		writePos = 0;
+		reset();
 		if (writtenBytes == -1)
 		{
 			printToLog("Error writing to client fd: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 		}
-		writePos = 0;
-		clear();
 	}
 	else
 		writePos += writtenBytes;
@@ -50,22 +49,22 @@ void	Client::writeToFile()
 std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)
 {
 	std::stringstream	ss;
-	std::string			normalizedPath = '/' + dir.parent_path().filename().string();
+	std::string			dotPath = '/' + dir.parent_path().filename().string();
 
-	if (request.locationPath != normalizedPath)
+	if (request.locationPath != dotPath)
 	{
-		normalizedPath = request.locationPath + normalizedPath;
+		dotPath = request.locationPath + dotPath;
 	}
 	ss << "<!DOCTYPE html>\n"
     	<< "<html>\n"
         << "<head><meta charset=\"UTF-8\"><title>Directory Listing</title></head>\n"
         << "<body>\n"
-        << "<h1>Index of " << normalizedPath << "</h1>\n"
+        << "<h1>Index of " << dotPath << "</h1>\n"
         << "<ul>\n";
 	for (std::filesystem::directory_entry dirEntry : std::filesystem::directory_iterator(dir))
 	{
 		std::string entry = dirEntry.path().filename().string();
-		ss << " <li><a href=\"" << normalizedPath + '/' << entry << "\">" << entry << "</a></li>\n";
+		ss << " <li><a href=\"" << dotPath + '/' << entry << "\">" << entry << "</a></li>\n";
 	}
 	ss << "</ul>\n"
 		<< "</body>\n"
@@ -75,7 +74,7 @@ std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)
 
 void	Client::parseDirectory()
 {
-	std::filesystem::path	dir(request.path);	
+	std::filesystem::path	dir(request.dotPath);	
 
 	response.buffer = generateDirectoryListing(dir);
 	response.constructResponse(requestIsOk, "text/html", response.buffer.size());

@@ -17,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);
+	printVector(split);
 	return (split);
 }
 
@@ -52,9 +52,17 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
 {
 	int pollFdIndex = getPollfdIndex(polls, fd);
 
-	close(fd);
+	std::cout << "fd we try to close: " << fd << std::endl;
+	std::cout << "fd in this array: " << polls[pollFdIndex].fd << std::endl;
+	if (close(fd) == -1)
+		std::cout << "SHOUT SOMETHING BECAUSE WTF" << std::endl;
 	fd = -1;
 	polls.erase(polls.begin() + pollFdIndex);
+	std::cout << "size of poll array: " << polls.size() << std::endl;
+	for (size_t i = 0; i < polls.size(); i++)
+	{
+		std::cout << "fd in array[" << i << "] " << polls[i].fd << std::endl;
+	}
 }
 
 std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)

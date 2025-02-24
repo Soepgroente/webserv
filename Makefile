@@ -1,9 +1,9 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast #-g -fsanitize=address #-DNDEBUG   -flto -std=c++2a 
-OS			:= $(shell uname)
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g -fsanitize=address #-DNDEBUG#-flto
 HEADERS		:= -I include
+MAKEFLAGS	+= -j$(shell nproc)
 
 CPPFILES	:=	Client.cpp \
 				ClientCGI.cpp \
@@ -46,7 +46,6 @@ $(OBJ_DIR):
 
 $(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
 	$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME)
-	@if [ $$? -eq 0 ]; then echo "\033[32mSuccess\033[0m"; fi
 
 $(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
 	$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
@@ -61,7 +60,9 @@ fclean: clean
 	rm -f $(NAME)
 	rm -f $(T_EXEC)
 
-re: fclean all
+re: fclean
+	$(MAKE)
+
 retest: fclean test
 
 debug: CFLAGS += -fsanitize=address

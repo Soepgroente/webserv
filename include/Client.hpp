@@ -88,7 +88,7 @@ class Client
 	std::string	generateDirectoryListing(const std::filesystem::path& dir);
 
 
-	void	clear();
+	void	reset();
 
 	int64_t				latestPing;
 	int64_t				timeout;

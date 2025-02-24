@@ -52,6 +52,8 @@ void	WebServer::removeInactiveConnections()
 			closeConnection(i + servers.size(), i);
 			i--;
 		}
+		else if (clients[i].getClientStatus() != LISTENING)
+			clients[i].setPingTime();
 	}
 }
 

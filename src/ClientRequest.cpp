@@ -105,6 +105,7 @@ bool	Client::parseHeaders()
 		{
 			if (parseFunctions.at(firstWord)(this, request.splitRequest[i]) == false)
 			{
+				// request.clear()?
 				setupErrorPage(request.status);
 				return (false);
 			}
@@ -184,6 +185,7 @@ static void	parseBody(HttpRequest& request)
 	}
 	if (request.body.size() > request.contentLength)
 	{
+		std::cout << "body: " << request.body.size() << " length: " << request.contentLength << std::endl;
 		request.status = requestIsInvalid;
 	}
 	if (request.body.size() == request.contentLength)
@@ -229,10 +231,12 @@ void	Client::interpretRequest()
 			{
 				status = launchCgi;
 			}
-			if (request.fileType == "unsupported")
+			else if (request.fileType == "unsupported")
 			{
 				setupErrorPage(unsupportedMediaType);
 			}
+			else
+				fileFd = openFile(request.dotPath.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 		}
 		if (request.method == "POST")
 		{
