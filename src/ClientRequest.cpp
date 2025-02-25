@@ -235,7 +235,14 @@ void	Client::interpretRequest()
 				setupErrorPage(unsupportedMediaType);
 			}
 			else
+			{
 				fileFd = openFile(request.dotPath.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
+				if (fileFd == -1)
+				{
+					setupErrorPage(internalServerError);
+					return ;
+				}
+			}
 		}
 		if (request.method == "POST")
 		{

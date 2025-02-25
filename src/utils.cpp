@@ -26,7 +26,7 @@ int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>
 	int fd = open(path, openFlags, 0644);
 	if (fd == -1)
 	{
-		throw std::runtime_error("Failed to open file in openFile function");
+		return (-1);
 	}
 	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 	{
@@ -73,7 +73,7 @@ void	printToLog(const std::string& message)
 	if (file.is_open() == false)
 	{
 		std::cerr << "Failed to open log file" << std::endl;
-		throw std::runtime_error("Failed to open log file");
+		throw std::runtime_error("Failed to open log file"); // culprit in siege
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();

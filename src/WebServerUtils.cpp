@@ -37,7 +37,7 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 {
 	if (WebServer::getTime() - lastPinged > timeout)
 	{
-		printToLog("Connection timed out");
+		// printToLog("Connection timed out");
 		return (true);
 	}
 	return (false);
@@ -47,6 +47,7 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 static void	exitGracefullyOnSignal(int signal)
 {
 	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
+	std::exit(EXIT_FAILURE);
 	*ptr = false;
 }
 
@@ -58,15 +59,15 @@ void	WebServer::set_signals()
 	signal(SIGQUIT, SIG_IGN);
 }
 
-static bool	duplicateClient(const std::vector<Client>& clients, const Client& client)
-{
-	for (const Client& tmp : clients)
-	{
-		if (tmp.getFd() == client.getFd())
-			return (true);
-	}
-	return (false);
-}
+// static bool	duplicateClient(const std::vector<Client>& clients, const Client& client)
+// {
+// 	for (const Client& tmp : clients)
+// 	{
+// 		if (tmp.getFd() == client.getFd())
+// 			return (true);
+// 	}
+// 	return (false);
+// }
 
 void	WebServer::addClient(int serverSocket)
 {

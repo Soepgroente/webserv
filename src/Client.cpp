@@ -36,7 +36,12 @@ void	Client::initializeSocket(int serverSocket)
 
 	this->fd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), &clientAddressLength);
 	if (this->fd == -1)
-		throw std::runtime_error("Failed to accept client");
+	{
+		// printToLog("Failed to accept client");
+		status = CLOSING;
+		return ;
+	}
+		// throw std::runtime_error("Failed to accept client");
 	if (fcntl(this->fd, F_SETFL, fcntl(this->fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 		throw std::runtime_error("Failed to set client socket to non-blocking");
 }

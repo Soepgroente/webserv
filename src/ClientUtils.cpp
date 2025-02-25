@@ -87,6 +87,12 @@ void	Client::setupErrorPage(int error)
 	std::string	path = "." + server.errorLocation + std::to_string(error) + ".jpg";
 
 	fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
+	if (fileFd == -1)
+	{
+		status = RESPONDING;
+		response.reply = HttpResponse::defaultResponses[internalServerError] + "text/plain\r\nContent-Length: 25\r\n\r\n500 Internal server error";
+		return ;
+	}
 	request.fileType = getMimeType(".jpg");
 	status = readingFromFile;
 }
