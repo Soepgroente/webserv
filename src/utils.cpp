@@ -17,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	printVector(split);
+	// printVector(split);
 	return (split);
 }
 
@@ -52,17 +52,10 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
 {
 	int pollFdIndex = getPollfdIndex(polls, fd);
 
-	std::cout << "fd we try to close: " << fd << std::endl;
-	std::cout << "fd in this array: " << polls[pollFdIndex].fd << std::endl;
-	if (close(fd) == -1)
-		std::cout << "SHOUT SOMETHING BECAUSE WTF" << std::endl;
+	assert(fcntl(fd, F_GETFD) != -1);
+	close(fd);
 	fd = -1;
 	polls.erase(polls.begin() + pollFdIndex);
-	std::cout << "size of poll array: " << polls.size() << std::endl;
-	for (size_t i = 0; i < polls.size(); i++)
-	{
-		std::cout << "fd in array[" << i << "] " << polls[i].fd << std::endl;
-	}
 }
 
 std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
@@ -80,7 +73,7 @@ void	printToLog(const std::string& message)
 	if (file.is_open() == false)
 	{
 		std::cerr << "Failed to open log file" << std::endl;
-		std::exit(EXIT_FAILURE);
+		throw std::runtime_error("Failed to open log file");
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();

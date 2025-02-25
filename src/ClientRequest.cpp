@@ -185,7 +185,6 @@ static void	parseBody(HttpRequest& request)
 	}
 	if (request.body.size() > request.contentLength)
 	{
-		std::cout << "body: " << request.body.size() << " length: " << request.contentLength << std::endl;
 		request.status = requestIsInvalid;
 	}
 	if (request.body.size() == request.contentLength)

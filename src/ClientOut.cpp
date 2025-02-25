@@ -7,16 +7,13 @@ void	Client::writeToClient()
 {
 	ssize_t	writtenBytes;
 
-	// std::cout << "Reply size: " << response.reply.size() << std::endl;
 	writtenBytes = write(fd, &response.reply[writePos], \
 		std::min(response.reply.size() - writePos, (size_t)BUFFERSIZE));
-	// std::cout << "Written bytes: " << writtenBytes << std::endl;
 	if (writtenBytes <= 0)
 	{
 		writePos = 0;
-		std::cout << "WRITE TO CLIENT, response.reply.size(): " << response.reply.size() << std::endl;
 
-		std::cout << response.reply.substr(0, 250) << std::endl;
+		// std::cout << response.reply.substr(0, 250) << std::endl;
 		reset();
 		if (writtenBytes == -1)
 		{
