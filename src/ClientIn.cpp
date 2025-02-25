@@ -41,9 +41,10 @@ void	Client::readFromFile()
 				return ;
 			}
 			response.status = headerIsParsed;
-			response.cgiContentLength = std::stoi(response.buffer.substr(contentLengthIndex, response.buffer.find("\r\n", contentLengthIndex)));
-			response.reply = response.buffer.substr(0, index);
-			response.buffer.erase(0, index);
+			response.cgiContentLength = std::stoi(response.buffer.substr(contentLengthIndex, response.buffer.find("\r\n", contentLengthIndex))) + index;
+			response.reply = response.buffer;
+			// response.reply = response.buffer.substr(0, index);
+			// response.buffer.erase(0, index);
 		}
 	}
 	if (readBytes < BUFFERSIZE)
@@ -73,7 +74,7 @@ void	Client::readFromFile()
 		}
 		else
 		{
-			response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
+			// response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
 			response.constructResponse(request.status, request.fileType, response.buffer.size());
 			status = RESPONDING;
 		}

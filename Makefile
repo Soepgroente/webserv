@@ -1,7 +1,7 @@
 NAME		:= webserv
 T_EXEC		:= webserv_tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g -fsanitize=address #-DNDEBUG#-flto
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-fsanitize=address #-DNDEBUG#-flto
 HEADERS		:= -I include
 MAKEFLAGS	+= -j$(shell nproc)
 
