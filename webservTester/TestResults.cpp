@@ -6,7 +6,7 @@ void	TestResults::addResponseTime(double time_ms)
 	response_times.push_back(time_ms);
 }
 
-double	TestResults::averageResponseTime() const
+double	TestResults::averageResponseTime()
 {
 	std::lock_guard<std::mutex> lock(response_times_mutex);
 	if (response_times.empty())
@@ -14,7 +14,7 @@ double	TestResults::averageResponseTime() const
 	return (std::accumulate(response_times.begin(), response_times.end(), 0.0) / response_times.size());
 }
 
-double	TestResults::medianResponseTime() const
+double	TestResults::medianResponseTime()
 {
 	std::lock_guard<std::mutex> lock(response_times_mutex);
 	if (response_times.empty())
@@ -26,7 +26,7 @@ double	TestResults::medianResponseTime() const
 	return (sorted_times[sorted_times.size() / 2]);
 }
 
-double	TestResults::minResponseTime() const
+double	TestResults::minResponseTime()
 {
 	std::lock_guard<std::mutex> lock(response_times_mutex);
 	if (response_times.empty())
@@ -34,7 +34,7 @@ double	TestResults::minResponseTime() const
 	return (*std::min_element(response_times.begin(), response_times.end()));
 }
 
-double	TestResults::maxResponseTime() const
+double	TestResults::maxResponseTime()
 {
 	std::lock_guard<std::mutex> lock(response_times_mutex);
 	if (response_times.empty())
@@ -42,7 +42,7 @@ double	TestResults::maxResponseTime() const
 	return (*std::max_element(response_times.begin(), response_times.end()));
 }
 
-double	TestResults::percentile(double p) const
+double	TestResults::percentile(double p)
 {
 	std::lock_guard<std::mutex> lock(response_times_mutex);
 	if (response_times.empty())

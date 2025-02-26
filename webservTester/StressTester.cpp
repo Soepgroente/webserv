@@ -16,7 +16,8 @@ StressTester::StressTester(const std::string& host, const std::string& port, \
 
 void	StressTester::setupRequestTemplates()
 {
-	m_paths = {
+	m_paths =
+	{
 		"/",
 		"/index.html",
 		"/about",
@@ -29,11 +30,10 @@ void	StressTester::setupRequestTemplates()
 		"/very/deep/nested/path/structure"
 	};
 
-	// Create some request templates
 	m_request_templates.push_back({RequestMethod::GET, "/", "", ""});
 	m_request_templates.push_back({RequestMethod::GET, "/index.html", "", ""});
-	m_request_templates.push_back({RequestMethod::POST, "/api/submit", "name=test&data=example", "application/x-www-form-urlencoded"});
-	m_request_templates.push_back({RequestMethod::DELETE, "/api/remove", "id=123", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::POST, "/uploads/submit", "name=test&data=example", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::DELETE, "/uploads/remove", "id=123", "application/x-www-form-urlencoded"});
 }
 
 void	StressTester::runTest()
@@ -136,7 +136,6 @@ void	StressTester::displayProgress()
 				else if (i == filled_width) std::cout << ">";
 				else std::cout << " ";
 			}
-			
 			std::cout << "] " << progress_percent << "% (" 
 						<< m_progress << "/" << total_requests << " requests, "
 						<< m_results.successful_requests << " successful, "
@@ -150,7 +149,10 @@ void	StressTester::displayProgress()
 	{
 		std::lock_guard<std::mutex> lock(m_output_mutex);
 		std::cout << "\r[";
-		for (int i = 0; i < 50; ++i) std::cout << "=";
+		for (int i = 0; i < 50; ++i)
+		{
+			std::cout << "=";
+		}
 		std::cout << "] 100% (" << total_requests << "/" << total_requests 
 					<< " requests, " << m_results.successful_requests 
 					<< " successful, " << m_results.failed_requests 
@@ -160,8 +162,8 @@ void	StressTester::displayProgress()
 
 void	StressTester::displayFinalResults()
 {
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-		m_results.end_time - m_results.start_time).count() / 1000.0;
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>
+		(m_results.end_time - m_results.start_time).count() / 1000.0;
 	
 	auto requests_per_second = m_results.requestsPerSecond();
 	auto avg_response_time = m_results.averageResponseTime();
@@ -172,10 +174,10 @@ void	StressTester::displayFinalResults()
 	auto p95_response_time = m_results.percentile(95);
 	auto p99_response_time = m_results.percentile(99);
 	
-	auto now = std::chrono::system_clock::now();
-	auto now_time = std::chrono::system_clock::to_time_t(now);
+	// auto now = std::chrono::system_clock::now();
+	// auto now_time = std::chrono::system_clock::to_time_t(now);
 	std::stringstream filename;
-	filename << "webserv_stress_report_" << std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S") << ".log";
+	filename << "webservTestReport" <</* std::put_time(std::localtime(&now_time), "%Y%m%d_%H%M%S") <<*/ ".log";
 
 	std::cout << "\n\n📊 Test Results Summary:\n";
 	std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
@@ -247,9 +249,7 @@ std::string	StressTester::methodToString(RequestMethod method) const
 {
 	const std::array<std::string, 3> method_names = {"GET", "POST", "DELETE"};
 
-	if (method >= DELETE)
-		return ("UNKNOWN");
-	return (method_names[static_cast<int>(method)]);
+	return (method_names[static_cast<int>(method % 3)]);
 }
 
 RequestTemplate	StressTester::getRandomRequestTemplate()
@@ -273,6 +273,7 @@ RequestTemplate	StressTester::getRandomRequestTemplate()
 	{
 		std::uniform_int_distribution<int> method_dist(0, 8);
 		int method_selector = method_dist(m_rng);
+
 		if (method_selector < 7)
 		{
 			tmpl.method = RequestMethod::GET;
@@ -302,10 +303,9 @@ RequestTemplate	StressTester::getRandomRequestTemplate()
 		for (int i = 0; i < segments; ++i)
 		{
 			std::uniform_int_distribution<int> segment_dist(0, segment_options.size() - 1);
-			path += segment_options[segment_dist(m_rng)];
-			
-			// Sometimes add an ID-like number
 			std::uniform_int_distribution<int> add_id_dist(0, 3);
+
+			path += segment_options[segment_dist(m_rng)];
 			if (add_id_dist(m_rng) == 0)
 			{
 				std::uniform_int_distribution<int> id_dist(1, 9999);
@@ -338,7 +338,6 @@ RequestTemplate	StressTester::getRandomRequestTemplate()
 				}
 			}
 		}
-		
 		tmpl.path = path;
 	}
 	else
@@ -376,7 +375,7 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	
-	memset(&hints, 0, sizeof hints);
+	memset(&hints, 0, sizeof(addrinfo));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	if ((rv = getaddrinfo(m_host.c_str(), m_port.c_str(), &hints, &servinfo)) != 0)
@@ -443,24 +442,50 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 		return (false);
 	}
 
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE + 1];
 	struct timeval timeout;
 	timeout.tv_sec = m_timeout_ms / 1000;
 	timeout.tv_usec = (m_timeout_ms % 1000) * 1000;
 	
-	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+	#ifdef __APPLE__
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &timeout, sizeof(timeout)) == -1)
 	{
 		close(sockfd);
 		return (false);
 	}
+	#elif defined(__linux__)
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &options, sizeof(options)) == -1)
+	{
+		close(sockfd);
+		return (false);
+	}
+	#endif
+	// if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+	// {
+	// 	return (false);
+	// }
 	
-	int received = 0;
+	ssize_t received = 0;
 	bool success = false;
 	int status_code = -1;
 
-	while ((received = recv(sockfd, buffer, BUFFER_SIZE - 1, 0)) > 0)
+	while (true)
 	{
+		received = recv(sockfd, buffer, BUFFER_SIZE, 0);
+		if (received == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+			{
+				m_results.timeouts++;
+			}
+			success = false;
+			break ;
+		}
 		buffer[received] = '\0';
+		if (received < BUFFER_SIZE)
+		{
+			break ;
+		}
 		if (status_code == -1)
 		{
 			std::string response(buffer, received);
@@ -468,30 +493,29 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 			if (status_pos != std::string::npos)
 			{
 				status_pos++;
-				status_code = std::stoi(response.substr(status_pos));
+				try
+				{
+					status_code = std::stoi(response.substr(status_pos));
+					success = true;
+				}
+				catch (std::exception& e)
+				{
+					success = false;
+					break ;
+				}
 			}
 		}
-		if (status_code >= 200 && status_code < 400)
-		{
-			success = true;
-		}
-	}
-	
-	if (received == 0)
-	{
-		if (status_code == -1)
-		{
-			success = false;
-		}
-	}
-	else if (received == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-		{
-			m_results.timeouts++;
-		}
-		success = false;
-	}
+		// if (status_code != -1/*&& status_code < 400*/)
+		// {
+		// }
+	}	
+	// if (received == 0)
+	// {
+	// 	if (status_code == -1)
+	// 	{
+	// 		success = false;
+	// 	}
+	// }
 	close(sockfd);
 	return (success);
 }
@@ -521,9 +545,9 @@ std::string	StressTester::createHttpRequest(const RequestTemplate& req)
 		request += "Accept-Encoding: gzip, deflate\r\n";
 	}
 	request += "\r\n";
-	if (req.method == RequestMethod::POST)
-	{
-		request += req.data;
-	}
+	// if (req.method == RequestMethod::POST)
+	// {
+	// 	request += req.data;
+	// }
 	return (request);
 };

@@ -32,27 +32,13 @@ constexpr int DEFAULT_TIMEOUT_MS = 5000;
 constexpr const char* DEFAULT_HOST = "localhost";
 constexpr const char* DEFAULT_PORT = "8080";
 constexpr int CONNECT_TIMEOUT_MS = 3000;
-constexpr int BUFFER_SIZE = 4096;
+constexpr int BUFFER_SIZE = 32 * 1024;
 
-std::atomic<bool> g_running(true);
+extern std::atomic<bool> g_running;
 
-class StressTester;
-class TestResults;
-
-enum RequestMethod
-{
-    GET,
-    POST,
-    DELETE,
-};
-
-struct RequestTemplate
-{
-    RequestMethod method;
-    std::string path;
-    std::string data;
-    std::string content_type;
-};
+class	StressTester;
+struct	TestResults;
+struct	RequestTemplate;
 
 void	printUsage(const char* program);
 void	signal_handler(int signal);

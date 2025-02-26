@@ -1,5 +1,7 @@
 #include "Tester.hpp"
 
+extern std::atomic<bool> g_running;
+
 void signal_handler(int signal)
 {
     if (signal == SIGINT)

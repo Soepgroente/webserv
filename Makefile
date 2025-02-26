@@ -1,9 +1,8 @@
 NAME		:= webserv
-T_EXEC		:= webserv_tester
+T_EXEC		:= tester
 CC			:= c++
 CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -flto #-DNDEBUG #-g #-fsanitize=address #-DNDEBUG#
 HEADERS		:= -I include
-T_HEADERS	:= -I $(T_DIR)/include
 
 ifeq ($(shell uname), Darwin)
     CPUCORES := $(shell sysctl -n hw.ncpu)
@@ -32,11 +31,8 @@ CPPFILES	:=	Client.cpp \
 				utils.cpp \
 
 TFILES		:=	StressTester.cpp \
-				StressTesterClient.cpp \
-				StressTesterRequest.cpp \
-				StressTesterResponse.cpp \
-				StressTesterUtils.cpp \
 				testerMain.cpp \
+				TestResults.cpp \
 				testerUtils.cpp \
 
 MAIN		:= main.cpp
@@ -44,6 +40,8 @@ MAIN		:= main.cpp
 SRC_DIR		:= src
 T_DIR		:= webservTester
 OBJ_DIR		:= obj
+
+T_HEADERS	:= -I $(T_DIR)/include
 
 OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
 M_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(MAIN:%.cpp=%.o)))
@@ -61,13 +59,13 @@ $(OBJ_DIR):
 $(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
 	$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME)
 
-$(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
-	$(CC) $(CPPFLAGS) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
+$(T_EXEC): $(OBJ_DIR) $(T_OBJ)
+	$(CC) $(CPPFLAGS) $(T_OBJ) -o $(T_EXEC)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
 
-$(T_DIR)/%.o : $(T_DIR)/%.cpp
+$(OBJ_DIR)/%.o : $(T_DIR)/%.cpp
 	$(CC) -c $(CPPFLAGS) $(T_HEADERS) -o $@ $^
 
 clean:

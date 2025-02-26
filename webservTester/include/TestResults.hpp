@@ -1,6 +1,14 @@
 #pragma once
 
-#include "Tester.hpp"
+#include <atomic>
+#include <vector>
+#include <mutex>
+#include <chrono>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <algorithm>
+#include <numeric>
 
 struct TestResults
 {
@@ -15,10 +23,10 @@ struct TestResults
 	std::chrono::time_point<std::chrono::high_resolution_clock> end_time;
     
 	void	addResponseTime(double time_ms);
-	double	averageResponseTime() const;
-	double	medianResponseTime() const;
-	double	minResponseTime() const;
-    double	maxResponseTime() const;    
-    double	percentile(double p) const;
+	double	averageResponseTime();
+	double	medianResponseTime();
+	double	minResponseTime();
+    double	maxResponseTime();    
+    double	percentile(double p);
     double	requestsPerSecond() const;
 };

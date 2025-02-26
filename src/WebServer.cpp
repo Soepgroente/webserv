@@ -30,7 +30,7 @@ void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
 	clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
-	printToLog("New connection accepted");
+	// printToLog("New connection accepted");
 }
 
 /*	Sets up a 408 (request timeout) for clients that have unfinished requests, 

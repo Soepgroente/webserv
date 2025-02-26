@@ -17,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);
+	printVector(split);
 	return (split);
 }
 
@@ -64,7 +64,7 @@ std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
 	return (out);
 }
 
-void	printToLog(const std::string& message)
+/* void	// printToLog(const std::string& message)
 {
 	std::ofstream	file;
 	DateTime		time;
@@ -77,7 +77,7 @@ void	printToLog(const std::string& message)
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();
-}
+} */
 
 std::string	getMimeType(const std::string& input)
 {

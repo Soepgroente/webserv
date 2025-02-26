@@ -40,5 +40,5 @@ void	WebServer::closeConnection(int pollIndex, int clientIndex)
 {
 	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
-	printToLog("Closed connection");
+	// printToLog("Closed connection");
 }

@@ -17,7 +17,7 @@ void	Client::writeToClient()
 		reset();
 		if (writtenBytes == -1)
 		{
-			printToLog("Error writing to client fd: " + std::string(strerror(errno)));
+			// printToLog("Error writing to client fd: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 		}
 	}
@@ -37,7 +37,7 @@ void	Client::writeToFile()
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 		if (writtenBytes == -1)
 		{
-			printToLog("Error writing to file fd: " + std::string(strerror(errno)));
+			// printToLog("Error writing to file fd: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 			return ;
 		}

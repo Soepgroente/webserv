@@ -2,6 +2,23 @@
 
 #include "Tester.hpp"
 
+struct	TestResults;
+
+enum RequestMethod
+{
+    GET,
+    POST,
+    DELETE,
+};
+
+struct RequestTemplate
+{
+    RequestMethod   method;
+    std::string		path;
+    std::string		data;
+    std::string		content_type;
+};
+
 class StressTester
 {
 	public:
