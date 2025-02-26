@@ -115,8 +115,6 @@ bool	Client::parsePost(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-
-
 	if (std::filesystem::exists(request.dotPath) == true)
 	{
 		request.status = fileAlreadyExists;
@@ -135,7 +133,6 @@ bool	Client::parseDelete(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-
 	if (std::filesystem::exists(request.dotPath) == true)
 	{
 		if (std::filesystem::remove(request.dotPath) == false)

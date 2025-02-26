@@ -17,7 +17,7 @@ int		openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd
 int		getPollfdIndex(std::vector<pollfd>& polls, int fdToFind);
 void	closeAndResetFd(std::vector<pollfd>& polls, int& fd);
 void	errorExit(std::string errorMessage, int errorLocation);
-//void	printToLog(const std::string& message);
+void	printToLog(const std::string& message);
 
 std::string					getMimeType(const std::string& input);
 std::vector<std::string>	stringSplit(std::string toSplit);
