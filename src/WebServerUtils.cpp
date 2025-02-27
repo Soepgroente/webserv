@@ -37,7 +37,7 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 {
 	if (WebServer::getTime() - lastPinged > timeout)
 	{
-		// printToLog("Connection timed out");
+		printToLog("Connection timed out");
 		return (true);
 	}
 	return (false);
@@ -47,7 +47,6 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 static void	exitGracefullyOnSignal(int signal)
 {
 	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
-	std::exit(EXIT_FAILURE);
 	*ptr = false;
 }
 

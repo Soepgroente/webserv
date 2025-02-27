@@ -30,10 +30,15 @@ void	StressTester::setupRequestTemplates()
 		"/very/deep/nested/path/structure"
 	};
 
-	m_request_templates.push_back({RequestMethod::GET, "/", "", ""});
-	m_request_templates.push_back({RequestMethod::GET, "/index.html", "", ""});
-	m_request_templates.push_back({RequestMethod::POST, "/uploads/submit", "name=test&data=example", "application/x-www-form-urlencoded"});
-	m_request_templates.push_back({RequestMethod::DELETE, "/uploads/remove", "id=123", "application/x-www-form-urlencoded"});
+	// m_request_templates.push_back({RequestMethod::GET, "/", "", ""});
+	// m_request_templates.push_back({RequestMethod::GET, "/home.html", "", ""});
+	// m_request_templates.push_back({RequestMethod::GET, "/planets/mars.jpg", "", ""});
+	m_request_templates.push_back({RequestMethod::POST, "/uploads/submit.txt", "name=test&data=example", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::POST, "/uploads/boundary.txt", "--BOUNDARY\r\n\r\nContent here\r\n--BOUNDARY--\r\n", "multipart/form-data; boundary=BOUNDARY"});
+	m_request_templates.push_back({RequestMethod::POST, "/uplods/submit.txt", "name=test&data=example", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::DELETE, "/uploads/boundary.txt", "id=123", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::DELETE, "/uplods/boundary.txt", "id=123", "application/x-www-form-urlencoded"});
+	m_request_templates.push_back({RequestMethod::DELETE, "/home3.html", "id=123", "application/x-www-form-urlencoded"});
 }
 
 void	StressTester::runTest()
@@ -376,7 +381,7 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 	int rv;
 	
 	memset(&hints, 0, sizeof(addrinfo));
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	if ((rv = getaddrinfo(m_host.c_str(), m_port.c_str(), &hints, &servinfo)) != 0)
 	{
@@ -426,13 +431,12 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 		fcntl(sockfd, F_SETFL, flags);
 		break ;
 	}
+	freeaddrinfo(servinfo);
 	if (p == nullptr)
 	{
-		freeaddrinfo(servinfo);
 		m_results.connection_errors++;
 		return (false);
 	}
-	freeaddrinfo(servinfo);
 
 	std::string http_request = createHttpRequest(req);
 
@@ -454,7 +458,7 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 		return (false);
 	}
 	#elif defined(__linux__)
-	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &options, sizeof(options)) == -1)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &timeout, sizeof(timeout)) == -1)
 	{
 		close(sockfd);
 		return (false);
@@ -545,9 +549,9 @@ std::string	StressTester::createHttpRequest(const RequestTemplate& req)
 		request += "Accept-Encoding: gzip, deflate\r\n";
 	}
 	request += "\r\n";
-	// if (req.method == RequestMethod::POST)
-	// {
-	// 	request += req.data;
-	// }
+	if (req.method == RequestMethod::POST)
+	{
+		request += req.data;
+	}
 	return (request);
 };

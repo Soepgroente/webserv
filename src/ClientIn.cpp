@@ -8,7 +8,7 @@ void	Client::readIncomingRequest()
 	readBytes = read(fd, &readBuffer[0], BUFFERSIZE);
 	if (readBytes == -1)
 	{
-		// printToLog("Error reading from client_fd: " + std::string(strerror(errno)));
+		printToLog("Error reading from client_fd: " + std::string(strerror(errno)));
 		status = CLOSING;
 		return ;
 	}
@@ -51,7 +51,7 @@ void	Client::readFromFile()
 		{
 			readPos = 0;
 			closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
-			// printToLog("Error reading from file: " + std::string(strerror(errno)));
+			printToLog("Error reading from file: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 			return ;
 		}

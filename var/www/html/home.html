@@ -129,27 +129,42 @@
     </div>
 
     <script>
-        document.getElementById('fileUpload').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
+		document.getElementById('fileUpload').addEventListener('change', async function(e) {
+		const file = e.target.files[0];
+		const formData = new FormData();
+		formData.append('file', file);
 
-            try {
-                const response = await fetch(`/uploads/${file.name}`, {
-                    method: 'POST',
-                    body: formData
-                });
+		const imageElement = document.getElementById('planetImage');
+		const mandelbrotImage = document.getElementById('mandelbrotImage');
+		const errorElement = document.getElementById('errorMessage');
+		const errorImg = document.getElementById('errorImg');
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+		imageElement.style.display = 'none';
+		mandelbrotImage.style.display = 'none';
+		errorElement.style.display = 'none';
+		errorImg.style.display = 'none';
 
-                alert(`File uploaded successfully: ${file.name}`);
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                alert('Failed to upload file');
-            }
-        });
+		try {
+			const response = await fetch(`/uploads/${file.name}`, {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!response.ok) {
+				throw response;
+			}
+
+			alert(`File uploaded successfully: ${file.name}`);
+		} catch (errorResponse) {
+			const errorBlob = await errorResponse.blob();
+			const errorImgUrl = URL.createObjectURL(errorBlob);
+			errorImg.src = errorImgUrl;
+			errorImg.style.display = 'inline';
+			console.error('Error uploading file:', errorResponse);
+			errorElement.style.display = 'block';
+			alert('Failed to upload file');
+		}
+	});
 
         document.querySelectorAll('.planet-button').forEach(button => {
             button.addEventListener('click', async function() {

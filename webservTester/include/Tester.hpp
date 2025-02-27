@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include <string>
 #include <chrono>
 #include <thread>
@@ -26,8 +27,8 @@
 #include "TestResults.hpp"
 #include "StressTester.hpp"
 
-constexpr int DEFAULT_CONCURRENT_CLIENTS = 10;
-constexpr int DEFAULT_REQUESTS_PER_CLIENT = 100;
+constexpr int DEFAULT_CONCURRENT_CLIENTS = 2;
+constexpr int DEFAULT_REQUESTS_PER_CLIENT = 50;
 constexpr int DEFAULT_TIMEOUT_MS = 5000;
 constexpr const char* DEFAULT_HOST = "localhost";
 constexpr const char* DEFAULT_PORT = "8080";

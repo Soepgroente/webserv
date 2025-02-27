@@ -64,7 +64,7 @@ std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
 	return (out);
 }
 
-/* void	// printToLog(const std::string& message)
+void	printToLog(const std::string& message)
 {
 	std::ofstream	file;
 	DateTime		time;
@@ -73,11 +73,11 @@ std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
 	if (file.is_open() == false)
 	{
 		std::cerr << "Failed to open log file" << std::endl;
-		throw std::runtime_error("Failed to open log file"); // culprit in siege
+		throw std::runtime_error("Failed to open log file");
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();
-} */
+}
 
 std::string	getMimeType(const std::string& input)
 {

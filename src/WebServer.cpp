@@ -29,7 +29,7 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
+	// clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
 	// printToLog("New connection accepted");
 }
 
@@ -46,7 +46,7 @@ void	WebServer::removeInactiveConnections()
 		{
 			clients[i].setupErrorPage(requestTimeout);
 		}
-		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() == 0 || \
+		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() <= 0 || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(i + servers.size(), i);

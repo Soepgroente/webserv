@@ -133,20 +133,17 @@ bool	Client::parseDelete(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-	if (std::filesystem::exists(request.dotPath) == true)
-	{
-		if (std::filesystem::remove(request.dotPath) == false)
-		{
-			request.status = requestForbidden;
-			return (false);
-		}
-		status = RESPONDING;
-		response.constructResponse(requestIsOk, "text/plain", 0);
-		return (true);
-	}
-	else
+	if (std::filesystem::exists(request.dotPath) == false)
 	{
 		request.status = requestNotFound;
 		return (false);
 	}
+	if (std::filesystem::remove(request.dotPath) == false)
+	{
+		request.status = requestForbidden;
+		return (false);
+	}
+	status = RESPONDING;
+	response.constructResponse(requestIsOk, "text/plain", 0);
+	return (true);
 }

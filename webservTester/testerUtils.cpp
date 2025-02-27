@@ -4,11 +4,11 @@ extern std::atomic<bool> g_running;
 
 void signal_handler(int signal)
 {
-    if (signal == SIGINT)
+	if (signal == SIGINT)
 	{
-        std::cout << "\nReceived interrupt signal. Stopping test gracefully...\n";
-        g_running = false;
-    }
+		std::cout << "\nReceived interrupt signal. Stopping test gracefully...\n";
+		g_running = false;
+	}
 }
 
 void printUsage(const char* program)

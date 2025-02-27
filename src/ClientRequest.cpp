@@ -51,7 +51,7 @@ bool	Client::parseChunked(const std::string& requestLine)
 bool	Client::parseConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
-	if (request.connectionType == "Close")
+	if (request.connectionType == "close")
 		remainingRequests = 1;
 	return (true);
 }
@@ -217,7 +217,6 @@ void	Client::interpretRequest()
 	if (request.status == bodyIsParsed)
 	{
 		request.status = requestIsOk;
-		remainingRequests--;
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{

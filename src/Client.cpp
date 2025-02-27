@@ -37,7 +37,7 @@ void	Client::initializeSocket(int serverSocket)
 	this->fd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), &clientAddressLength);
 	if (this->fd == -1)
 	{
-		// printToLog("Failed to accept client");
+		printToLog("Failed to accept client");
 		status = CLOSING;
 		return ;
 	}

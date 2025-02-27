@@ -12,12 +12,13 @@ void	Client::writeToClient()
 	if (writtenBytes <= 0)
 	{
 		writePos = 0;
+		remainingRequests--;
 
 		// std::cout << response.reply.substr(0, 250) << std::endl;
 		reset();
 		if (writtenBytes == -1)
 		{
-			// printToLog("Error writing to client fd: " + std::string(strerror(errno)));
+			printToLog("Error writing to client fd: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 		}
 	}
@@ -37,7 +38,7 @@ void	Client::writeToFile()
 		closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 		if (writtenBytes == -1)
 		{
-			// printToLog("Error writing to file fd: " + std::string(strerror(errno)));
+			printToLog("Error writing to file fd: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);
 			return ;
 		}
