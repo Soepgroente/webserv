@@ -214,6 +214,12 @@
 			const imageElement = document.getElementById('planetImage');
 			const mandelbrotImage = document.getElementById('mandelbrotImage');
             const errorElement = document.getElementById('errorMessage');
+			const errorImg = document.getElementById('errorImg');
+
+			imageElement.style.display = 'none';
+			mandelbrotImage.style.display = 'none';
+			errorElement.style.display = 'none';
+			errorImg.style.display = 'none';
 
             try {
                 const response = await fetch('mandelbrotPython.cgi');
@@ -233,9 +239,14 @@
                     URL.revokeObjectURL(imageUrl);
                 };
             } catch (error) {
+                mandelbrotImage.style.display = 'none';
                 console.error('Error executing CGI script:', error);
-                errorElement.textContent = `Error executing CGI script: ${error.message}`;
+				const errorBlob = await errorResponse.blob();
+				const errorImgUrl = URL.createObjectURL(errorBlob);
+				errorImg.src = errorImgUrl;
+				errorImg.style.display = 'inline';
                 errorElement.style.display = 'block';
+				alert('Failed to execute CGI script');
             }
         });
 

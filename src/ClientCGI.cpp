@@ -53,6 +53,9 @@ void	Client::launchCGI()
 	{
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
+		if (write(STDOUT_FILENO, "Error: 409", 10) == -1)
+			printToLog("Failed to write to cgi pipe");
+		std::exit(EXIT_FAILURE);
 		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)

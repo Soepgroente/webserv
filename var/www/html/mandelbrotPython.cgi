@@ -58,12 +58,13 @@ max_iter = 100
 data = mandelbrot(height, width, max_iter)
 image = create_image(data, max_iter)
 
-# Save the image to a BytesIO buffer
 buffer = io.BytesIO()
 image.save(buffer, format='PNG')
 buffer.seek(0)
 
-# Write the HTTP response headers
+# sys.stdout.write("Error: 500\r\n")
+# sys.exit(0)
+
 sys.stdout.write("HTTP/1.1 200 OK\r\n")
 sys.stdout.write("Content-Type: image/png\r\n")
 sys.stdout.write("Content-Length: {}\r\n".format(len(buffer.getvalue())))

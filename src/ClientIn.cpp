@@ -29,9 +29,10 @@ void	Client::readFromFile()
 		response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
 	if (response.status == defaultStatus && status == parseCgi)
 	{
-		size_t index = response.buffer.find("\r\n\r\n") + 4;
+		size_t index = response.buffer.find("\r\n\r\n");
 		if (index != std::string::npos)
 		{
+			index += 4;
 			size_t contentLengthIndex = response.buffer.find("Content-Length: ");
 
 			if (contentLengthIndex == std::string::npos)
@@ -57,9 +58,16 @@ void	Client::readFromFile()
 		}
 		if (status == parseCgi)
 		{
-			if (response.buffer.substr(0, 6) == "Error:")
+			if (response.buffer.substr(0, 7) == "Error: ")
 			{
-				setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
+				try
+				{
+					setupErrorPage(std::stoi(response.buffer.substr(7, 3)));
+				}
+				catch (std::exception& e)
+				{
+					setupErrorPage(internalServerError);
+				}
 			}
 			else if (response.status == headerIsParsed && response.buffer.size() == response.cgiLength)
 			{
