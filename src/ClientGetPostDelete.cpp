@@ -47,16 +47,6 @@ static void restoreWhitespace(std::string& path)
 
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
 
-static void	restoreWhitespace(std::string& path)
-{
-	size_t	position = path.find("%20");
-	while (position != std::string::npos)
-	{
-		path.replace(position, 3, " ");
-		position = path.find("%20");
-	}
-}
-
 bool	Client::parsePath(const std::string& requestLine)
 {
     std::stringstream	stream;
