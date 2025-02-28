@@ -98,7 +98,7 @@ bool	Client::parseGet(const std::string &requestLine)
 
 	if (request.location->dirs.at("redirection").empty() == false)
 	{
-		request.status = permanentRedirect;
+		request.status = temporaryRedirect;
 		status = redirection;
 		return (false);
 	}
