@@ -19,6 +19,7 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		protocol = other.protocol;
 		contentType = other.contentType;
 		fileType = other.fileType;
+		body = other.body;
 		status = other.status;
 		chunked = other.chunked;
 		boundary = other.boundary;
@@ -43,6 +44,7 @@ void	HttpRequest::clear()
 	status = defaultStatus;
 	chunked = false;
 	boundary.clear();
+	body.clear();
 	location = nullptr;
 	locationPath.clear();
 }

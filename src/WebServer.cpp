@@ -29,8 +29,8 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
-	printToLog("New connection accepted");
+	// clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
+	// printToLog("New connection accepted");
 }
 
 /*	Sets up a 408 (request timeout) for clients that have unfinished requests, 
@@ -46,12 +46,14 @@ void	WebServer::removeInactiveConnections()
 		{
 			clients[i].setupErrorPage(requestTimeout);
 		}
-		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() == 0 || \
+		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() <= 0 || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(i + servers.size(), i);
 			i--;
 		}
+		else if (clients[i].getClientStatus() != LISTENING)
+			clients[i].setPingTime();
 	}
 }
 
@@ -109,6 +111,7 @@ void	WebServer::loopadydoopady()
 			client.setPingTime();
 		}
 	}
+	std::exit(EXIT_FAILURE);
 }
 
 void	WebServer::startTheThing()

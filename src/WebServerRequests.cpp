@@ -38,15 +38,7 @@ Client*	WebServer::getClient(int fileDes)
 
 void	WebServer::closeConnection(int pollIndex, int clientIndex)
 {
-	int tmpFd = clients[clientIndex].getFileFd();
-	if (tmpFd != -1)
-	{
-		Client::fileAndCgiDescriptors.erase(Client::fileAndCgiDescriptors.begin() + getFileCgiIndex(tmpFd));
-		close(tmpFd);
-	}
 	removeClient(clientIndex);
 	pollDescriptors.erase(pollDescriptors.begin() + pollIndex);
-	printToLog("Closed connection");
-	newConnectionTotal--;
-	// std::cout << newConnectionTotal << " connections" << std::endl;
+	// printToLog("Closed connection");
 }

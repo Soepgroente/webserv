@@ -1,9 +1,16 @@
 NAME		:= webserv
-T_EXEC		:= webserv_tester
+T_EXEC		:= tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -g #-fsanitize=address #-DNDEBUG   -flto -std=c++2a 
-OS			:= $(shell uname)
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -Ofast -flto #-DNDEBUG #-g #-fsanitize=address #-DNDEBUG#
 HEADERS		:= -I include
+
+ifeq ($(shell uname), Darwin)
+    CPUCORES := $(shell sysctl -n hw.ncpu)
+else
+    CPUCORES := $(shell nproc)
+endif
+MAKEFLAGS	+= -j$(CPUCORES)
+export MAKEFLAGS
 
 CPPFILES	:=	Client.cpp \
 				ClientCGI.cpp \
@@ -23,22 +30,22 @@ CPPFILES	:=	Client.cpp \
 				WebServerUtils.cpp \
 				utils.cpp \
 
-TFILES		:= 
+TFILES		:=	StressTester.cpp \
+				testerMain.cpp \
+				TestResults.cpp \
+				testerUtils.cpp \
 
 MAIN		:= main.cpp
 
 SRC_DIR		:= src
-T_DIR		:= tests
+T_DIR		:= webservTester
 OBJ_DIR		:= obj
-OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
 
+T_HEADERS	:= -I $(T_DIR)/include
+
+OBJECTS		= $(addprefix $(OBJ_DIR)/,$(notdir $(CPPFILES:%.cpp=%.o)))
 M_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(MAIN:%.cpp=%.o)))
 T_OBJ		= $(addprefix $(OBJ_DIR)/,$(notdir $(TFILES:%.cpp=%.o)))
-
-#ifeq ($(OS), Darwin)
-#
-#
-#endif
 
 vpath %.cpp $(shell find $(SRC_DIR) -type d)
 
@@ -51,13 +58,15 @@ $(OBJ_DIR):
 
 $(NAME): $(OBJ_DIR) $(OBJECTS) $(M_OBJ)
 	$(CC) $(CPPFLAGS) $(OBJECTS) $(M_OBJ) -o $(NAME)
-	@if [ $$? -eq 0 ]; then echo "\033[32mSuccess\033[0m"; fi
 
-$(T_EXEC): $(OBJ_DIR) $(OBJECTS) $(T_OBJ)
-	$(CC) $(CPPFLAGS) -I $(T_DIR) $(OBJECTS) $(T_OBJ) -o $(T_EXEC)
+$(T_EXEC): $(OBJ_DIR) $(T_OBJ)
+	$(CC) $(CPPFLAGS) $(T_OBJ) -o $(T_EXEC)
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(CC) -c $(CPPFLAGS) $(HEADERS) -o $@ $^
+
+$(OBJ_DIR)/%.o : $(T_DIR)/%.cpp
+	$(CC) -c $(CPPFLAGS) $(T_HEADERS) -o $@ $^
 
 clean:
 	rm -rf $(OBJ_DIR)
@@ -66,10 +75,15 @@ fclean: clean
 	rm -f $(NAME)
 	rm -f $(T_EXEC)
 
-re: fclean all
-retest: fclean test
+re:
+	$(MAKE) -j1 fclean
+	$(MAKE) all
 
-debug: CFLAGS += -fsanitize=address
+retest:
+	$(MAKE) -j1 fclean
+	$(MAKE) test
+
+debug: CPPFLAGS += -fsanitize=address
 debug: re
 
 .PHONY: all clean fclean re debug test retest

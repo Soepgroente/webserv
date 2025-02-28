@@ -32,3 +32,24 @@ std::ostream&	operator<<(std::ostream& out, const Server& p)
 	out << "==============================================" << std::endl;
 	return (out);
 }
+
+std::ostream&	operator<<(std::ostream& out, const Location& location)
+{
+	out << "Methods: ";
+	for (const std::string& iter : location.methods)
+	{
+		out << iter << ", ";
+	}
+	out << std::endl;
+	out << "CGI extensions: ";
+	for (const std::string& iter : location.cgiExtensions)
+	{
+		out << iter << ", ";
+	}
+	out << std::endl;
+	for (const std::pair<std::string, std::string> despair : location.dirs)
+	{
+		out << despair.first << ": " << despair.second << std::endl;
+	}
+	return (out);
+}

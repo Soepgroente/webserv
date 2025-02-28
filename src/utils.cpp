@@ -5,6 +5,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 	std::vector<std::string>	split;
 	size_t	end;
 
+	// std::cout << "Incoming: " << toSplit.substr(0, 250) << std::endl;
 	while (toSplit.empty() == false)
 	{
 		end = toSplit.find("\r\n");
@@ -16,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);
+	printVector(split);
 	return (split);
 }
 
@@ -25,7 +26,7 @@ int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>
 	int fd = open(path, openFlags, 0644);
 	if (fd == -1)
 	{
-		throw std::runtime_error("Failed to open file even though it exists");
+		return (-1);
 	}
 	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 	{
@@ -51,6 +52,7 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
 {
 	int pollFdIndex = getPollfdIndex(polls, fd);
 
+	assert(fcntl(fd, F_GETFD) != -1);
 	close(fd);
 	fd = -1;
 	polls.erase(polls.begin() + pollFdIndex);
@@ -71,8 +73,38 @@ void	printToLog(const std::string& message)
 	if (file.is_open() == false)
 	{
 		std::cerr << "Failed to open log file" << std::endl;
-		std::exit(EXIT_FAILURE);
+		throw std::runtime_error("Failed to open log file");
 	}
 	file << time << "---" << message << "---\n" << std::endl;
 	file.close();
+}
+
+std::string	getMimeType(const std::string& input)
+{
+	const std::map<std::string, std::string>	types = 
+	{
+		{".jpg", "image/jpeg"},
+		{".jpeg", "image/jpeg"},
+		{".png", "image/png"},
+		{".gif", "image/gif"},
+		{".bmp", "image/bmp"},
+		{".ico", "image/x-icon"},
+		{".css", "text/css"},
+		{".html", "text/html"},
+		{".js", "text/javascript"},
+		{".txt", "text/plain"},
+		{".pdf", "application/pdf"},
+		{".xml", "application/xml"},
+		{".json", "application/json"},
+		{".csv", "text/csv"},
+		{".svg", "image/svg+xml"},
+		{".webp", "image/webp"},
+		{".cgi", "cgi"},
+	};
+
+	if (types.find(input) == types.end())
+	{
+		return ("unsupported");
+	}
+	return (types.at(input));
 }

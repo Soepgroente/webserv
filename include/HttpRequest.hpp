@@ -10,6 +10,8 @@ enum RequestStatus
 	headerIsParsed = 1,
 	bodyIsParsed,
 	requestIsOk = 200,
+	requestCreated = 201,
+	permanentRedirect = 307,
 	requestIsInvalid = 400,
 	requestForbidden = 403,
 	requestNotFound = 404,
@@ -18,6 +20,9 @@ enum RequestStatus
 	fileAlreadyExists = 409,
 	lengthRequired = 411,
 	payloadTooLarge = 413,
+	unsupportedMediaType = 415,
+	internalServerError = 500,
+	versionNotSupported = 505,
 };
 
 struct	HttpRequest
@@ -40,6 +45,7 @@ struct	HttpRequest
 	std::string					port;
 	std::string					method;
 	std::string					path;
+	std::string					dotPath;
 	std::string					protocol;
 	std::string					contentType;
 	std::string					fileType;

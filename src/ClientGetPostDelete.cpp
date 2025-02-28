@@ -13,7 +13,7 @@ Location*	Client::resolveRequestLocation(std::string& path)
 		if (path.find(it->first) == 0)
 			tmp = it;
 	}
-	if (tmp == end)
+	if (tmp == end || std::filesystem::exists('.' + server.locations.at(tmp->first).dirs.at("root")) == false)
 	{
 		request.status = requestNotFound;
 		request.locationPath = start->first;
@@ -33,6 +33,18 @@ Location*	Client::resolveRequestLocation(std::string& path)
 	request.locationPath = tmp->first;
 	return (const_cast<Location*>(&(tmp->second)));
 }
+
+static void restoreWhitespace(std::string& path)
+{
+	size_t position = path.find("%20");
+
+	while (position != std::string::npos)
+	{
+		path.replace(position, 3, " ");
+		position = path.find("%20");
+	}
+}
+
 /*	Sets up the correct path for the next step, shows index if no particular path	*/
 
 static void	restoreWhitespace(std::string& path)
@@ -51,19 +63,31 @@ bool	Client::parsePath(const std::string& requestLine)
 	
 	stream.str(requestLine);
 	stream >> request.method >> request.path >> request.protocol;
-	restoreWhitespace(request.path); // this can become a function for all the encodings
+
+	if (request.protocol != "HTTP/1.1")
+	{
+		request.status = versionNotSupported;
+		return (false);
+	}
+	restoreWhitespace(request.path);
 	request.location = resolveRequestLocation(request.path);
-	const Location& location = *request.location;
-	if (request.status == defaultStatus && std::find(location.methods.begin(), location.methods.end(), request.method) == location.methods.end())
+	if (request.location == nullptr)
+	{
+		request.status = internalServerError;
+		return (false);
+	}
+	response.location = request.location;
+	if (request.status == defaultStatus && std::find(request.location->methods.begin(), request.location->methods.end(), request.method) == request.location->methods.end())
 		request.status = requestMethodNotAllowed;
 	if (request.status != defaultStatus)
 		return (false);
-	const std::map<std::string, std::string>&	dir = location.dirs;
+	const std::map<std::string, std::string>&	dir = request.location->dirs;
 	if (request.path == "/")
 	{
 		request.path = request.path + dir.at("index");
 	}
 	request.path = dir.at("root") + request.path;
+	request.dotPath = "." + request.path;
 	return (true);
 }
 
@@ -71,22 +95,25 @@ bool	Client::parseGet(const std::string &requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-	const std::filesystem::path path = '.' + request.path;
 
-	if (std::filesystem::exists(path) == false)
+	if (request.location->dirs.at("redirection").empty() == false)
+	{
+		request.status = permanentRedirect;
+		status = redirection;
+		return (false);
+	}
+	if (std::filesystem::exists(request.dotPath) == false)
 	{
 		request.status = requestNotFound;
 		return (false);
 	}
-	// std::cout << path << std::endl;
-    if (std::filesystem::is_directory(path))
+    if (std::filesystem::is_directory(request.dotPath) == true)
 	{
-		if (request.location->directoryListing == true)
+		if (request.location->dirs.at("directory_listing") == "on")
 		{
 			status = showDirectory;
-			request.path = path;
-			if (request.path.back() != '/')
-				request.path += "/"; // check this as well
+			if (request.dotPath.back() != '/')
+				request.dotPath += "/";
 		}
 		else
 		{
@@ -94,9 +121,8 @@ bool	Client::parseGet(const std::string &requestLine)
 			return (false);
 		}
 	}
-	else if (std::filesystem::is_regular_file(path))
+	else if (std::filesystem::is_regular_file(request.dotPath) == true)
 	{
-		fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 		status = readingFromFile;
 	}
 	return (true);
@@ -106,15 +132,17 @@ bool	Client::parsePost(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-
-	const std::filesystem::path path = '.' + request.path;
-
-	if (std::filesystem::exists(path) == true)
+	if (std::filesystem::exists(request.dotPath) == true)
 	{
 		request.status = fileAlreadyExists;
 		return (false);
 	}
-	fileFd = openFile(path.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
+	fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
+	if (fileFd == -1)
+	{
+		setupErrorPage(internalServerError);
+		return (false);
+	}
 	return (true);
 }
 
@@ -122,22 +150,17 @@ bool	Client::parseDelete(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
 		return (false);
-	const std::filesystem::path path = '.' + request.path;
-
-	if (std::filesystem::exists(path) == true)
-	{
-		if (std::filesystem::remove(path) == false)
-		{
-			request.status = requestForbidden;
-			return (false);
-		}
-		status = RESPONDING;
-		response.reply = HttpResponse::defaultResponses[requestIsOk];
-		return (true);
-	}
-	else
+	if (std::filesystem::exists(request.dotPath) == false)
 	{
 		request.status = requestNotFound;
 		return (false);
 	}
+	if (std::filesystem::remove(request.dotPath) == false)
+	{
+		request.status = requestForbidden;
+		return (false);
+	}
+	status = RESPONDING;
+	response.constructResponse(requestIsOk, "text/plain", 0);
+	return (true);
 }

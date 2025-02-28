@@ -21,10 +21,16 @@ static void	setupSocket(int& sock)
 		errorExit(strerror(errno), -1);
 	#ifdef __APPLE__
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &options, sizeof(options)) == -1)
+	{
+		close(sock);
 		errorExit(strerror(errno), -1);
+	}
 	#elif defined(__linux__)
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &options, sizeof(options)) == -1)
+	{
+		close(sock);
 		errorExit(strerror(errno), -1);
+	}
 	#endif
 	if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK) == -1)
 		errorExit(strerror(errno), -1);

@@ -51,7 +51,7 @@ bool	Client::parseChunked(const std::string& requestLine)
 bool	Client::parseConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
-	if (request.connectionType == "Close")
+	if (request.connectionType == "close")
 		remainingRequests = 1;
 	return (true);
 }
@@ -105,6 +105,7 @@ bool	Client::parseHeaders()
 		{
 			if (parseFunctions.at(firstWord)(this, request.splitRequest[i]) == false)
 			{
+				// request.clear()?
 				setupErrorPage(request.status);
 				return (false);
 			}
@@ -213,23 +214,42 @@ void	Client::interpretRequest()
 		setupErrorPage(request.status);
 		return ;
 	}
-	if (request.status == bodyIsParsed)
+	if (request.status == bodyIsParsed && status != redirection)
 	{
-		remainingRequests--;
-		if (request.method == "GET" && status != showDirectory)
-			status = readingFromFile;
-		if (request.method == "POST")
-		{
-			status = writingToFile;
-		}
+		request.status = requestIsOk;
 		size_t index = request.path.find_last_of('.');
 		if (index != std::string::npos)
 		{
-			request.fileType = request.path.substr(index);
+			request.fileType = getMimeType(request.path.substr(index));
 		}
-		if (request.fileType == ".cgi")
+		if (request.method == "GET" && status != showDirectory)
 		{
-			status = launchCgi;
+			status = readingFromFile;
+			if (request.fileType == "cgi")
+			{
+				status = launchCgi;
+			}
+			else if (request.fileType == "unsupported")
+			{
+				setupErrorPage(unsupportedMediaType);
+			}
+			else
+			{
+				fileFd = openFile(request.dotPath.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
+				if (fileFd == -1)
+				{
+					setupErrorPage(internalServerError);
+					return ;
+				}
+			}
+		}
+		if (request.method == "POST")
+		{
+			if (request.fileType == "unsupported")
+			{
+				request.fileType = "text/plain";
+			}
+			status = writingToFile;
 		}
 	}
 }

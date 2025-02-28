@@ -80,8 +80,13 @@ void	WebServer::addClient(int serverSocket)
 
 void	WebServer::removeClient(int clientIndex)
 {
-	if (clients[clientIndex].getFileFd() != -1)
-		close(clients[clientIndex].getFileFd());
+	int tmpFd = clients[clientIndex].getFileFd();
+
+	if (tmpFd != -1)
+	{
+		close(tmpFd);
+		Client::fileAndCgiDescriptors.erase(Client::fileAndCgiDescriptors.begin() + getFileCgiIndex(tmpFd));
+	}
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
 }

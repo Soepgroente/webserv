@@ -1,22 +1,17 @@
 #include "WebServer.hpp"
 
-const std::string defaultCgiLocation = "./CGI/mandelbrotPython.cgi";
-
-static char** getArgs()
+static char** getArgs(const std::string& location)
 {
 	char** args = new char*[2];
 
-	args[0] = strdup(defaultCgiLocation.c_str());
+	args[0] = strdup(location.c_str());
 	args[1] = nullptr;
-
-	std::cerr << args[0] << " " << args[1] << std::endl;
 	return (args);
 }
 
 static char** getEnvp()
 {
-	char** envp = new char*[1];
-	// envp[0] = strdup("PATH=/home/vvan-der/.capt:/home/vvan-der/.capt/root/usr/local/sbin:/home/vvan-der/.capt/root/usr/local/bin:/home/vvan-der/.capt/root/usr/sbin:/home/vvan-der/.capt/root/usr/bin:/home/vvan-der/.capt/root/sbin:/home/vvan-der/.capt/root/bin:/home/vvan-der/.capt/root/usr/games:/home/vvan-der/.capt/root/usr/local/games:/home/vvan-der/.capt/snap/bin:/home/vvan-der/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/vvan-der/.dotnet/tools");
+	char** envp = new char*;
 	envp[0] = nullptr;
 	return (envp);
 }
@@ -58,10 +53,10 @@ void	Client::launchCGI()
 	{
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		char** args = getArgs();
-		std::cout << args[0] << " " << args[1] << std::endl;
-		char** envp = getEnvp();
-		if (execve(defaultCgiLocation.c_str(), args, envp) == -1)
+		// if (write(STDOUT_FILENO, "Error: 409", 10) == -1)
+		// 	printToLog("Failed to write to cgi pipe");
+		// std::exit(EXIT_FAILURE);
+		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
 				printToLog("Failed to write to cgi pipe");
@@ -69,6 +64,8 @@ void	Client::launchCGI()
 			std::exit(EXIT_FAILURE);
 		}
 	}
+	close(pipeFd[1]);
+	assert(fileFd == -1);
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	fileFd = pipeFd[0];
 	status = parseCgi;

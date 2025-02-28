@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "Server.hpp"
 
 struct HttpResponse
 {
@@ -12,8 +13,14 @@ struct HttpResponse
 
 	HttpResponse&	operator=(const HttpResponse& other);
 
-	void			clear();
+	void	constructResponse(int status, const std::string& mimeType, size_t length);
+	void	clear();
+
 	std::string		buffer;
 	std::string		reply;
+	int 			status;
+	size_t			cgiLength;
+	size_t			cgiContentLength;
+	Location*		location;
 	static std::map<int, std::string> defaultResponses;
 };

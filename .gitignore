@@ -9,3 +9,5 @@ tester
 obj
 ubuntu_tester
 log.txt
+webservTestReport.log
+tester

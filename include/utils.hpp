@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <poll.h>
 #include <stdexcept>
 #include <string>
@@ -18,6 +19,7 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd);
 void	errorExit(std::string errorMessage, int errorLocation);
 void	printToLog(const std::string& message);
 
+std::string					getMimeType(const std::string& input);
 std::vector<std::string>	stringSplit(std::string toSplit);
 std::ostream&				operator<<(std::ostream& out, const std::vector<pollfd>& p);
 
