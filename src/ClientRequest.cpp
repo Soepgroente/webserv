@@ -225,7 +225,7 @@ void	Client::interpretRequest()
 		if (request.method == "GET" && status != showDirectory)
 		{
 			status = readingFromFile;
-			if (request.fileType == "cgi")
+			if (std::find(request.location->cgiExtensions.begin(), request.location->cgiExtensions.end(), request.fileType) != request.location->cgiExtensions.end())
 			{
 				status = launchCgi;
 			}
