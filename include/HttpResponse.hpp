@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "Server.hpp"
 
 struct HttpResponse
 {
@@ -20,5 +21,6 @@ struct HttpResponse
 	int 			status;
 	size_t			cgiLength;
 	size_t			cgiContentLength;
+	Location*		location;
 	static std::map<int, std::string> defaultResponses;
 };

@@ -11,6 +11,7 @@ enum RequestStatus
 	bodyIsParsed,
 	requestIsOk = 200,
 	requestCreated = 201,
+	permanentRedirect = 307,
 	requestIsInvalid = 400,
 	requestForbidden = 403,
 	requestNotFound = 404,

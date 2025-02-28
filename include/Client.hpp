@@ -25,7 +25,8 @@ enum clientStatus
 	CLOSING,
 	readingFromFile,
 	writingToFile,
-	showDirectory
+	showDirectory,
+	redirection
 };
 
 struct HttpRequest;

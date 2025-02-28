@@ -95,7 +95,7 @@ void	Client::handleOutgoingState()
 		{launchCgi, &Client::launchCGI},
 		{parseCgi, &Client::readFromFile},
 		{showDirectory, &Client::parseDirectory},
-		{readingFromFile, &Client::readFromFile},
+		{readingFromFile, &Client::readFromFile}
 	};
 	outgoingMethods[status](this);
 }

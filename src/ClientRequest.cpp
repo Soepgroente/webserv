@@ -214,7 +214,7 @@ void	Client::interpretRequest()
 		setupErrorPage(request.status);
 		return ;
 	}
-	if (request.status == bodyIsParsed)
+	if (request.status == bodyIsParsed && status != redirection)
 	{
 		request.status = requestIsOk;
 		size_t index = request.path.find_last_of('.');

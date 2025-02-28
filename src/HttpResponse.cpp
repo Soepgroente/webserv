@@ -9,6 +9,7 @@ std::map<int, std::string> HttpResponse::defaultResponses =
 
 	{301, "HTTP/1.1 301 Moved Permanently\r\nContent-Type: "},
 	{302, "HTTP/1.1 302 Found\r\nContent-Type: "},
+	{307, "HTTP/1.1 307 Temporary Redirect\r\nContent-Type: "},
 
 	{400, "HTTP/1.1 400 Bad Request\r\nContent-Type: "},
 	{401, "HTTP/1.1 401 Unauthorized\r\nContent-Type: "},
@@ -68,6 +69,10 @@ void	HttpResponse::constructResponse(int status, const std::string& mimeType, si
 	{
 		reply = defaultResponses[status] + "text/html\r\nContent-Length: 0\r\n\r\n";
 	}
+	// else if (status == 307) /* Choose if we want this or the error page, both is more technical */
+	// {
+	// 	reply = defaultResponses[status] + mimeType + "\r\nContent-Lenght: " + std::to_string(length) + "\r\nLocation: " + location->dirs.at("redirection") + "\r\n\r\n" + buffer;
+	// }
 	else
 	{
 		reply = defaultResponses[status] + mimeType + "\r\nContent-Length: " + std::to_string(length) + "\r\n\r\n" + buffer;
