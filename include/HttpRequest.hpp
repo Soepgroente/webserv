@@ -21,6 +21,7 @@ enum RequestStatus
 	lengthRequired = 411,
 	payloadTooLarge = 413,
 	unsupportedMediaType = 415,
+	tooManyRequests = 429,
 	internalServerError = 500,
 	versionNotSupported = 505,
 };

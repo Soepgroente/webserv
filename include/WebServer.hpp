@@ -29,6 +29,8 @@
 #define FOREVER 1
 #define BUFFERSIZE 32 * 1024
 #define CHUNKED_EOF "0\r\n\r\n"
+#define MAXCLIENTS 256
+#define MAXDUMMYCLIENTS 10
 
 struct	Server;
 struct	pollfd;

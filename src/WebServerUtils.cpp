@@ -70,12 +70,23 @@ static bool	duplicateClient(const std::vector<Client>& clients, const Client& cl
 
 void	WebServer::addClient(int serverSocket)
 {
+	if (clients.size() >= MAXCLIENTS + MAXDUMMYCLIENTS)
+	{
+		printToLog("Too many clients, rejecting connection");
+		return ;
+	}
 	Client	newClient(getServer(serverSocket));
 
 	newClient.initializeSocket(serverSocket);
 	assert(duplicateClient(clients, newClient) == false);
 	clients.push_back(newClient);
-	pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+	if (clients.size() >= MAXCLIENTS)
+	{
+		newClient.setupErrorPage(tooManyRequests);
+		pollDescriptors.push_back({clients.back().getFd(), POLLOUT, 0});
+	}
+	else
+		pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
 }
 
 void	WebServer::removeClient(int clientIndex)
