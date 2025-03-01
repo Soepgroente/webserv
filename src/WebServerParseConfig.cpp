@@ -122,11 +122,13 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 	};
 
 	server.maxBodySize = -1;
-	while (line == "")
+	while (file.eof() == false && (line == "" || line == "\n"))
 	{
 		std::getline(file, line, '\n');
 		lineCount++;
 	}
+	if (file.eof() == true)
+		closeAndExit("Empty lines at end of config file", lineCount);
 	removeWhiteSpaces(line);
 	if (line != "server {")
 	{
@@ -144,6 +146,36 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		lineCount++;
 	}
 	return (server);
+}
+
+static void	checkDuplicateIps(const std::vector<Server>& servers)
+{
+	std::vector<std::string>	ips;
+
+	for (const Server& server : servers)
+	{
+		if (std::find(ips.begin(), ips.end(), server.host) != ips.end())
+			errorExit("Multiple servers with the same IP address in configuration file", -1);
+		ips.push_back(server.host + ":" + std::to_string(server.port));
+	}
+}
+
+static void	checkFolderValidity(const std::vector<Server>& servers)
+{
+	using MapIterator = std::map<std::string, Location>::const_iterator;
+
+	for (const Server& server : servers)
+	{
+		if (server.errorLocation != "" && std::filesystem::exists("." + server.errorLocation) == false)
+			errorExit("Error folder " + server.errorLocation + " does not exist", -1);
+		for (MapIterator it = server.locations.begin(); it != server.locations.end(); it++)
+		{
+			if (std::filesystem::exists("." + it->second.dirs.at("root")) == false)
+			{
+				errorExit("Root folder " + it->second.dirs.at("root") + " does not exist", -1);
+			}
+		}
+	}
 }
 
 void	WebServer::parseConfigurations(const std::string& fileLocation)
@@ -169,4 +201,6 @@ void	WebServer::parseConfigurations(const std::string& fileLocation)
 		}
 	}
 	file.close();
+	checkDuplicateIps(servers);
+	checkFolderValidity(servers);
 }
