@@ -69,10 +69,11 @@ void	HttpResponse::constructResponse(int status, const std::string& mimeType, si
 	{
 		reply = defaultResponses[status] + "text/html\r\nContent-Length: 0\r\n\r\n";
 	}
-	// else if (status == 307) /* Choose if we want this or the error page, both is more technical */
-	// {
-	// 	reply = defaultResponses[status] + mimeType + "\r\nContent-Lenght: " + std::to_string(length) + "\r\nLocation: " + location->dirs.at("redirection") + "\r\n\r\n" + buffer;
-	// }
+	else if (status == temporaryRedirect)
+	{
+		reply = defaultResponses[status] + mimeType + "\r\nRefresh: 3; url=" + location->dirs.at("redirection") + "\r\nContent-Length: " + std::to_string(length) + "\r\nLocation: " +  + "\r\n\r\n" + buffer;
+		std::cout << reply.substr(0, 250) << std::endl;
+	}
 	else
 	{
 		reply = defaultResponses[status] + mimeType + "\r\nContent-Length: " + std::to_string(length) + "\r\n\r\n" + buffer;
