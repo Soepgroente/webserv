@@ -42,7 +42,7 @@ HttpResponse&	Client::getResponse()
 
 const Server&	Client::getServer() const
 {
-	return (server);
+	return (*server);
 }
 
 void	Client::setTimeout(int64_t newTimeout)
@@ -84,7 +84,7 @@ std::ostream&	operator<<(std::ostream& out, const Client& p)
 
 void	Client::setupErrorPage(int error)
 {
-	std::string	path = "." + server.errorLocation + std::to_string(error) + ".jpg";
+	std::string	path = "." + server->errorLocation + std::to_string(error) + ".jpg";
 
 	fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 	if (fileFd == -1)

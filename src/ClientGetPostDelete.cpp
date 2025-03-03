@@ -4,8 +4,8 @@ Location*	Client::resolveRequestLocation(std::string& path)
 {
 	using MapIterator = std::map<std::string, Location>::const_iterator;
 
-	MapIterator	start = server.locations.begin();
-	MapIterator	end = server.locations.end();
+	MapIterator	start = server->locations.begin();
+	MapIterator	end = server->locations.end();
 	MapIterator	tmp = end;
 
 	for (MapIterator it = start; it != end; it++)
@@ -13,11 +13,11 @@ Location*	Client::resolveRequestLocation(std::string& path)
 		if (path.find(it->first) == 0)
 			tmp = it;
 	}
-	if (tmp == end || std::filesystem::exists('.' + server.locations.at(tmp->first).dirs.at("root")) == false)
+	if (tmp == end || std::filesystem::exists('.' + server->locations.at(tmp->first).dirs.at("root")) == false)
 	{
 		request.status = requestNotFound;
 		request.locationPath = start->first;
-		return (const_cast<Location*>(&(server.locations.at(start->first))));
+		return (const_cast<Location*>(&(server->locations.at(start->first))));
 	}
 	if (tmp->first != "/")
 	{
@@ -27,7 +27,7 @@ Location*	Client::resolveRequestLocation(std::string& path)
 		{
 			request.status = requestNotFound;
 			request.locationPath = start->first;
-			return (const_cast<Location*>(&(server.locations.at(start->first))));
+			return (const_cast<Location*>(&(server->locations.at(start->first))));
 		}
 	}
 	request.locationPath = tmp->first;

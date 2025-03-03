@@ -105,6 +105,12 @@ void	WebServer::loopadydoopady()
 				client.handleOutgoingState();
 				if (client.getClientStatus() == LISTENING)
 				{
+					if (Client::fileAndCgiDescriptors.size() > 0)
+					{
+						std::cout << "Clients size: " << clients.size() << std::endl;
+						std::cout << "polls: " << pollDescriptors.size() << std::endl;
+						std::cout << "pollfiles: " << Client::fileAndCgiDescriptors.size() << std::endl;
+					}
 					pollDescriptors[i + amountOfServers].events = POLLIN;
 				}
 			}

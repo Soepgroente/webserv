@@ -6,7 +6,7 @@ std::vector<struct pollfd>	Client::fileAndCgiDescriptors;
 Client::Client(const Server& in) : 
 	latestPing(WebServer::getTime()), timeout(DEFAULT_TIMEOUT), writePos(0), readPos(0),
 	remainingRequests(INT_MAX), status(LISTENING), fd(-1), fileFd(-1), \
-	request(HttpRequest()), response(HttpResponse()), server(in)
+	request(HttpRequest()), response(HttpResponse()), server(&in)
 {
 }
 
@@ -24,9 +24,24 @@ Client::~Client()
 
 Client&	Client::operator=(const Client& other)
 {
-	Client* tmp = new Client(other);
+	if (this != &other)
+	{
+		this->latestPing = other.latestPing;
+		this->timeout = other.timeout;
+		this->writePos = other.writePos;
+		this->readPos = other.readPos;
+		this->remainingRequests = other.remainingRequests;
+		this->status = other.status;
+		this->fd = other.fd;
+		this->fileFd = other.fileFd;
+		this->request = other.request;
+		this->response = other.response;
+		this->server = other.server;
+	}
+	return (*this);
+	// Client* tmp = new Client(other);
 
-	return (*tmp);
+	// return (*tmp);
 }
 
 void	Client::initializeSocket(int serverSocket)

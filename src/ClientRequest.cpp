@@ -20,7 +20,7 @@ bool	Client::parseContentType(const std::string& requestLine)
 bool	Client::parseContentLength(const std::string& requestLine)
 {
 	request.contentLength = std::stoi(requestLine.substr(16));
-	if (static_cast<int32_t>(request.contentLength) > server.maxBodySize)
+	if (static_cast<int32_t>(request.contentLength) > server->maxBodySize)
 	{
 		request.status = payloadTooLarge;
 		return (false);

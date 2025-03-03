@@ -30,9 +30,9 @@ void	StressTester::setupRequestTemplates()
 		"/very/deep/nested/path/structure"
 	};
 
-	// m_request_templates.push_back({RequestMethod::GET, "/", "", ""});
-	// m_request_templates.push_back({RequestMethod::GET, "/home.html", "", ""});
-	// m_request_templates.push_back({RequestMethod::GET, "/planets/mars.jpg", "", ""});
+	m_request_templates.push_back({RequestMethod::GET, "/", "", ""});
+	m_request_templates.push_back({RequestMethod::GET, "/home.html", "", ""});
+	m_request_templates.push_back({RequestMethod::GET, "/planets/mars.jpg", "", ""});
 	m_request_templates.push_back({RequestMethod::POST, "/uploads/submit.txt", "name=test&data=example", "application/x-www-form-urlencoded"});
 	m_request_templates.push_back({RequestMethod::POST, "/uploads/boundary.txt", "--BOUNDARY\r\n\r\nContent here\r\n--BOUNDARY--\r\n", "multipart/form-data; boundary=BOUNDARY"});
 	m_request_templates.push_back({RequestMethod::POST, "/uplods/submit.txt", "name=test&data=example", "application/x-www-form-urlencoded"});

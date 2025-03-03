@@ -101,7 +101,7 @@ class Client
 	int					fileFd;
 	HttpRequest			request;
 	HttpResponse		response;
-	const Server&		server;
+	const Server*		server;
 	
 };
 
