@@ -65,7 +65,6 @@ void	Client::launchCGI()
 		}
 	}
 	close(pipeFd[1]);
-	assert(fileFd == -1);
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	fileFd = pipeFd[0];
 	status = parseCgi;

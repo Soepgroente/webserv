@@ -39,7 +39,6 @@ int	openFile(const char* path, int openFlags, int16_t state, std::vector<pollfd>
 
 int	getPollfdIndex(std::vector<pollfd>& polls, int fdToFind)
 {
-	assert(fdToFind != -1);
 	for (size_t i = 0; i < polls.size(); i++)
 	{
 		if (polls[i].fd == fdToFind)
@@ -52,7 +51,6 @@ void	closeAndResetFd(std::vector<pollfd>& polls, int& fd)
 {
 	int pollFdIndex = getPollfdIndex(polls, fd);
 
-	assert(fcntl(fd, F_GETFD) != -1);
 	close(fd);
 	fd = -1;
 	polls.erase(polls.begin() + pollFdIndex);

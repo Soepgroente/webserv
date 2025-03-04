@@ -54,7 +54,7 @@ void	WebServer::initialize()
 			errorExit("Failed to set up socket", -1);
 		if (bindSocket(serverAddress, it, ipStringToInt(it.host)) == -1)
 			errorExit("Failed to bind socket", -1);
-		if (listen(it.socket, 10) == -1)
+		if (listen(it.socket, SOMAXCONN) == -1)
 			errorExit("Failed to listen on socket", -1);
 	}
 	set_signals();
