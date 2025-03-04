@@ -7,7 +7,6 @@
 #include <vector>
 #include <map>
 
-
 #define MAXBODYSIZE 50000000
 
 struct Location
@@ -20,7 +19,6 @@ struct Location
 		{"root", ""},
 		{"directory_listing", ""},
 		{"index", ""},
-		{"upload_dir", ""},
 		{"redirection", ""},
 	};
 };

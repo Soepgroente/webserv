@@ -98,8 +98,8 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 			std::map<std::string, std::string>::iterator it;
 
 			it = server.locations[path].dirs.find(tmp);
-			if (it == server.locations[path].dirs.end())
-				closeAndExit("Invalid location variable", lineCount);
+			if (it == server.locations[path].dirs.end() || it->second != "")
+				closeAndExit("Invalid or duplicate location variable", lineCount);
 			s_line >> it->second;
 		}
 	}
@@ -128,19 +128,22 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		lineCount++;
 	}
 	if (file.eof() == true)
+	{
 		closeAndExit("Empty lines at end of config file", lineCount);
+	}
 	removeWhiteSpaces(line);
 	if (line != "server {")
 	{
-		file.close();
-		errorExit("Error in configuration file", lineCount);
+		closeAndExit("Error in configuration file", lineCount);
 	}
 	while (file.eof() == false)
 	{
 		std::getline(file, line, '\n');
 		removeWhiteSpaces(line);
 		if (line == "}")
+		{
 			return (server);
+		}
 		pos = line.find_first_of(' ');
 		parseFunctions[line.substr(0, pos)](&line[pos + 1], server, lineCount);
 		lineCount++;

@@ -74,6 +74,7 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 	rm -f $(T_EXEC)
+	rm -f log.txt
 
 re:
 	$(MAKE) -j1 fclean

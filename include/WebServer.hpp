@@ -57,7 +57,6 @@ class	WebServer
 	std::vector<Server>		servers;
 	std::vector<Client>		clients;
 	std::vector<pollfd>		pollDescriptors;
-	bool					serverShouldRun;
 	
 	/*	Private functions	*/
 	

@@ -29,7 +29,7 @@ const Server&	WebServer::getServer(int serverSocket)
 void	WebServer::acceptConnection(int serverSocket)
 {
 	addClient(serverSocket);
-	// clients.back().getRequest().buffer.reserve(std::max(1, (int)(100 - clients.size())) * BUFFERSIZE);
+	clients.back().getRequest().buffer.reserve(32 * BUFFERSIZE);
 	// printToLog("New connection accepted");
 }
 
@@ -40,17 +40,17 @@ void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientStatus() == LISTENING && (clients[i].getRequest().buffer.empty() == false || \
-			clients[i].getRequest().splitRequest.empty() == false) && \
-			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
-		{
-			clients[i].setupErrorPage(requestTimeout);
-		}
-		else if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() <= 0 || \
+		if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() <= 0 || \
 			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
 		{
 			closeConnection(i + servers.size(), i);
 			i--;
+		}
+		else if (clients[i].getClientStatus() == LISTENING && (clients[i].getRequest().buffer.empty() == false || \
+			clients[i].getRequest().splitRequest.empty() == false) && \
+			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		{
+			clients[i].setupErrorPage(requestTimeout);
 		}
 		else if (clients[i].getClientStatus() != LISTENING)
 			clients[i].setPingTime();
@@ -61,7 +61,7 @@ void	WebServer::loopadydoopady()
 {
 	size_t amountOfServers = servers.size();
 
-	while (serverShouldRun == true)
+	while (true)
 	{
 		removeInactiveConnections();
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
@@ -111,7 +111,7 @@ void	WebServer::loopadydoopady()
 			client.setPingTime();
 		}
 	}
-	std::exit(EXIT_FAILURE);
+	throw std::runtime_error("ActuallyExit");
 }
 
 void	WebServer::startTheThing()
@@ -119,17 +119,4 @@ void	WebServer::startTheThing()
 	initialize();
 	pollDescriptors = createPollArray();
 	loopadydoopady();
-}
-
-std::ostream&	operator<<(std::ostream& out, const std::vector<pollfd>& p)
-{
-	for (size_t i = 0; i < p.size(); i++)
-	{
-		out << "Index: " << i << std::endl;
-		out << "Pollfd: " << p[i].fd << std::endl;
-		out << "Events: " << p[i].events << std::endl;
-		out << "Revents: " << p[i].revents << std::endl;
-		out << std::endl;
-	}
-	return (out);
 }

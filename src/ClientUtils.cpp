@@ -95,4 +95,5 @@ void	Client::setupErrorPage(int error)
 	}
 	request.fileType = getMimeType(".jpg");
 	status = readingFromFile;
+	remainingRequests = 1;
 }

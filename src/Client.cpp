@@ -2,7 +2,6 @@
 
 std::vector<struct pollfd>	Client::fileAndCgiDescriptors;
 
-
 Client::Client(const Server& in) : 
 	latestPing(WebServer::getTime()), timeout(DEFAULT_TIMEOUT), writePos(0), readPos(0),
 	remainingRequests(INT_MAX), status(LISTENING), fd(-1), fileFd(-1), \
@@ -46,15 +45,14 @@ void	Client::initializeSocket(int serverSocket)
 	struct sockaddr_in	clientAddress;
 	socklen_t			clientAddressLength = sizeof(sockaddr_in);
 
-	this->fd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), &clientAddressLength);
-	if (this->fd == -1)
+	fd = accept(serverSocket, reinterpret_cast<sockaddr*> (&clientAddress), &clientAddressLength);
+	if (fd == -1)
 	{
 		printToLog("Failed to accept client");
 		status = CLOSING;
 		return ;
 	}
-		// throw std::runtime_error("Failed to accept client");
-	if (fcntl(this->fd, F_SETFL, fcntl(this->fd, F_GETFL, 0) | O_NONBLOCK) == -1)
+	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
 		throw std::runtime_error("Failed to set client socket to non-blocking");
 }
 

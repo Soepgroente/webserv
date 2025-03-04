@@ -13,6 +13,11 @@ void	Client::readIncomingRequest()
 		return ;
 	}
 	request.buffer += readBuffer.substr(0, readBytes);
+	if (request.buffer.size() > MAXBODYSIZE)
+	{
+		setupErrorPage(payloadTooLarge);
+		return ;
+	}
 	interpretRequest();
 }
 
@@ -73,6 +78,7 @@ void	Client::readFromFile()
 			{
 				response.reply = response.buffer;
 				status = RESPONDING;
+				timeout /= 5;
 			}
 			else
 				readPos += readBytes;

@@ -1,14 +1,11 @@
 #include "WebServer.hpp"
 
-bool*	ptr;
-
 void	errorExit(std::string errorMessage, int errorLocation)
 {
-	std::cerr << errorMessage;
+	printToLog(errorMessage);
 	if (errorLocation >= 0)
-		std::cerr << " on line " << errorLocation;
-	std::cerr << std::endl;
-	std::exit(EXIT_FAILURE);
+		printToLog(std::string(" on line ") + std::to_string(errorLocation));
+	throw std::runtime_error("ActuallyExit");
 }
 
 bool	WebServer::isServerSocket(size_t position)	const
@@ -47,12 +44,11 @@ bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
 static void	exitGracefullyOnSignal(int signal)
 {
 	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
-	*ptr = false;
+	throw std::runtime_error("ActuallyExit");
 }
 
 void	WebServer::set_signals()
 {
-	ptr = &serverShouldRun;
 	signal(SIGINT, &exitGracefullyOnSignal);
 	signal(SIGTERM, &exitGracefullyOnSignal);
 	signal(SIGQUIT, SIG_IGN);
@@ -100,4 +96,17 @@ void	WebServer::removeClient(int clientIndex)
 	}
 	close(clients[clientIndex].getFd());
 	clients.erase(clients.begin() + clientIndex);
+}
+
+std::ostream&	operator<<(std::ostream& out, const std::vector<pollfd>& p)
+{
+	for (size_t i = 0; i < p.size(); i++)
+	{
+		out << "Index: " << i << std::endl;
+		out << "Pollfd: " << p[i].fd << std::endl;
+		out << "Events: " << p[i].events << std::endl;
+		out << "Revents: " << p[i].revents << std::endl;
+		out << std::endl;
+	}
+	return (out);
 }
