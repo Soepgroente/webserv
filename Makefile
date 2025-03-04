@@ -1,7 +1,7 @@
 NAME		:= webserv
 T_EXEC		:= tester
 CC			:= c++
-CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 $(HEADERS) -g # -Ofast -flto -fsanitize=address #-DNDEBUG#
+CPPFLAGS	= -Wall -Wextra -Werror -std=c++20 -O3 -flto $(HEADERS) #-g  -fsanitize=address #-DNDEBUG#
 HEADERS		:= -I include
 
 ifeq ($(shell uname), Darwin)

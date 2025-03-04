@@ -102,7 +102,6 @@ class Client
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server*		server;
-	
 };
 
 std::ostream&	operator<<(std::ostream& out, const Client& p);

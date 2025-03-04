@@ -90,7 +90,7 @@ void	Client::setupErrorPage(int error)
 	if (fileFd == -1)
 	{
 		status = RESPONDING;
-		response.reply = HttpResponse::defaultResponses[internalServerError] + "text/plain\r\nContent-Length: 25\r\n\r\n500 Internal server error";
+		response.reply = HttpResponse::defaultResponses[internalServerError] + "text/plain\r\nContent-Length: 47\r\n\r\n500 Internal server error, no error pages found";
 		return ;
 	}
 	request.fileType = getMimeType(".jpg");

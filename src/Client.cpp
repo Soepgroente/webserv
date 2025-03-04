@@ -39,9 +39,6 @@ Client&	Client::operator=(const Client& other)
 		this->server = other.server;
 	}
 	return (*this);
-	// Client* tmp = new Client(other);
-
-	// return (*tmp);
 }
 
 void	Client::initializeSocket(int serverSocket)
