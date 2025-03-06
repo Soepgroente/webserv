@@ -41,6 +41,29 @@ void	StressTester::setupRequestTemplates()
 	m_request_templates.push_back({RequestMethod::DELETE, "/home3.html", "id=123", "application/x-www-form-urlencoded"});
 }
 
+std::string create_chunked_post_request()
+{
+	std::ostringstream request;
+	request << "POST /test HTTP/1.1\r\n";
+	request << "Host: your.server.com\r\n";
+	request << "Transfer-Encoding: chunked\r\n";
+	request << "Content-Type: application/x-www-form-urlencoded\r\n";
+	request << "\r\n";
+
+	std::srand(std::time(0));
+	for (int i = 0; i < 10; ++i) {
+		int chunk_size = std::rand() % 1024 + 1; // generate chunk sizes between 1 and 1024
+		std::string chunk(chunk_size, 'A' + (std::rand() % 26)); // fill chunk with random letters
+		request << std::hex << chunk_size << "\r\n";
+		request << chunk << "\r\n";
+	}
+
+	// End of chunks
+	request << "0\r\n\r\n";
+
+	return request.str();
+}
+
 void	StressTester::runTest()
 {
 	std::signal(SIGINT, signal_handler);

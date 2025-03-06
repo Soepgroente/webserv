@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "utils.hpp"
 
 int64_t	Client::getLatestPing() const
 {
@@ -7,7 +8,7 @@ int64_t	Client::getLatestPing() const
 
 void	Client::setPingTime()
 {
-	latestPing = WebServer::getTime();
+	latestPing = getTime();
 }
 
 int64_t	Client::getTimeout() const
@@ -69,6 +70,33 @@ int	Client::getClientStatus() const
 void	Client::setClientStatus(clientStatus newStatus)
 {
 	status = newStatus;
+}
+
+int	Client::getCgiCounter() const
+{
+	return (cgiCounter);
+}
+
+int	Client::checkTimeout()
+{
+	if (status == CLOSING || remainingRequests <= 0)
+	{
+		return (CLOSING);
+	}
+	if (status == LISTENING && hasTimedOut(latestPing, timeout) == true)
+	{
+		setupErrorPage(requestTimeout);
+		return (defaultStatus);
+	}
+	if (status == parseCgi && hasTimedOut(cgiTimeout, timeout) == true)
+	{
+		cgiCounter--;
+		assert(cgiPid >= 0);
+		if (kill(cgiPid, SIGTERM) == -1)
+			printToLog("Failed to kill cgi");
+		return (serviceOverloaded);
+	}
+	return (defaultStatus);
 }
 
 std::ostream&	operator<<(std::ostream& out, const Client& p)

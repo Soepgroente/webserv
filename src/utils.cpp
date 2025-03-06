@@ -17,7 +17,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);
+	printVector(split);
 	return (split);
 }
 
@@ -60,6 +60,22 @@ std::ostream&	operator<<(std::ostream& out, const DateTime& currentTime)
 {
 	out << std::asctime(currentTime.localTime);
 	return (out);
+}
+
+int64_t	getTime()
+{
+	return (std::chrono::duration_cast<std::chrono::milliseconds>\
+		(std::chrono::system_clock::now().time_since_epoch()).count());
+}
+
+bool	hasTimedOut(int64_t lastPinged, int64_t timeout)
+{
+	if (getTime() - lastPinged > timeout)
+	{
+		printToLog("Connection timed out");
+		return (true);
+	}
+	return (false);
 }
 
 void	printToLog(const std::string& message)

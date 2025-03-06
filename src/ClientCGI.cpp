@@ -29,9 +29,9 @@ static void	createPipe(int (&fd)[2])
 		throw std::runtime_error("Failed to pipe");
 }
 
-static int forkProcess()
+static pid_t forkProcess()
 {
-	int pid = fork();
+	pid_t	pid = fork();
 
 	if (pid == -1)
 	{
@@ -44,18 +44,19 @@ static int forkProcess()
 
 void	Client::launchCGI()
 {
-	int pipeFd[2];
-	int pid;
+	int		pipeFd[2];
 
+	if (cgiCounter >= MAX_CONCURRENT_CGIS)
+	{
+		setupErrorPage(serviceOverloaded);
+		return ;
+	}
 	createPipe(pipeFd);
-	pid = forkProcess();
-	if (pid == 0)
+	cgiPid = forkProcess();
+	if (cgiPid == 0)
 	{
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		// if (write(STDOUT_FILENO, "Error: 409", 10) == -1)
-		// 	printToLog("Failed to write to cgi pipe");
-		// std::exit(EXIT_FAILURE);
 		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
@@ -68,5 +69,7 @@ void	Client::launchCGI()
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	fileFd = pipeFd[0];
 	status = parseCgi;
-	timeout *= 5;
+	cgiCounter++;
+	cgiTimeout = getTime();
+	std::cout << cgiCounter << std::endl;
 }

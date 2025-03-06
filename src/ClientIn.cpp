@@ -77,8 +77,9 @@ void	Client::readFromFile()
 			else if (response.status == headerIsParsed && response.buffer.size() == response.cgiLength)
 			{
 				response.reply = response.buffer;
+				std::cout << response.reply.substr(0, 100) << std::endl;
 				status = RESPONDING;
-				timeout /= 5;
+				cgiCounter--;
 			}
 			else
 				readPos += readBytes;

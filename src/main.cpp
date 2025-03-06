@@ -15,7 +15,7 @@ void	startWebserver(const std::string& config)
 		}
 		catch (std::exception& e)
 		{
-			if (std::string(e.what()) == "ActuallyExit")
+			if (std::string(e.what()) == "Error: shutting down server")
 				return ;
 			// std::cerr << "Error: " << e.what() << std::endl;
 			printToLog("WebServer shutting down due to exception: " + std::string(e.what()));
@@ -37,5 +37,5 @@ int	main(int argc, char** argv)
 	else
 		config = argv[1];
 	startWebserver(config);
-	return (0);
+	return (1);
 }

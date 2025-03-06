@@ -5,7 +5,7 @@ void	errorExit(std::string errorMessage, int errorLocation)
 	printToLog(errorMessage);
 	if (errorLocation >= 0)
 		printToLog(std::string(" on line ") + std::to_string(errorLocation));
-	throw std::runtime_error("ActuallyExit");
+	throw std::runtime_error("Error: shutting down server");
 }
 
 bool	WebServer::isServerSocket(size_t position)	const
@@ -24,27 +24,12 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	return (fileDescriptors);
 }
 
-int64_t	WebServer::getTime()
-{
-	return (std::chrono::duration_cast<std::chrono::milliseconds>\
-		(std::chrono::system_clock::now().time_since_epoch()).count());
-}
-
-bool	WebServer::timeout(int64_t lastPinged, int64_t timeout)	const
-{
-	if (WebServer::getTime() - lastPinged > timeout)
-	{
-		printToLog("Connection timed out");
-		return (true);
-	}
-	return (false);
-}
 
 
 static void	exitGracefullyOnSignal(int signal)
 {
 	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
-	throw std::runtime_error("ActuallyExit");
+	throw std::runtime_error("Error: shutting down server");
 }
 
 void	WebServer::set_signals()

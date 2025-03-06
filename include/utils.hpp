@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <chrono>
 #include <ctime>
 #include <fcntl.h>
 #include <fstream>
@@ -18,6 +19,9 @@ int		getPollfdIndex(std::vector<pollfd>& polls, int fdToFind);
 void	closeAndResetFd(std::vector<pollfd>& polls, int& fd);
 void	errorExit(std::string errorMessage, int errorLocation);
 void	printToLog(const std::string& message);
+
+int64_t	getTime();
+bool	hasTimedOut(int64_t lastPinged, int64_t timeout);
 
 std::string					getMimeType(const std::string& input);
 std::vector<std::string>	stringSplit(std::string toSplit);

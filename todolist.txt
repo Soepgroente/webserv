@@ -4,3 +4,7 @@ Stress test the fuck out of the server
 	*Check for memory management / proper error handling -> did basic valgrind checks
 
 Issues:
+
+If file fails to upload it still shows up with 0kb size
+
+Think about whether we want to kill the CGI after a while

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <assert.h>
-#include <chrono>
 #include <cstring>
 #include <errno.h>
 #include <exception>
@@ -19,6 +18,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
 
@@ -66,7 +66,6 @@ class	WebServer
 	bool	isServerSocket(size_t position)	const;
 	void	acceptConnection(int serverSocket);
 	void	closeConnection(int pollIndex, int clientIndex);
-	bool	timeout(int64_t lastPinged, int64_t timeout)	const;
 
 	std::vector<pollfd>		createPollArray();
 	void					set_signals();

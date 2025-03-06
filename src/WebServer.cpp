@@ -40,20 +40,11 @@ void	WebServer::removeInactiveConnections()
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientStatus() == CLOSING || clients[i].getRemainingRequests() <= 0 || \
-			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
+		if (clients[i].checkTimeout() == CLOSING)
 		{
 			closeConnection(i + servers.size(), i);
 			i--;
 		}
-		else if (clients[i].getClientStatus() == LISTENING && (clients[i].getRequest().buffer.empty() == false || \
-			clients[i].getRequest().splitRequest.empty() == false) && \
-			WebServer::timeout(clients[i].getLatestPing(), clients[i].getTimeout()) == true)
-		{
-			clients[i].setupErrorPage(requestTimeout);
-		}
-		else if (clients[i].getClientStatus() != LISTENING)
-			clients[i].setPingTime();
 	}
 }
 
@@ -64,6 +55,7 @@ void	WebServer::loopadydoopady()
 	while (true)
 	{
 		removeInactiveConnections();
+		waitpid(-1, NULL, WNOHANG);
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 			throw std::runtime_error("Failed to poll clients");
 		if (poll(Client::fileAndCgiDescriptors.data(), Client::fileAndCgiDescriptors.size(), 0) == -1)
@@ -111,7 +103,7 @@ void	WebServer::loopadydoopady()
 			client.setPingTime();
 		}
 	}
-	throw std::runtime_error("ActuallyExit");
+	throw std::runtime_error("Error: shutting down server");
 }
 
 void	WebServer::startTheThing()

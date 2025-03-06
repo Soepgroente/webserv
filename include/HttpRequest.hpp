@@ -24,6 +24,8 @@ enum RequestStatus
 	tooManyRequests = 429,
 	internalServerError = 500,
 	versionNotSupported = 505,
+	connectionTimeout = 522,
+	serviceOverloaded = 529
 };
 
 struct	HttpRequest

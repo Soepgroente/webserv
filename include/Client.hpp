@@ -14,7 +14,8 @@
 #include "Server.hpp"
 #include "WebServer.hpp"
 
-#define DEFAULT_TIMEOUT 5000
+#define DEFAULT_TIMEOUT 500
+#define MAX_CONCURRENT_CGIS 1
 
 enum clientStatus
 {
@@ -57,6 +58,7 @@ class Client
 	int				getRemainingRequests() const;
 	int				getClientStatus() const;
 	void			setClientStatus(clientStatus newStatus);
+	int				getCgiCounter() const;
 
 	void			readFromFile();
 	void			writeToClient();
@@ -64,6 +66,8 @@ class Client
 	void			readIncomingRequest();
 	void			handleOutgoingState();
 	void			setupErrorPage(int error);
+
+	int				checkTimeout();
 
 	static std::vector<pollfd>	fileAndCgiDescriptors;
 
@@ -93,6 +97,8 @@ class Client
 
 	int64_t				latestPing;
 	int64_t				timeout;
+	pid_t				cgiPid;
+	int64_t				cgiTimeout;
 	size_t				writePos;
 	size_t				readPos;
 	int					remainingRequests;
@@ -102,6 +108,7 @@ class Client
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server*		server;
+	static int			cgiCounter;
 };
 
 std::ostream&	operator<<(std::ostream& out, const Client& p);
