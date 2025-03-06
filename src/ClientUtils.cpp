@@ -74,7 +74,7 @@ void	Client::setClientStatus(clientStatus newStatus)
 
 int	Client::getCgiCounter() const
 {
-	return (cgiCounter);
+	return (Client::cgiCounter);
 }
 
 int	Client::checkTimeout()
@@ -85,15 +85,15 @@ int	Client::checkTimeout()
 	}
 	if (status == LISTENING && hasTimedOut(latestPing, timeout) == true)
 	{
-		setupErrorPage(requestTimeout);
-		return (defaultStatus);
+		setupErrorPage(connectionTimeout);
+		return (status);
 	}
-	if (status == parseCgi && hasTimedOut(cgiTimeout, timeout) == true)
+	if (status == parseCgi && hasTimedOut(cgiLaunchTime, timeout * 5) == true)
 	{
-		cgiCounter--;
-		assert(cgiPid >= 0);
+		Client::cgiCounter--;
 		if (kill(cgiPid, SIGTERM) == -1)
 			printToLog("Failed to kill cgi");
+		setupErrorPage(serviceOverloaded);
 		return (serviceOverloaded);
 	}
 	return (defaultStatus);

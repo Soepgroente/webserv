@@ -69,7 +69,6 @@ void	Client::launchCGI()
 	Client::fileAndCgiDescriptors.push_back({pipeFd[0], POLLIN, 0});
 	fileFd = pipeFd[0];
 	status = parseCgi;
-	cgiCounter++;
-	cgiTimeout = getTime();
-	std::cout << cgiCounter << std::endl;
+	Client::cgiCounter++;
+	cgiLaunchTime = getTime();
 }

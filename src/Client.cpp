@@ -4,7 +4,7 @@ std::vector<struct pollfd>	Client::fileAndCgiDescriptors;
 int							Client::cgiCounter = 0;
 
 Client::Client(const Server& in) : 
-	latestPing(getTime()), timeout(DEFAULT_TIMEOUT), cgiPid(-1), cgiTimeout(-1), writePos(0), readPos(0),
+	latestPing(getTime()), timeout(DEFAULT_TIMEOUT), cgiPid(-1), cgiLaunchTime(-1), writePos(0), readPos(0),
 	remainingRequests(INT_MAX), status(LISTENING), fd(-1), fileFd(-1), \
 	request(HttpRequest()), response(HttpResponse()), server(&in)
 {
@@ -12,7 +12,7 @@ Client::Client(const Server& in) :
 
 Client::Client(const Client& other) : 
 	latestPing(other.latestPing), timeout(other.timeout), cgiPid(other.cgiPid), \
-	cgiTimeout(other.cgiTimeout), writePos(other.writePos), \
+	cgiLaunchTime(other.cgiLaunchTime), writePos(other.writePos), \
 	readPos(other.readPos), remainingRequests(other.remainingRequests), \
 	status(other.status), fd(other.fd), fileFd(other.fileFd), \
 	request(other.request), response(other.response), server(other.server)
@@ -30,7 +30,7 @@ Client&	Client::operator=(const Client& other)
 		this->latestPing = other.latestPing;
 		this->timeout = other.timeout;
 		this->cgiPid = other.cgiPid;
-		this->cgiTimeout = other.cgiTimeout;
+		this->cgiLaunchTime = other.cgiLaunchTime;
 		this->writePos = other.writePos;
 		this->readPos = other.readPos;
 		this->remainingRequests = other.remainingRequests;

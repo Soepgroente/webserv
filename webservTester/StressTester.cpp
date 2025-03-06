@@ -41,26 +41,28 @@ void	StressTester::setupRequestTemplates()
 	m_request_templates.push_back({RequestMethod::DELETE, "/home3.html", "id=123", "application/x-www-form-urlencoded"});
 }
 
-std::string create_chunked_post_request()
+static std::string create_chunked_post_request()
 {
 	std::ostringstream request;
-	request << "POST /test HTTP/1.1\r\n";
-	request << "Host: your.server.com\r\n";
+
+	request << "POST /uploads/test.txt HTTP/1.1\r\n";
+	request << "Host: 127.0.0.1:8080\r\n";
+	request << "Connection: keep-alive\r\n";
 	request << "Transfer-Encoding: chunked\r\n";
 	request << "Content-Type: application/x-www-form-urlencoded\r\n";
 	request << "\r\n";
 
 	std::srand(std::time(0));
-	for (int i = 0; i < 10; ++i) {
-		int chunk_size = std::rand() % 1024 + 1; // generate chunk sizes between 1 and 1024
-		std::string chunk(chunk_size, 'A' + (std::rand() % 26)); // fill chunk with random letters
-		request << std::hex << chunk_size << "\r\n";
+	for (int i = 0; i < 10; i++)
+	{
+		int chunk_size = std::rand() % 1024 + 1;
+		std::string chunk(chunk_size, 'A' + (std::rand() % 26));
+		chunk += "\n";
+		request << std::hex << chunk_size + 1 << "\r\n";
 		request << chunk << "\r\n";
 	}
 
-	// End of chunks
 	request << "0\r\n\r\n";
-
 	return request.str();
 }
 
@@ -461,7 +463,9 @@ bool	StressTester::sendRequest(const RequestTemplate& req)
 		return (false);
 	}
 
-	std::string http_request = createHttpRequest(req);
+	(void)req;
+	// std::string http_request = createHttpRequest(req);
+	std::string http_request = create_chunked_post_request();
 
 	if (send(sockfd, http_request.c_str(), http_request.length(), 0) == -1)
 	{

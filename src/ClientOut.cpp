@@ -14,7 +14,7 @@ void	Client::writeToClient()
 		writePos = 0;
 		remainingRequests--;
 
-		std::cout << response.reply.substr(0, 250) << std::endl;
+		std::cout << response.reply.substr(0, 100) << std::endl;
 		reset();
 		if (writtenBytes == -1)
 		{

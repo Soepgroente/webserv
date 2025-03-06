@@ -24,8 +24,6 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 	return (fileDescriptors);
 }
 
-
-
 static void	exitGracefullyOnSignal(int signal)
 {
 	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;

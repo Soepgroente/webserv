@@ -121,10 +121,13 @@ bool	Client::parseHeaders()
 
 static int	decodeChunks(std::string& buffer, std::string& body)
 {
-	while (buffer.empty() == false)
+	buffer = body;
+	body.clear();
+	while (buffer.size() > 0)
 	{
 		size_t		chunkSize;
 		std::string	newChunk;
+
 		try
 		{
 			chunkSize = std::stoi(buffer.substr(0, buffer.find("\r\n")), nullptr, 16);
@@ -162,9 +165,14 @@ static void	trimMultipart(HttpRequest& request)
 
 static void	parseBody(HttpRequest& request)
 {
-	if (request.chunked == true && request.buffer.find(CHUNKED_EOF) != std::string::npos)
+	if (request.chunked == true)
 	{
-		request.status = decodeChunks(request.buffer, request.body);
+		request.body += request.buffer;
+		request.buffer.clear();
+		if (request.body.find(CHUNKED_EOF) != std::string::npos)
+		{
+			request.status = decodeChunks(request.buffer, request.body);
+		}
 		return ;
 	}
 	else if (request.contentLength == 0)
@@ -243,8 +251,14 @@ void	Client::interpretRequest()
 				}
 			}
 		}
-		if (request.method == "POST")
+		else if (request.method == "POST")
 		{
+			fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
+			if (fileFd == -1)
+			{
+				setupErrorPage(internalServerError);
+				return ;
+			}
 			if (request.fileType == "unsupported")
 			{
 				request.fileType = "text/plain";

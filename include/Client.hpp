@@ -14,8 +14,8 @@
 #include "Server.hpp"
 #include "WebServer.hpp"
 
-#define DEFAULT_TIMEOUT 500
-#define MAX_CONCURRENT_CGIS 1
+#define DEFAULT_TIMEOUT 5000
+#define MAX_CONCURRENT_CGIS 2
 
 enum clientStatus
 {
@@ -98,7 +98,7 @@ class Client
 	int64_t				latestPing;
 	int64_t				timeout;
 	pid_t				cgiPid;
-	int64_t				cgiTimeout;
+	int64_t				cgiLaunchTime;
 	size_t				writePos;
 	size_t				readPos;
 	int					remainingRequests;

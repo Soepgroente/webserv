@@ -19,8 +19,8 @@ int main(int argc, char** argv)
 {
 	std::string host = DEFAULT_HOST;
 	std::string port = DEFAULT_PORT;
-	int concurrent_clients = DEFAULT_CONCURRENT_CLIENTS;
-	int requests_per_client = DEFAULT_REQUESTS_PER_CLIENT;
+	int concurrent_clients = 1;
+	int requests_per_client = 1;
 	int timeout_ms = DEFAULT_TIMEOUT_MS;
 	bool verbose = false;
 	bool use_random_paths = false;

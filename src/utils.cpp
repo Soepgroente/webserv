@@ -18,6 +18,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		toSplit.erase(0, end + 2);
 	}
 	printVector(split);
+	fflush(stdout);
 	return (split);
 }
 

@@ -127,12 +127,6 @@ bool	Client::parsePost(const std::string& requestLine)
 		request.status = fileAlreadyExists;
 		return (false);
 	}
-	fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
-	if (fileFd == -1)
-	{
-		setupErrorPage(internalServerError);
-		return (false);
-	}
 	return (true);
 }
 
