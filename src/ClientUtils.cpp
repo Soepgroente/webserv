@@ -111,9 +111,9 @@ std::ostream&	operator<<(std::ostream& out, const Client& p)
 }
 
 void	Client::setupErrorPage(int error)
-{
+{	
+	
 	std::string	path = "." + server->errorLocation + std::to_string(error) + ".jpg";
-
 	fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 	if (fileFd == -1)
 	{
@@ -123,5 +123,6 @@ void	Client::setupErrorPage(int error)
 	}
 	request.fileType = getMimeType(".jpg");
 	status = readingFromFile;
+	request.status = error;
 	remainingRequests = 1;
 }

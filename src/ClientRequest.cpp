@@ -78,7 +78,7 @@ bool	Client::parseKeepAlive(const std::string& requestLine)
 
 bool	Client::parseAction(const std::string& requestLine)
 {
-	request.action = requestLine.substr(9);
+	request.action = requestLine.substr(10);
 	if (request.action != "upload" && request.action != "execute")
 	{
 		request.status = requestIsInvalid;
@@ -268,9 +268,22 @@ void	Client::interpretRequest()
 		}
 		else if (request.method == "POST")
 		{
-			if (request.action == "execute")
+
+			if (std::filesystem::exists(request.dotPath) == true)
 			{
-				status = launchCgi;
+
+				std::cout << "ACTION: " << request.action << std::endl;
+				if (request.action == "execute")
+				{
+					status = launchCgi;
+					return ;					
+				}
+				setupErrorPage(fileAlreadyExists);
+				return ;
+			}
+			else if (request.action == "execute")
+			{
+				setupErrorPage(requestNotFound);
 				return ;
 			}
 			fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);

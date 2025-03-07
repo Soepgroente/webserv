@@ -124,21 +124,21 @@ bool	Client::parsePost(const std::string& requestLine)
 	{
 		return (false);
 	}
-	std::cout << "ACTION: " << request.action << std::endl;
-	if (std::filesystem::exists(request.dotPath) == true)
-	{
-		if (request.action == "execute")
-		{
-			return (true);
-		}
-		request.status = fileAlreadyExists;
-		return (false);
-	}
-	else if (request.action == "execute")
-	{
-		request.status = requestNotFound;
-		return (false);
-	}
+	// std::cout << "ACTION: " << request.action << std::endl;
+	// if (std::filesystem::exists(request.dotPath) == true)
+	// {
+	// 	if (request.action == "execute")
+	// 	{
+	// 		return (true);
+	// 	}
+	// 	request.status = fileAlreadyExists;
+	// 	return (false);
+	// }
+	// else if (request.action == "execute")
+	// {
+	// 	request.status = requestNotFound;
+	// 	return (false);
+	// }
 	return (true);
 }
 

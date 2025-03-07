@@ -1,0 +1,17 @@
+http://127.0.0.1:8080/
+http://127.0.0.1:8080/home.html
+http://127.0.0.1:8080/home3.html
+http://127.0.0.1:8080/planets/mars.jpg
+http://127.0.0.1:8080/planets/earth.jpg
+http://127.0.0.1:8080/mandelbrotPython.cgi
+http://127.0.0.1:8080/uploads/
+http://127.0.0.1:8080/redirect
+http://127.0.0.1:8080/methodNotAllowed/TwasAnAllowedMethod.txt
+http://127.0.0.1:8080/directoryListingOn/
+http://127.0.0.1:8080/directoryListingOn/1
+http://127.0.0.1:8080/directoryListingOn/dir_1/
+http://127.0.0.1:8080/doesnotexist.html
+http://127.0.0.1:8081/
+http://127.0.0.1:8081/index.html
+http://127.0.0.1:8081/mandelbrotPython.cgi
+http://127.0.0.1:8081/redirect

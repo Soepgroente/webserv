@@ -58,15 +58,49 @@ max_iter = 100
 data = mandelbrot(height, width, max_iter)
 image = create_image(data, max_iter)
 
-buffer = io.BytesIO()
-image.save(buffer, format='PNG')
-buffer.seek(0)
+# buffer = io.BytesIO()
+# image.save(buffer, format='PNG')
+# buffer.seek(0)
 
-with open('fractal.png', 'wb') as file:
-    file.write(buffer)
+# with open('fractal.png', 'wb') as file:
+#     file.write(buffer.getvalue())
 
-sys.stdout.write("HTTP/1.1 201 Created\r\n")
-sys.stdout.write("Content-Type: text/plain\r\n")
-sys.stdout.write("Content-Length: 19\r\n")
-sys.stdout.write("\r\n")
-sys.stdout.write("Upload successful.\r\n")
+# sys.stdout.write("HTTP/1.1 201 Created\r\n")
+# sys.stdout.write("Content-Type: text/plain\r\n")
+# sys.stdout.write("Content-Length: 19\r\n")
+# sys.stdout.write("\r\n")
+# sys.stdout.write("Upload successful.\r\n")
+
+# Generate a unique filename using timestamp
+import time
+filename = f"fractal_{int(time.time())}.png"
+filepath = "./var/www/generated"  # Store in a subdirectory
+
+try:
+    # Ensure directory exists
+    import os
+    os.makedirs(filepath, exist_ok=True)
+    
+    # Save the image
+    full_path = os.path.join(filepath, filename)
+    image.save(full_path)
+    
+    # Send proper 201 response with location of the created resource
+    sys.stdout.write("HTTP/1.1 201 Created\r\n")
+    sys.stdout.write(f"Location: {filepath}/{filename}\r\n")
+    sys.stdout.write("Content-Type: text/plain\r\n")
+    sys.stdout.write("Content-Length: 19\r\n")
+    sys.stdout.write("\r\n")
+    sys.stdout.write("Upload successful.\r\n")
+    sys.stdout.flush()
+    
+except Exception as e:
+    # Handle errors gracefully
+    error_message = f"Error: {str(e)}"
+    sys.stdout.write("HTTP/1.1 500 Internal Server Error\r\n")
+    sys.stdout.write("Content-Type: text/plain\r\n")
+    sys.stdout.write(f"Content-Length: {len(error_message)}\r\n")
+    sys.stdout.write("\r\n")
+    sys.stdout.write(error_message)
+    sys.stdout.flush()
+    
