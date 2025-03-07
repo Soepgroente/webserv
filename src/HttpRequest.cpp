@@ -21,6 +21,7 @@ HttpRequest&	HttpRequest::operator=(const HttpRequest& other)
 		fileType = other.fileType;
 		body = other.body;
 		status = other.status;
+		action = other.action;
 		chunked = other.chunked;
 		boundary = other.boundary;
 		location = other.location;
@@ -40,6 +41,7 @@ void	HttpRequest::clear()
 	path.clear();
 	protocol.clear();
 	contentType.clear();
+	action.clear();
 	fileType.clear();
 	status = defaultStatus;
 	chunked = false;
@@ -62,6 +64,7 @@ std::ostream&	operator<<(std::ostream& out, struct HttpRequest& p)
 	out << "content type: " << p.contentType << std::endl;
 	out << "file type: " << p.fileType << std::endl;
 	out << "status: " << p.status << std::endl;
+	out << "action: " << p.action << std::endl;
 	out << "chunked: " << p.chunked << std::endl;
 	out << "boundary: " << p.boundary << std::endl;
 	out << "body size: " << p.body.size() << std::endl;

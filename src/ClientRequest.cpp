@@ -76,12 +76,27 @@ bool	Client::parseKeepAlive(const std::string& requestLine)
 	return (true);
 }
 
+bool	Client::parseAction(const std::string& requestLine)
+{
+	request.action = requestLine.substr(9);
+	if (request.action != "upload" && request.action != "execute")
+	{
+		request.status = requestIsInvalid;
+		return (false);
+	}
+	return (true);
+}
+
 bool	Client::parseHeaders()
 {
 	if (request.status == headerIsParsed || request.status == bodyIsParsed)
+	{
 		return (true);
+	}
 	if (request.buffer.find("\r\n\r\n") == std::string::npos)
+	{
 		return (false);
+	}
 
 	const std::map<std::string, std::function<bool(Client*, const std::string&)>> parseFunctions = 
 	{
@@ -93,7 +108,8 @@ bool	Client::parseHeaders()
 		{"Keep-Alive:", &Client::parseKeepAlive},
 		{"Host:", &Client::parseHost},
 		{"Content-Type:", &Client::parseContentType},
-		{"Content-Length:", &Client::parseContentLength}
+		{"Content-Length:", &Client::parseContentLength},
+		{"X-action:", &Client::parseAction}
 	};
 
 	request.splitRequest = stringSplit(request.buffer);
@@ -105,7 +121,6 @@ bool	Client::parseHeaders()
 		{
 			if (parseFunctions.at(firstWord)(this, request.splitRequest[i]) == false)
 			{
-				// request.clear()?
 				setupErrorPage(request.status);
 				return (false);
 			}
@@ -253,6 +268,11 @@ void	Client::interpretRequest()
 		}
 		else if (request.method == "POST")
 		{
+			if (request.action == "execute")
+			{
+				status = launchCgi;
+				return ;
+			}
 			fileFd = openFile(request.dotPath.c_str(), O_WRONLY | O_CREAT, POLLOUT, Client::fileAndCgiDescriptors);
 			if (fileFd == -1)
 			{

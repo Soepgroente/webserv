@@ -16,13 +16,11 @@ void	startWebserver(const std::string& config)
 		catch (std::exception& e)
 		{
 			if (std::string(e.what()) == "Error: shutting down server")
+			{
 				return ;
-			// std::cerr << "Error: " << e.what() << std::endl;
+			}
 			printToLog("WebServer shutting down due to exception: " + std::string(e.what()));
-			// std::exit(EXIT_FAILURE);
 		}
-		// std::exit(EXIT_SUCCESS);
-		// return ;
 	}
 }
 
@@ -31,11 +29,18 @@ int	main(int argc, char** argv)
 	std::string	config;
 
 	if (argc > 2)
+	{
 		std::cout << "Please run the Webserver as default (no arguments) or provide a configuration file" << std::endl;
+		return (1);
+	}
 	if (argc == 1)
+	{
 		config = "default.conf";
+	}
 	else
+	{
 		config = argv[1];
+	}
 	startWebserver(config);
-	return (1);
+	return (2);
 }

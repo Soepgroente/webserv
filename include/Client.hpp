@@ -26,6 +26,7 @@ enum clientStatus
 	CLOSING,
 	readingFromFile,
 	writingToFile,
+	writingToPipe,
 	showDirectory,
 	redirection
 };
@@ -85,6 +86,7 @@ class Client
 	bool		parseHost(const std::string& requestLine);
 	bool		parseKeepAlive(const std::string& requestLine);
 	bool		parseConnectionType(const std::string& requestLine);
+	bool		parseAction(const std::string& requestLine);
 	bool		parseGet(const std::string& requestLine);
 	bool		parsePost(const std::string& requestLine);
 	bool		parseDelete(const std::string& requestLine);

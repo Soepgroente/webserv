@@ -2,9 +2,14 @@
 
 void	errorExit(std::string errorMessage, int errorLocation)
 {
-	printToLog(errorMessage);
 	if (errorLocation >= 0)
-		printToLog(std::string(" on line ") + std::to_string(errorLocation));
+	{
+		printToLog(errorMessage + " on line " + std::to_string(errorLocation));
+	}
+	else
+	{
+		printToLog(errorMessage);
+	}
 	throw std::runtime_error("Error: shutting down server");
 }
 

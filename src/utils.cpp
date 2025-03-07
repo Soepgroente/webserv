@@ -115,6 +115,7 @@ std::string	getMimeType(const std::string& input)
 		{".svg", "image/svg+xml"},
 		{".webp", "image/webp"},
 		{".cgi", "cgi"},
+		{".py", "cgi"}
 	};
 
 	if (types.find(input) == types.end())

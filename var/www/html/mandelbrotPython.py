@@ -62,10 +62,11 @@ buffer = io.BytesIO()
 image.save(buffer, format='PNG')
 buffer.seek(0)
 
-sys.stdout.write("HTTP/1.1 200 OK\r\n")
-sys.stdout.write("Content-Type: image/png\r\n")
-sys.stdout.write("Content-Length: {}\r\n".format(len(buffer.getvalue())))
-sys.stdout.write("\r\n")
-sys.stdout.flush()
+with open('fractal.png', 'wb') as file:
+    file.write(buffer)
 
-sys.stdout.buffer.write(buffer.getvalue())
+sys.stdout.write("HTTP/1.1 201 Created\r\n")
+sys.stdout.write("Content-Type: text/plain\r\n")
+sys.stdout.write("Content-Length: 19\r\n")
+sys.stdout.write("\r\n")
+sys.stdout.write("Upload successful.\r\n")

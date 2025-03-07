@@ -53,6 +53,7 @@ struct	HttpRequest
 	std::string					contentType;
 	std::string					fileType;
 	std::string					boundary;
+	std::string					action;
 	int							status;
 	bool 						chunked;
 	Location*					location;

@@ -106,6 +106,7 @@
 
     <div class="cgi-section">
         <button class="cgi-button" id="executeButton">Mandelbrot</button>
+        <button class="cgi-button" id="executeButton2">Fractal in a file! Wow!</button>
         <button class="cgi-button" id="deleteButton">Delete Uploaded File</button>
     </div>
 
@@ -223,6 +224,49 @@
 
             try {
                 const response = await fetch('mandelbrotPython.cgi');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+				imageElement.style.display = 'none';
+				mandelbrotImage.src = imageUrl;
+                mandelbrotImage.style.display = 'inline';
+                errorElement.style.display = 'none';
+
+                mandelbrotImage.onload = () => {
+                    URL.revokeObjectURL(imageUrl);
+                };
+            } catch (error) {
+                mandelbrotImage.style.display = 'none';
+                console.error('Error executing CGI script:', error);
+				const errorBlob = await errorResponse.blob();
+				const errorImgUrl = URL.createObjectURL(errorBlob);
+				errorImg.src = errorImgUrl;
+				errorImg.style.display = 'inline';
+                errorElement.style.display = 'block';
+				alert('Failed to execute CGI script');
+            }
+        });
+
+        document.getElementById('executeButton2').addEventListener('click', async function() {
+			const imageElement = document.getElementById('planetImage');
+			const mandelbrotImage = document.getElementById('mandelbrotImage');
+            const errorElement = document.getElementById('errorMessage');
+			const errorImg = document.getElementById('errorImg');
+
+			imageElement.style.display = 'none';
+			mandelbrotImage.style.display = 'none';
+			errorElement.style.display = 'none';
+			errorImg.style.display = 'none';
+
+            try {
+                const response = await fetch('mandelbrotPython.py', {
+					method: 'POST',
+					headers: {'X-action': 'execute'}
+				});
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
