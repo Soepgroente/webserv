@@ -14,7 +14,7 @@
 #include "Server.hpp"
 #include "WebServer.hpp"
 
-#define DEFAULT_TIMEOUT 10000
+#define DEFAULT_TIMEOUT 5000
 #define MAX_CONCURRENT_CGIS 2
 
 enum clientStatus
