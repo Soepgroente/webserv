@@ -79,7 +79,7 @@ void	Client::readFromFile()
 				response.reply = response.buffer;
 				// std::cout << response.reply.substr(0, 100) << std::endl;
 				status = RESPONDING;
-				// Client::cgiCounter--;
+				Client::cgiCounter--;
 			}
 			else
 				readPos += readBytes;
