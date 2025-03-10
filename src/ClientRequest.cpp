@@ -109,7 +109,8 @@ bool	Client::parseHeaders()
 		{"Host:", &Client::parseHost},
 		{"Content-Type:", &Client::parseContentType},
 		{"Content-Length:", &Client::parseContentLength},
-		{"X-action:", &Client::parseAction}
+		{"X-action:", &Client::parseAction},
+		{"x-action:", &Client::parseAction} // for compatibility with github codespaces and possibly other clients
 	};
 
 	request.splitRequest = stringSplit(request.buffer);
@@ -272,7 +273,7 @@ void	Client::interpretRequest()
 			if (std::filesystem::exists(request.dotPath) == true)
 			{
 
-				std::cout << "ACTION: " << request.action << std::endl;
+				// std::cout << "ACTION: " << request.action << std::endl;
 				if (request.action == "execute")
 				{
 					status = launchCgi;
