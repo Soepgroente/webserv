@@ -86,7 +86,13 @@ int	Client::checkTimeout()
 	if (status == LISTENING && hasTimedOut(latestPing, timeout) == true)
 	{
 		setupErrorPage(connectionTimeout);
-		return (status);
+		return (CLOSING);
+	}
+	// I thought of the following when trying to solve a timeout error, does it make sense? I haven't been able to produce it, even under heavy load. Seems most of the delay is in making the connection, when it starts responding it proceeds succesfully
+	if (status == RESPONDING && hasTimedOut(latestPing, timeout) == true)
+	{
+		setupErrorPage(serviceOverloaded);
+		return (CLOSING);
 	}
 	if (status == parseCgi && hasTimedOut(cgiLaunchTime, timeout * 5) == true)
 	{
@@ -94,7 +100,7 @@ int	Client::checkTimeout()
 		if (kill(cgiPid, SIGTERM) == -1)
 			printToLog("Failed to kill cgi");
 		setupErrorPage(serviceOverloaded); // Service overload in the sense that it took too long so the server is probably busy? Or we send the timeout error?
-		return (serviceOverloaded);
+		return (CLOSING);
 	}
 	return (defaultStatus);
 }
