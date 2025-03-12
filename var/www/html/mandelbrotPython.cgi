@@ -53,6 +53,12 @@ def create_image(data, max_iter):
 
     return img
 
+# an_int = 1
+# while an_int == 1:
+# 	an_int = 1
+    
+
+
 width, height = 1280 * 247 / 224, 1280
 max_iter = 100
 data = mandelbrot(height, width, max_iter)

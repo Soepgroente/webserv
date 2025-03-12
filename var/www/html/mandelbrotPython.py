@@ -89,9 +89,9 @@ try:
     sys.stdout.write("HTTP/1.1 201 Created\r\n")
     sys.stdout.write(f"Location: {filepath}/{filename}\r\n")
     sys.stdout.write("Content-Type: text/plain\r\n")
-    sys.stdout.write("Content-Length: 19\r\n")
+    sys.stdout.write("Content-Length: 18\r\n")
     sys.stdout.write("\r\n")
-    sys.stdout.write("Upload successful.\r\n")
+    sys.stdout.write("Upload successful.")
     sys.stdout.flush()
     
 except Exception as e:

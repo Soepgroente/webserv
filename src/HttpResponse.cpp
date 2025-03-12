@@ -27,7 +27,8 @@ std::map<int, std::string> HttpResponse::defaultResponses =
 	{502, "HTTP/1.1 502 Bad Gateway\r\nContent-Type: "},
 	{503, "HTTP/1.1 503 Service Unavailable\r\nContent-Type: "},
 	{505, "HTTP/1.1 505 HTTP Version Not Supported\r\nContent-Type: "},
-	{522, "HTTP/1.1 522 Connection Timed Out\r\nContent-Type: "}
+	{522, "HTTP/1.1 522 Connection Timed Out\r\nContent-Type: "},
+	{529, "HTTP/1.1 529 The Service is Overloaded\r\nContent-Type: "}
 };
 
 HttpResponse::HttpResponse(const HttpResponse& other)

@@ -1,0 +1,10 @@
+- homepage requests intended functionality (GET, POST, DELETE) -> Y
+- method not allowed -> Y
+- directory listing -> Y
+- CGI execution -> Y
+- timeouts -> Y
+- unsupported type -> Y
+- Forbidden -> Y
+- Not Found -> Y
+- sieging GET requests with multiple instances of 255 clients simultaneously (not CGI, max 2) -> Y
+- 

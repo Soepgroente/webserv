@@ -93,7 +93,7 @@ int	Client::checkTimeout()
 		Client::cgiCounter--;
 		if (kill(cgiPid, SIGTERM) == -1)
 			printToLog("Failed to kill cgi");
-		setupErrorPage(serviceOverloaded);
+		setupErrorPage(serviceOverloaded); // Service overload in the sense that it took too long so the server is probably busy? Or we send the timeout error?
 		return (serviceOverloaded);
 	}
 	return (defaultStatus);
