@@ -5,7 +5,8 @@ std::ifstream	file;
 
 static void	closeAndExit(std::string message, int& lineCount)
 {
-	file.close();
+	if (file.is_open() == true)
+		file.close();
 	errorExit(message, lineCount);
 }
 
@@ -245,7 +246,11 @@ void	WebServer::parseConfigurations(const std::string& fileLocation)
 
 			if (server.host == "Error")
 			{
-				continue ;
+				if (servers.empty() == false)
+				{
+					continue ;
+				}
+				closeAndExit("Error in configuration file", lineCount);
 			}
 			servers.push_back(server);
 		}
