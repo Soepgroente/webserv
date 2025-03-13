@@ -73,7 +73,7 @@ void	HttpResponse::constructResponse(int status, const std::string& mimeType, si
 	}
 	else if (status == temporaryRedirect)
 	{
-		reply = defaultResponses[status] + mimeType + "\r\nRefresh: 3; url=" + location->dirs.at("redirection") + "\r\nContent-Length: " + std::to_string(length) + "\r\nLocation: " +  + "\r\n\r\n" + buffer;
+		reply = defaultResponses[status] + mimeType + "\r\nRefresh: 3; url=" + location->dirs.at("redirection") + "\r\nContent-Length: " + std::to_string(length) + "\r\n\r\n" + buffer;
 	}
 	else
 	{

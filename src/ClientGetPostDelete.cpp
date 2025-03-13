@@ -99,7 +99,7 @@ bool	Client::parseGet(const std::string &requestLine)
 	}
     if (std::filesystem::is_directory(request.dotPath) == true)
 	{
-		if (request.location->dirs.at("directory_listing") == "on")
+		if (request.location->dirs.at("directory_listing") == "on") // do we care if it's anything else?
 		{
 			status = showDirectory;
 			if (request.dotPath.back() != '/')

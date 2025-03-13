@@ -78,6 +78,10 @@ static void	parseErrorPage(const std::string& input, Server& server, int& lineCo
 		closeAndExit("Invalid configuration file", lineCount);
 	}
 	server.errorLocation = input;
+	if (server.errorLocation.back() != '/')
+	{
+		server.errorLocation += '/';
+	}
 }
 
 static void	parseBodySize(const std::string& input, Server& server, int& lineCount)
@@ -126,6 +130,10 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 		std::getline(file, line, '\n');
 		removeWhiteSpaces(line);
 		lineCount++;
+		if (line == "")
+		{
+			continue;
+		}
 		if (line == "}")
 		{
 			break ;
@@ -155,7 +163,7 @@ static void	parseLocation(const std::string& input, Server& server, int& lineCou
 			std::map<std::string, std::string>::iterator it;
 
 			it = server.locations[path].dirs.find(tmp);
-			if (it == server.locations[path].dirs.end() || it->second != "")
+			if (it == server.locations[path].dirs.end() || it->second != "" || s_line.eof() == true)
 			{
 				closeAndExit("Invalid or duplicate location variable", lineCount);
 			}
