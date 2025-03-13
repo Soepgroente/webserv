@@ -15,7 +15,7 @@ void	Client::readIncomingRequest()
 	request.buffer += readBuffer.substr(0, readBytes);
 	if (request.buffer.size() > MAXBODYSIZE)
 	{
-		setupErrorPage(payloadTooLarge);
+		setupErrorPage(payloadTooLarge); // this error doesn't show in the homepage on firefox, it shows on chrome-edge, but chrome-edge don't repeat a request to POST a file if a POST request for this file has already been sent and the client hasn't timed out, or this is what I observed, so we can showcase POST with different browsers or bugfix the homepage 
 		return ;
 	}
 	interpretRequest();

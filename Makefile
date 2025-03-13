@@ -75,6 +75,8 @@ fclean: clean
 	rm -f $(NAME)
 	rm -f $(T_EXEC)
 	rm -f log.txt
+	rm -f ./var/www/generated/*
+	rm -f ./var/www/uploads/*
 
 re:
 	$(MAKE) -j1 fclean
