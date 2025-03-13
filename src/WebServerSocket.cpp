@@ -7,12 +7,8 @@ static uint32_t ipStringToInt(std::string ip)
 	for (int i = 0; i < 4; i++)
 	{
 		size_t dotIndex = ip.find('.');
-		if (i < 3 && dotIndex == std::string::npos)
-		{
-			throw std::exception();
-		}
 		int octet = std::stoi(ip.substr(0, dotIndex));
-		if (octet < 0 || octet > 255) // -0 still works, do we care?
+		if (octet < 0 || octet > 255)
 		{
 			throw std::exception();
 		}	

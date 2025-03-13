@@ -56,7 +56,9 @@ void	WebServer::loopadydoopady()
 	{
 		removeInactiveConnections();
 		if (waitpid(-1, NULL, WNOHANG) > 0)
-			std::cout << "Child process ended" << std::endl; // After testing, remove or print to log? 
+		{
+			std::cout << "Child process ended" << std::endl; // After testing, remove or print to log?
+		}
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 			throw std::runtime_error("Failed to poll clients");
 		if (poll(Client::fileAndCgiDescriptors.data(), Client::fileAndCgiDescriptors.size(), 0) == -1)

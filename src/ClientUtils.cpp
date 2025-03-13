@@ -85,22 +85,22 @@ int	Client::checkTimeout()
 	}
 	if (status == LISTENING && hasTimedOut(latestPing, timeout) == true)
 	{
-		setupErrorPage(connectionTimeout);
-		return (CLOSING);
-	}
-	// I thought of the following when trying to solve a timeout error, does it make sense? I haven't been able to produce it, even under heavy load. Seems most of the delay is in making the connection, when it starts responding it proceeds succesfully
-	if (status == RESPONDING && hasTimedOut(latestPing, timeout) == true)
-	{
-		setupErrorPage(serviceOverloaded);
-		return (CLOSING);
+		status = CLOSING;
+		if (request.body.empty() == false)
+		{
+			setupErrorPage(connectionTimeout);
+		}
+		return (status);
 	}
 	if (status == parseCgi && hasTimedOut(cgiLaunchTime, timeout * 5) == true)
 	{
 		Client::cgiCounter--;
 		if (kill(cgiPid, SIGTERM) == -1)
+		{
 			printToLog("Failed to kill cgi");
+		}
 		setupErrorPage(serviceOverloaded); // Service overload in the sense that it took too long so the server is probably busy? Or we send the timeout error?
-		return (CLOSING);
+		return (status);
 	}
 	return (defaultStatus);
 }
@@ -118,8 +118,8 @@ std::ostream&	operator<<(std::ostream& out, const Client& p)
 
 void	Client::setupErrorPage(int error)
 {	
-	
 	std::string	path = "." + server->errorLocation + std::to_string(error) + ".jpg";
+
 	fileFd = openFile(path.c_str(), O_RDONLY, POLLIN, Client::fileAndCgiDescriptors);
 	if (fileFd == -1)
 	{

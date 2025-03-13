@@ -3,22 +3,33 @@
 
 std::ifstream	file;
 
-
 static void	closeAndExit(std::string message, int& lineCount)
 {
 	if (file.is_open() == true)
-	file.close();
+	{
+		file.close();
+	}
 	errorExit(message, lineCount);
 }
 
 static void	networkNumIsValid(const std::string& input, int& lineCount)
 {
+	int dotCount = 0;
+
 	for (size_t i = 0; i < input.size(); i++)
 	{
-		if (isalpha(input[i]) != false) // different than '== true'
+		if (std::isdigit(input[i]) == 0 && input[i] != '.')
 		{
 			closeAndExit("Invalid configuration file", lineCount);
 		}
+		if (input[i] == '.')
+		{
+			dotCount++;
+		}
+	}
+	if (dotCount != 3)
+	{
+		closeAndExit("Invalid configuration file", lineCount);
 	}
 }
 
@@ -38,7 +49,11 @@ static void	parsePort(const std::string& input, Server& server, int& lineCount)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
 	}
-	networkNumIsValid(input, lineCount);
+	// networkNumIsValid(input, lineCount);
+	if (input.find_first_not_of("0123456789") != std::string::npos)
+	{
+		closeAndExit("Invalid configuration file", lineCount);
+	}
 	int32_t	largePortTemp = std::stoi(input);
 	server.port = std::stoi(input);
 	if (largePortTemp < 0 || static_cast<uint16_t>(largePortTemp) != server.port)

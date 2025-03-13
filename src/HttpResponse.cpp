@@ -79,5 +79,6 @@ void	HttpResponse::constructResponse(int status, const std::string& mimeType, si
 	{
 		reply = defaultResponses[status] + mimeType + "\r\nContent-Length: " + std::to_string(length) + "\r\n\r\n" + buffer;
 	}
+	// std::cout << reply.substr(0, 100) << std::endl;
 	buffer.clear();
 }
