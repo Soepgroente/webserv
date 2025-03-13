@@ -3,11 +3,23 @@
 
 std::ifstream	file;
 
+
 static void	closeAndExit(std::string message, int& lineCount)
 {
 	if (file.is_open() == true)
-		file.close();
+	file.close();
 	errorExit(message, lineCount);
+}
+
+static void	networkNumIsValid(const std::string& input, int& lineCount)
+{
+	for (size_t i = 0; i < input.size(); i++)
+	{
+		if (isalpha(input[i]) != false) // different than '== true'
+		{
+			closeAndExit("Invalid configuration file", lineCount);
+		}
+	}
 }
 
 static void	parseHost(const std::string& input, Server& server, int& lineCount)
@@ -16,6 +28,7 @@ static void	parseHost(const std::string& input, Server& server, int& lineCount)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
 	}
+	networkNumIsValid(input, lineCount);
 	server.host = input;
 }
 
@@ -25,6 +38,7 @@ static void	parsePort(const std::string& input, Server& server, int& lineCount)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
 	}
+	networkNumIsValid(input, lineCount);
 	int32_t	largePortTemp = std::stoi(input);
 	server.port = std::stoi(input);
 	if (largePortTemp < 0 || static_cast<uint16_t>(largePortTemp) != server.port)

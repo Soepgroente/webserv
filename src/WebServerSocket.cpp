@@ -6,8 +6,18 @@ static uint32_t ipStringToInt(std::string ip)
 
 	for (int i = 0; i < 4; i++)
 	{
-		result |= std::stoi(ip.substr(0, ip.find('.'))) << (3 - i) * 8;
-		ip.erase(0, ip.find('.') + 1);
+		size_t dotIndex = ip.find('.');
+		if (i < 3 && dotIndex == std::string::npos)
+		{
+			throw std::exception();
+		}
+		int octet = std::stoi(ip.substr(0, dotIndex));
+		if (octet < 0 || octet > 255) // -0 still works, do we care?
+		{
+			throw std::exception();
+		}	
+		result |= std::stoi(ip.substr(0, dotIndex)) << (3 - i) * 8;
+		ip.erase(0, dotIndex + 1);
 	}
 	return (result);
 }
@@ -54,9 +64,17 @@ void	WebServer::initialize()
 		{
 			errorExit("Failed to set up socket", -1);
 		}
-		if (bindSocket(serverAddress, it, ipStringToInt(it.host)) == -1)
+		try
 		{
-			errorExit("Failed to bind socket on ip: " + it.host + ":" + std::to_string(it.port), -1);
+			if (bindSocket(serverAddress, it, ipStringToInt(it.host)) == -1)
+			{
+				errorExit("Failed to bind socket on ip: " + it.host + ":" + std::to_string(it.port), -1);
+			}
+
+		}
+		catch (std::exception& e)
+		{
+			errorExit("Wrong format of host address in one of the servers in the config file: " + it.host + ":" + std::to_string(it.port), -1);
 		}
 		if (listen(it.socket, SOMAXCONN) == -1)
 		{
