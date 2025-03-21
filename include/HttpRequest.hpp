@@ -20,6 +20,7 @@ enum RequestStatus
 	fileAlreadyExists = 409,
 	lengthRequired = 411,
 	payloadTooLarge = 413,
+	uriTooLong = 414,
 	unsupportedMediaType = 415,
 	tooManyRequests = 429,
 	internalServerError = 500,

@@ -31,8 +31,8 @@ std::vector<struct pollfd>	WebServer::createPollArray()
 
 static void	exitGracefullyOnSignal(int signal)
 {
-	std::cerr << "Shutting down after signal " << signal << " was received..." << std::endl;
-	throw std::runtime_error("Error: shutting down server");
+	std::string message = "Shutting down after signal " + std::to_string(signal) + " was received...";
+	throw std::runtime_error(message);
 }
 
 void	WebServer::set_signals()
@@ -59,7 +59,9 @@ void	WebServer::addClient(int serverSocket)
 		pollDescriptors.push_back({clients.back().getFd(), POLLOUT, 0});
 	}
 	else
+	{
 		pollDescriptors.push_back({clients.back().getFd(), POLLIN, 0});
+	}
 }
 
 void	WebServer::removeClient(int clientIndex)

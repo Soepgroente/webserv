@@ -19,14 +19,18 @@ static char** getEnvp()
 static void	duplicate_fd(int oldFd, int newFd)
 {
 	if (dup2(oldFd, newFd) == -1)
+	{
 		throw std::runtime_error("Failed to dup2");
+	}
 	close(oldFd);
 }
 
 static void	createPipe(int (&fd)[2])
 {
 	if (pipe(fd) == -1)
+	{
 		throw std::runtime_error("Failed to pipe");
+	}
 }
 
 static pid_t forkProcess()
@@ -38,7 +42,9 @@ static pid_t forkProcess()
 		throw std::runtime_error("Failed to fork process");
 	}
 	if (pid == 0)
+	{
 		signals_for_kids();
+	}
 	return (pid);
 }
 
@@ -60,7 +66,9 @@ void	Client::launchCGI()
 		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
 		{
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
+			{
 				printToLog("Failed to write to cgi pipe");
+			}
 			printToLog("Failed to execve");
 			std::exit(EXIT_FAILURE);
 		}

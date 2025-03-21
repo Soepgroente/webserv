@@ -52,7 +52,9 @@ bool	Client::parseConnectionType(const std::string& requestLine)
 {
 	request.connectionType = requestLine.substr(12);
 	if (request.connectionType == "close")
+	{
 		remainingRequests = 1;
+	}
 	return (true);
 }
 
@@ -95,6 +97,10 @@ bool	Client::parseHeaders()
 	}
 	if (request.buffer.find("\r\n\r\n") == std::string::npos)
 	{
+		if (request.buffer.size() > server->maxBodySize)
+		{
+			request.status = requestIsInvalid;
+		}
 		return (false);
 	}
 
@@ -110,7 +116,7 @@ bool	Client::parseHeaders()
 		{"Content-Type:", &Client::parseContentType},
 		{"Content-Length:", &Client::parseContentLength},
 		{"X-action:", &Client::parseAction},
-		{"x-action:", &Client::parseAction} // for compatibility with github codespaces and possibly other clients
+		{"x-action:", &Client::parseAction}
 	};
 
 	request.splitRequest = stringSplit(request.buffer);
@@ -156,7 +162,9 @@ static int	decodeChunks(std::string& buffer, std::string& body)
 		newChunk = buffer.substr(0, chunkSize);
 		buffer.erase(0, chunkSize);
 		if (buffer.compare(0, 2, "\r\n") != 0)
+		{
 			return (requestIsInvalid);
+		}
 		buffer.erase(0, 2);
 		body += newChunk;
 	}
@@ -185,6 +193,11 @@ static void	parseBody(HttpRequest& request)
 	{
 		request.body += request.buffer;
 		request.buffer.clear();
+		if (request.body.size() > MAXBODYSIZE)
+		{
+			request.status = payloadTooLarge;
+			return ;
+		}
 		if (request.body.find(CHUNKED_EOF) != std::string::npos)
 		{
 			request.status = decodeChunks(request.buffer, request.body);
@@ -220,7 +233,9 @@ static void	parseBody(HttpRequest& request)
 void	Client::interpretRequest()
 {
 	if (parseHeaders() == false)
+	{
 		return ;
+	}
 	parseBody(request);
 	if (request.status == bodyIsParsed && request.boundary.empty() == false)
 	{
@@ -240,8 +255,9 @@ void	Client::interpretRequest()
 	}
 	if (request.status == bodyIsParsed && status != redirection)
 	{
-		request.status = requestIsOk;
 		size_t index = request.path.find_last_of('.');
+
+		request.status = requestIsOk;
 		if (index != std::string::npos)
 		{
 			request.fileType = getMimeType(request.path.substr(index));
@@ -249,7 +265,8 @@ void	Client::interpretRequest()
 		if (request.method == "GET" && status != showDirectory)
 		{
 			status = readingFromFile;
-			if (std::find(request.location->cgiExtensions.begin(), request.location->cgiExtensions.end(), request.fileType) != request.location->cgiExtensions.end())
+			if (std::find(request.location->cgiExtensions.begin(), \
+				request.location->cgiExtensions.end(), request.fileType) != request.location->cgiExtensions.end())
 			{
 				status = launchCgi;
 			}
@@ -269,11 +286,8 @@ void	Client::interpretRequest()
 		}
 		else if (request.method == "POST")
 		{
-
 			if (std::filesystem::exists(request.dotPath) == true)
 			{
-
-				// std::cout << "ACTION: " << request.action << std::endl;
 				if (request.action == "execute")
 				{
 					status = launchCgi;

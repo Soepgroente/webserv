@@ -57,7 +57,9 @@ void	Client::initializeSocket(int serverSocket)
 		return ;
 	}
 	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1)
+	{
 		throw std::runtime_error("Failed to set client socket to non-blocking");
+	}
 }
 
 void	Client::reset()

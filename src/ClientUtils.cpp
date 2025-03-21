@@ -49,7 +49,9 @@ const Server&	Client::getServer() const
 void	Client::setTimeout(int64_t newTimeout)
 {
 	if (newTimeout != 0)
+	{
 		timeout = newTimeout;
+	}
 }
 
 void	Client::setRemainingRequests(int input)
@@ -92,14 +94,14 @@ int	Client::checkTimeout()
 		}
 		return (status);
 	}
-	if (status == parseCgi && hasTimedOut(cgiLaunchTime, timeout * 5) == true)
+	if (status == parseCgi && hasTimedOut(cgiLaunchTime, CGI_TIMEOUT) == true)
 	{
 		Client::cgiCounter--;
 		if (kill(cgiPid, SIGTERM) == -1)
 		{
 			printToLog("Failed to kill cgi");
 		}
-		setupErrorPage(serviceOverloaded); // Service overload in the sense that it took too long so the server is probably busy? Or we send the timeout error?
+		setupErrorPage(serviceOverloaded);
 		return (status);
 	}
 	return (defaultStatus);

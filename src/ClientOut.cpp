@@ -13,8 +13,6 @@ void	Client::writeToClient()
 	{
 		writePos = 0;
 		remainingRequests--;
-
-		// std::cout << response.reply.substr(0, 100) << std::endl;
 		reset();
 		if (writtenBytes == -1)
 		{
@@ -23,7 +21,9 @@ void	Client::writeToClient()
 		}
 	}
 	else
+	{
 		writePos += writtenBytes;
+	}
 }
 
 void	Client::writeToFile()
@@ -46,7 +46,9 @@ void	Client::writeToFile()
 		response.constructResponse(requestCreated, "text/html", 0);
 	}
 	else
+	{
 		writePos += writtenBytes;
+	}
 }
 
 std::string	Client::generateDirectoryListing(const std::filesystem::path& dir)

@@ -12,7 +12,7 @@ static void	closeAndExit(std::string message, int& lineCount)
 	errorExit(message, lineCount);
 }
 
-static void	networkNumIsValid(const std::string& input, int& lineCount)
+static void	checkAddressFormat(const std::string& input, int& lineCount)
 {
 	int dotCount = 0;
 
@@ -39,7 +39,7 @@ static void	parseHost(const std::string& input, Server& server, int& lineCount)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
 	}
-	networkNumIsValid(input, lineCount);
+	checkAddressFormat(input, lineCount);
 	server.host = input;
 }
 
@@ -49,7 +49,6 @@ static void	parsePort(const std::string& input, Server& server, int& lineCount)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
 	}
-	// networkNumIsValid(input, lineCount);
 	if (input.find_first_not_of("0123456789") != std::string::npos)
 	{
 		closeAndExit("Invalid configuration file", lineCount);
@@ -226,7 +225,7 @@ static Server	parseSingleServer(std::ifstream& file, int& lineCount)
 		lineCount++;
 	}
 	closeAndExit("Error in configuration file", lineCount);
-	return (server); // makes no sense, but can't compile otherwise
+	return (server); // unnecessary because the line above exits program, but can't compile otherwise
 }
 
 static void	checkDuplicateIps(const std::vector<Server>& servers)
@@ -275,6 +274,10 @@ void	WebServer::parseConfigurations(const std::string& fileLocation)
 	{
 		errorExit("Configuration file " + fileLocation + " failed to open", -1);
 	}
+	if (std::filesystem::file_size("./configs/" + fileLocation) > MAXCONFIGSIZE)
+	{
+		closeAndExit("Configuration file too large", lineCount);
+	}
 	while (file.eof() == false)
 	{
 		try
@@ -300,4 +303,8 @@ void	WebServer::parseConfigurations(const std::string& fileLocation)
 	file.close();
 	checkDuplicateIps(servers);
 	checkFolderValidity(servers);
+	if (servers.size() > MAXCLIENTS)
+	{
+		errorExit("Too many servers in configuration file", -1);
+	}
 }

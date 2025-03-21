@@ -8,6 +8,7 @@
 #include <map>
 
 #define MAXBODYSIZE 50000000
+#define MAXCONFIGSIZE 1000000
 
 struct Location
 {

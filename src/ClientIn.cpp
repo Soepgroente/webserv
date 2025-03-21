@@ -15,7 +15,7 @@ void	Client::readIncomingRequest()
 	request.buffer += readBuffer.substr(0, readBytes);
 	if (request.buffer.size() > MAXBODYSIZE)
 	{
-		setupErrorPage(payloadTooLarge); // this error doesn't show in the homepage on firefox, it shows on chrome-edge, but chrome-edge don't repeat a request to POST a file if a POST request for this file has already been sent and the client hasn't timed out, or this is what I observed, so we can showcase POST with different browsers or bugfix the homepage 
+		setupErrorPage(payloadTooLarge);
 		return ;
 	}
 	interpretRequest();
@@ -31,14 +31,16 @@ void	Client::readFromFile()
 	response.buffer.resize(response.buffer.size() + BUFFERSIZE);
 	ssize_t readBytes = read(fileFd, &response.buffer[readPos], BUFFERSIZE);
 	if (readBytes < BUFFERSIZE && readBytes >= 0)
+	{
 		response.buffer.resize(response.buffer.size() - (BUFFERSIZE - readBytes));
+	}
 	if (response.status == defaultStatus && status == parseCgi)
 	{
 		size_t index = response.buffer.find("\r\n\r\n");
 		if (index != std::string::npos)
 		{
-			index += 4;
 			size_t contentLengthIndex = response.buffer.find("Content-Length: ");
+			index += 4;
 
 			if (contentLengthIndex == std::string::npos)
 			{
@@ -77,12 +79,13 @@ void	Client::readFromFile()
 			else if (response.status == headerIsParsed && response.buffer.size() == response.cgiLength)
 			{
 				response.reply = response.buffer;
-				// std::cout << response.reply.substr(0, 100) << std::endl;
 				status = RESPONDING;
 				Client::cgiCounter--;
 			}
 			else
+			{
 				readPos += readBytes;
+			}
 		}
 		else
 		{
@@ -96,5 +99,7 @@ void	Client::readFromFile()
 		}
 	}
 	else
+	{
 		readPos += readBytes;
+	}
 }

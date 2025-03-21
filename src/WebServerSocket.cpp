@@ -3,11 +3,13 @@
 static uint32_t ipStringToInt(std::string ip)
 {
 	uint32_t	result = 0;
+	size_t		dotIndex;
+	int			octet;
 
 	for (int i = 0; i < 4; i++)
 	{
-		size_t dotIndex = ip.find('.');
-		int octet = std::stoi(ip.substr(0, dotIndex));
+		dotIndex = ip.find('.');
+		octet = std::stoi(ip.substr(0, dotIndex));
 		if (octet < 0 || octet > 255)
 		{
 			throw std::exception();
@@ -24,7 +26,9 @@ static int	setupSocket(int& sock)
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1)
+	{
 		return (-1);
+	}
 	#ifdef __APPLE__
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &options, sizeof(options)) == -1)
 	{

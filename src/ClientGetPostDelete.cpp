@@ -11,7 +11,9 @@ Location*	Client::resolveRequestLocation(std::string& path)
 	for (MapIterator it = start; it != end; it++)
 	{
 		if (path.find(it->first) == 0)
+		{
 			tmp = it;
+		}
 	}
 	if (tmp == end || std::filesystem::exists('.' + server->locations.at(tmp->first).dirs.at("root")) == false)
 	{
@@ -21,7 +23,6 @@ Location*	Client::resolveRequestLocation(std::string& path)
 	}
 	if (tmp->first != "/")
 	{
-		
 		path = path.substr(tmp->first.size());
 		if (path.size() != 0 && path[0] != '/')
 		{
@@ -59,6 +60,11 @@ bool	Client::parsePath(const std::string& requestLine)
 		request.status = versionNotSupported;
 		return (false);
 	}
+	if (request.path.size() > FILENAME_MAX)
+	{
+		request.status = uriTooLong;
+		return (false);
+	}
 	restoreWhitespace(request.path);
 	request.location = resolveRequestLocation(request.path);
 	if (request.location == nullptr)
@@ -67,10 +73,15 @@ bool	Client::parsePath(const std::string& requestLine)
 		return (false);
 	}
 	response.location = request.location;
-	if (request.status == defaultStatus && std::find(request.location->methods.begin(), request.location->methods.end(), request.method) == request.location->methods.end())
+	if (request.status == defaultStatus && std::find(request.location->methods.begin(), \
+		request.location->methods.end(), request.method) == request.location->methods.end())
+	{
 		request.status = requestMethodNotAllowed;
+	}
 	if (request.status != defaultStatus)
+	{
 		return (false);
+	}
 	const std::map<std::string, std::string>&	dir = request.location->dirs;
 	if (request.path == "/")
 	{
@@ -84,8 +95,9 @@ bool	Client::parsePath(const std::string& requestLine)
 bool	Client::parseGet(const std::string &requestLine)
 {
 	if (parsePath(requestLine) == false)
+	{
 		return (false);
-
+	}
 	if (request.location->dirs.at("redirection").empty() == false)
 	{
 		request.status = temporaryRedirect;
@@ -99,11 +111,13 @@ bool	Client::parseGet(const std::string &requestLine)
 	}
     if (std::filesystem::is_directory(request.dotPath) == true)
 	{
-		if (request.location->dirs.at("directory_listing") == "on") // do we care if it's anything else?
+		if (request.location->dirs.at("directory_listing") == "on")
 		{
 			status = showDirectory;
 			if (request.dotPath.back() != '/')
+			{
 				request.dotPath += "/";
+			}
 		}
 		else
 		{
@@ -120,32 +134,15 @@ bool	Client::parseGet(const std::string &requestLine)
 
 bool	Client::parsePost(const std::string& requestLine)
 {
-	if (parsePath(requestLine) == false)
-	{
-		return (false);
-	}
-	// std::cout << "ACTION: " << request.action << std::endl;
-	// if (std::filesystem::exists(request.dotPath) == true)
-	// {
-	// 	if (request.action == "execute")
-	// 	{
-	// 		return (true);
-	// 	}
-	// 	request.status = fileAlreadyExists;
-	// 	return (false);
-	// }
-	// else if (request.action == "execute")
-	// {
-	// 	request.status = requestNotFound;
-	// 	return (false);
-	// }
-	return (true);
+	return (parsePath(requestLine));
 }
 
 bool	Client::parseDelete(const std::string& requestLine)
 {
 	if (parsePath(requestLine) == false)
+	{
 		return (false);
+	}
 	if (std::filesystem::exists(request.dotPath) == false)
 	{
 		request.status = requestNotFound;
