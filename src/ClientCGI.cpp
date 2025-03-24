@@ -52,7 +52,6 @@ void	Client::launchCGI()
 {
 	int		pipeFd[2];
 
-	std::cout << "CGI counter: " << cgiCounter << std::endl;
 	if (cgiCounter >= MAX_CONCURRENT_CGIS)
 	{
 		setupErrorPage(serviceOverloaded);
