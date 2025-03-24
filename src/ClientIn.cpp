@@ -58,6 +58,10 @@ void	Client::readFromFile()
 		if (readBytes == -1)
 		{
 			readPos = 0;
+			if (status == parseCgi)
+			{
+				cgiCounter--;
+			}
 			closeAndResetFd(Client::fileAndCgiDescriptors, fileFd);
 			printToLog("Error reading from file: " + std::string(strerror(errno)));
 			setupErrorPage(internalServerError);

@@ -74,11 +74,6 @@ void	Client::setClientStatus(clientStatus newStatus)
 	status = newStatus;
 }
 
-int	Client::getCgiCounter() const
-{
-	return (Client::cgiCounter);
-}
-
 pid_t	Client::getCgiPid() const
 {
 	return (cgiPid);

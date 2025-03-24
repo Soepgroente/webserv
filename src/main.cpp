@@ -5,6 +5,8 @@ void	startWebserver(const std::string& config)
 	printToLog("Initial Server Bootup");
 	while (FOREVER)
 	{
+		// inspect this
+		Client::cgiCounter = 0;
 		try
 		{
 			WebServer	webserver;

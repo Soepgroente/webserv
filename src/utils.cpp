@@ -16,7 +16,7 @@ std::vector<std::string>	stringSplit(std::string toSplit)
 		split.emplace_back(toSplit.substr(0, end));
 		toSplit.erase(0, end + 2);
 	}
-	// printVector(split);	
+	// printVector(split);
 	return (split);
 }
 

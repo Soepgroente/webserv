@@ -13,6 +13,12 @@ WebServer::~WebServer()
 			close(servers[i].socket);
 		}
 	}
+	// inspect this
+	for (size_t i = 0; i < Client::fileAndCgiDescriptors.size(); i++)
+	{
+		closeAndResetFd(Client::fileAndCgiDescriptors, Client::fileAndCgiDescriptors[i].fd);
+	}
+	std::cerr << Client::fileAndCgiDescriptors.size() << std::endl;
 }
 
 const Server&	WebServer::getServer(int serverSocket)
@@ -57,6 +63,10 @@ void	WebServer::loopadydoopady()
 
 	while (true)
 	{
+		// if (waitpid(-1, NULL, WNOHANG) > 0)
+		// {
+		// 	std::cout << "Child process ended" << std::endl; // After testing, remove or print to log?
+		// }
 		removeInactiveConnections();
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 		{
@@ -98,6 +108,11 @@ void	WebServer::loopadydoopady()
 				if (waitpid(client.getCgiPid(), &status, WNOHANG) == -1)
 				{
 					throw std::runtime_error("Waitpid failed");
+				}
+				if (status == EXIT_FAILURE)
+				{
+					Client::cgiCounter--;
+					client.setupErrorPage(internalServerError);
 				}
 			}
 

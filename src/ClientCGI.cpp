@@ -52,6 +52,7 @@ void	Client::launchCGI()
 {
 	int		pipeFd[2];
 
+	std::cout << cgiCounter << std::endl;
 	if (cgiCounter >= MAX_CONCURRENT_CGIS)
 	{
 		setupErrorPage(serviceOverloaded);
@@ -63,8 +64,13 @@ void	Client::launchCGI()
 	{
 		close(pipeFd[0]);
 		duplicate_fd(pipeFd[1], STDOUT_FILENO);
-		if (execve(request.dotPath.c_str(), getArgs(request.dotPath), getEnvp()) == -1)
+		char** args = getArgs(request.dotPath);
+		char** envp = getEnvp();
+		if (execve(request.dotPath.c_str(), args, envp) == -1)
 		{
+			free(args[0]);
+			delete[] args;
+			delete envp;
 			if (write(STDOUT_FILENO, "Error: 500", 10) == -1)
 			{
 				printToLog("Failed to write to cgi pipe");

@@ -11,3 +11,5 @@ ubuntu_tester
 log.txt
 webservTestReport.log
 tester
+./var/www/generated/*
+./var/www/uploads/*

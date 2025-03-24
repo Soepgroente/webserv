@@ -60,7 +60,6 @@ class Client
 	int				getRemainingRequests() const;
 	int				getClientStatus() const;
 	void			setClientStatus(clientStatus newStatus);
-	int				getCgiCounter() const;
 	pid_t			getCgiPid() const;
 
 	void			readFromFile();
@@ -73,6 +72,7 @@ class Client
 	int				checkTimeout();
 
 	static std::vector<pollfd>	fileAndCgiDescriptors;
+	static int			cgiCounter;
 
 	private:
 
@@ -112,7 +112,6 @@ class Client
 	HttpRequest			request;
 	HttpResponse		response;
 	const Server*		server;
-	static int			cgiCounter;
 };
 
 std::ostream&	operator<<(std::ostream& out, const Client& p);

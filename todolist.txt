@@ -1,11 +1,3 @@
-- homepage requests intended functionality (GET, POST, DELETE) -> Y
-- method not allowed -> Y
-- directory listing -> Y
-- CGI execution -> Y
-- timeouts -> Y
-- unsupported type -> Y
-- Forbidden -> Y
-- Not Found -> Y
-- sieging GET requests with multiple instances of 255 clients simultaneously (not CGI, max 2) -> Y
-
-- Most thought of errors in the config file get handled, do we care if there are multiple entries on stuff that there shouldn't even if we don't parse them?
+- uploading the same file (to show that it won't upload if it's there) works after a refresh in chromium base browsers
+- payload too large error with uploads doesn't show error page in firefox, showcase it in chromium based browser
+- check the "//inspect this" and find the issue with the cgis not cleaning up properly after server restarts

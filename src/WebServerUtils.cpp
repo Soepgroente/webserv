@@ -68,6 +68,15 @@ void	WebServer::removeClient(int clientIndex)
 {
 	int tmpFd = clients[clientIndex].getFileFd();
 
+	// inspect this
+	if (clients[clientIndex].getCgiPid() != -1)
+	{
+		if (kill(clients[clientIndex].getCgiPid(), SIGTERM) == -1)
+		{
+			printToLog("Failed to kill cgi");
+		}
+		Client::cgiCounter--;
+	}
 	if (tmpFd != -1)
 	{
 		close(tmpFd);
