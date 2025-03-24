@@ -58,10 +58,6 @@ void	WebServer::loopadydoopady()
 	while (true)
 	{
 		removeInactiveConnections();
-		if (waitpid(-1, NULL, WNOHANG) == -1)
-		{
-			throw std::runtime_error("Waitpid failed");
-		}
 		if (poll(pollDescriptors.data(), pollDescriptors.size(), 0) == -1)
 		{
 			throw std::runtime_error("Failed to poll clients");
@@ -94,6 +90,16 @@ void	WebServer::loopadydoopady()
 				continue ;
 			}
 			Client& client = clients[i];
+
+			if (client.getCgiPid() != -1)
+			{
+				int status = 0;
+
+				if (waitpid(client.getCgiPid(), &status, WNOHANG) == -1)
+				{
+					throw std::runtime_error("Waitpid failed");
+				}
+			}
 
 			if ((pollDescriptors[i + amountOfServers].revents & POLLHUP) != 0)
 			{

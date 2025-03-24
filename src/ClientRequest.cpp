@@ -97,7 +97,7 @@ bool	Client::parseHeaders()
 	}
 	if (request.buffer.find("\r\n\r\n") == std::string::npos)
 	{
-		if (request.buffer.size() > server->maxBodySize)
+		if (request.buffer.size() > static_cast<size_t>(server->maxBodySize))
 		{
 			request.status = requestIsInvalid;
 		}

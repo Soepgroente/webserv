@@ -61,6 +61,7 @@ class Client
 	int				getClientStatus() const;
 	void			setClientStatus(clientStatus newStatus);
 	int				getCgiCounter() const;
+	pid_t			getCgiPid() const;
 
 	void			readFromFile();
 	void			writeToClient();

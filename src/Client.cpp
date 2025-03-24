@@ -66,5 +66,6 @@ void	Client::reset()
 {
 	request.clear();
 	response.clear();
+	cgiPid = -1;
 	status = LISTENING;
 }

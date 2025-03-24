@@ -79,6 +79,11 @@ int	Client::getCgiCounter() const
 	return (Client::cgiCounter);
 }
 
+pid_t	Client::getCgiPid() const
+{
+	return (cgiPid);
+}
+
 int	Client::checkTimeout()
 {
 	if (status == CLOSING || remainingRequests <= 0)
@@ -101,6 +106,7 @@ int	Client::checkTimeout()
 		{
 			printToLog("Failed to kill cgi");
 		}
+		cgiPid = -1;
 		setupErrorPage(serviceOverloaded);
 		return (status);
 	}

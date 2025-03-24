@@ -19,6 +19,11 @@ void	startWebserver(const std::string& config)
 			{
 				return ;
 			}
+			if (std::string(e.what()).substr(0, 27) == "Shutting down after signal ")
+			{
+				std::cerr << e.what() << std::endl;
+				return ;
+			}
 			printToLog("WebServer shutting down due to exception: " + std::string(e.what()));
 		}
 	}
