@@ -14,11 +14,11 @@ WebServer::~WebServer()
 		}
 	}
 	// inspect this
-	for (size_t i = 0; i < Client::fileAndCgiDescriptors.size(); i++)
-	{
-		closeAndResetFd(Client::fileAndCgiDescriptors, Client::fileAndCgiDescriptors[i].fd);
-	}
-	std::cerr << Client::fileAndCgiDescriptors.size() << std::endl;
+	// for (size_t i = 0; i < Client::fileAndCgiDescriptors.size(); i++)
+	// {
+	// 	closeAndResetFd(Client::fileAndCgiDescriptors, Client::fileAndCgiDescriptors[i].fd);
+	// }
+	// std::cerr << Client::fileAndCgiDescriptors.size() << std::endl;
 }
 
 const Server&	WebServer::getServer(int serverSocket)
@@ -107,11 +107,12 @@ void	WebServer::loopadydoopady()
 
 				if (waitpid(client.getCgiPid(), &status, WNOHANG) == -1)
 				{
-					throw std::runtime_error("Waitpid failed");
+					// throw std::runtime_error("Waitpid failed");
 				}
-				if (status == EXIT_FAILURE)
+				if (WEXITSTATUS(status) == EXIT_FAILURE)
 				{
 					Client::cgiCounter--;
+					std::cout << "Execve failed, new cgiCounter: " << Client::cgiCounter << std::endl;
 					client.setupErrorPage(internalServerError);
 				}
 			}

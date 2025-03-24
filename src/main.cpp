@@ -6,7 +6,7 @@ void	startWebserver(const std::string& config)
 	while (FOREVER)
 	{
 		// inspect this
-		Client::cgiCounter = 0;
+		// Client::cgiCounter = 0;
 		try
 		{
 			WebServer	webserver;
